@@ -1,0 +1,147 @@
+{
+ "words": [
+  [
+   "cash",
+   "наличные",
+   "/kæʃ/",
+   "Can I pay in cash?",
+   "Можно оплатить наличными?",
+   "A2"
+  ],
+  [
+   "card",
+   "карта (банковская)",
+   "/kɑːd/",
+   "I'll pay by card.",
+   "Я заплачу картой.",
+   "A1"
+  ],
+  [
+   "keep the change",
+   "сдачи не надо",
+   "/kiːp ðə tʃeɪndʒ/",
+   "Here you are. Keep the change!",
+   "Вот, сдачи не надо!",
+   "A2"
+  ],
+  [
+   "discount",
+   "скидка",
+   "/ˈdɪskaʊnt/",
+   "Is there a discount for students?",
+   "Есть скидка для студентов?",
+   "A2"
+  ],
+  [
+   "on sale",
+   "со скидкой",
+   "/ɒn seɪl/",
+   "These shoes are on sale.",
+   "Эти туфли со скидкой.",
+   "A2"
+  ],
+  [
+   "size",
+   "размер",
+   "/saɪz/",
+   "What size are you?",
+   "Какой у вас размер?",
+   "A1"
+  ],
+  [
+   "try on",
+   "примерить",
+   "/traɪ ɒn/",
+   "Can I try on this jacket?",
+   "Можно примерить эту куртку?",
+   "A2"
+  ],
+  [
+   "fitting room",
+   "примерочная",
+   "/ˈfɪtɪŋ ruːm/",
+   "Where is the fitting room?",
+   "Где примерочная?",
+   "A2"
+  ],
+  [
+   "refund",
+   "возврат денег",
+   "/ˈriːfʌnd/",
+   "I'd like a refund, please.",
+   "Я бы хотел вернуть деньги.",
+   "B1"
+  ],
+  [
+   "queue",
+   "очередь",
+   "/kjuː/",
+   "There's a long queue at the checkout.",
+   "На кассе длинная очередь.",
+   "A2"
+  ],
+  [
+   "checkout",
+   "касса",
+   "/ˈtʃekaʊt/",
+   "Please pay at the checkout.",
+   "Оплатите на кассе, пожалуйста.",
+   "A2"
+  ],
+  [
+   "bargain",
+   "выгодная покупка",
+   "/ˈbɑːɡən/",
+   "This coat was a real bargain!",
+   "Это пальто — настоящая находка!",
+   "B1"
+  ],
+  [
+   "save up",
+   "копить",
+   "/seɪv ʌp/",
+   "I'm saving up for a new laptop.",
+   "Я коплю на новый ноутбук.",
+   "B1"
+  ]
+ ],
+ "texts": [
+  {
+   "title": "In a clothes shop",
+   "l": "A2",
+   "text": "Excuse me, can I try on this jacket? — Of course. What size are you? — Medium, I think. — Here you are. The fitting room is over there. … How is it? — It's a bit small. Do you have it in large? — Yes, here's a large one. And good news: it's on sale today, thirty percent off. — Great! I'll take it. Can I pay by card? — Sure. Would you like a bag? — No, thanks. I have one.",
+   "q": [
+    {
+     "q": "Какой размер подошёл покупателю?",
+     "o": [
+      "Большой (large)",
+      "Средний (medium)",
+      "Маленький (small)"
+     ],
+     "a": "Большой (large)"
+    },
+    {
+     "q": "Какая скидка на куртку?",
+     "o": [
+      "30%",
+      "50%",
+      "Скидки нет"
+     ],
+     "a": "30%"
+    },
+    {
+     "q": "Как покупатель платит?",
+     "o": [
+      "Картой",
+      "Наличными",
+      "Не платит"
+     ],
+     "a": "Картой"
+    }
+   ]
+  }
+ ],
+ "id": "shopping",
+ "title": "Покупки и деньги",
+ "level": "A2"
+}

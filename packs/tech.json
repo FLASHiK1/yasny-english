@@ -1,0 +1,119 @@
+{
+ "words": [
+  [
+   "download",
+   "скачать",
+   "/ˌdaʊnˈləʊd/",
+   "Download the app for free.",
+   "Скачай приложение бесплатно.",
+   "A2"
+  ],
+  [
+   "upload",
+   "загрузить (в сеть)",
+   "/ˌʌpˈləʊd/",
+   "I uploaded the photos yesterday.",
+   "Я загрузил фото вчера.",
+   "A2"
+  ],
+  [
+   "password",
+   "пароль",
+   "/ˈpɑːswɜːd/",
+   "Never share your password.",
+   "Никому не сообщай свой пароль.",
+   "A2"
+  ],
+  [
+   "log in",
+   "войти (в аккаунт)",
+   "/lɒɡ ɪn/",
+   "I can't log in to my account.",
+   "Не могу войти в аккаунт.",
+   "A2"
+  ],
+  [
+   "sign up",
+   "зарегистрироваться",
+   "/saɪn ʌp/",
+   "Sign up with your email.",
+   "Зарегистрируйся по почте.",
+   "A2"
+  ],
+  [
+   "screen",
+   "экран",
+   "/skriːn/",
+   "My phone screen is broken.",
+   "У меня разбит экран телефона.",
+   "A2"
+  ],
+  [
+   "battery",
+   "аккумулятор",
+   "/ˈbætəri/",
+   "My battery is almost dead.",
+   "У меня почти сел аккумулятор.",
+   "A2"
+  ],
+  [
+   "charge",
+   "заряжать",
+   "/tʃɑːdʒ/",
+   "I need to charge my phone.",
+   "Мне нужно зарядить телефон.",
+   "A2"
+  ],
+  [
+   "settings",
+   "настройки",
+   "/ˈsetɪŋz/",
+   "Check your privacy settings.",
+   "Проверь настройки конфиденциальности.",
+   "B1"
+  ],
+  [
+   "app",
+   "приложение",
+   "/æp/",
+   "This app helps me learn English.",
+   "Это приложение помогает мне учить английский.",
+   "A2"
+  ],
+  [
+   "crash",
+   "вылетать (о программе)",
+   "/kræʃ/",
+   "The game keeps crashing.",
+   "Игра постоянно вылетает.",
+   "B1"
+  ],
+  [
+   "notification",
+   "уведомление",
+   "/ˌnəʊtɪfɪˈkeɪʃn/",
+   "Turn off notifications at night.",
+   "Выключай уведомления на ночь.",
+   "B1"
+  ],
+  [
+   "scroll",
+   "листать (ленту)",
+   "/skrəʊl/",
+   "I scroll social media too much.",
+   "Я слишком много листаю соцсети.",
+   "B1"
+  ],
+  [
+   "online",
+   "онлайн, в сети",
+   "/ˌɒnˈlaɪn/",
+   "I buy most things online.",
+   "Почти всё я покупаю онлайн.",
+   "A2"
+  ]
+ ],
+ "id": "tech",
+ "title": "Технологии и интернет",
+ "level": "B1"
+}

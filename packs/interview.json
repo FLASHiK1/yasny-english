@@ -1,0 +1,147 @@
+{
+ "words": [
+  [
+   "CV",
+   "резюме",
+   "/ˌsiː ˈviː/",
+   "Please send us your CV.",
+   "Пришлите, пожалуйста, ваше резюме.",
+   "B1"
+  ],
+  [
+   "apply for",
+   "подавать заявку на",
+   "/əˈplaɪ fɔː/",
+   "I'm applying for a job in marketing.",
+   "Я подаю заявку на работу в маркетинге.",
+   "B1"
+  ],
+  [
+   "position",
+   "должность",
+   "/pəˈzɪʃn/",
+   "Why are you interested in this position?",
+   "Почему вас интересует эта должность?",
+   "B1"
+  ],
+  [
+   "strengths",
+   "сильные стороны",
+   "/streŋθs/",
+   "What are your main strengths?",
+   "Каковы ваши главные сильные стороны?",
+   "B1"
+  ],
+  [
+   "weaknesses",
+   "слабые стороны",
+   "/ˈwiːknəsɪz/",
+   "Tell me about your weaknesses.",
+   "Расскажите о своих слабых сторонах.",
+   "B1"
+  ],
+  [
+   "be responsible for",
+   "отвечать за",
+   "/biː rɪˈspɒnsəbl fɔː/",
+   "I was responsible for a team of five.",
+   "Я отвечал за команду из пяти человек.",
+   "B1"
+  ],
+  [
+   "achievement",
+   "достижение",
+   "/əˈtʃiːvmənt/",
+   "What's your biggest achievement?",
+   "Какое ваше самое большое достижение?",
+   "B1"
+  ],
+  [
+   "work under pressure",
+   "работать в условиях стресса",
+   "/wɜːk ˈʌndə ˈpreʃə/",
+   "I can work under pressure.",
+   "Я умею работать под давлением.",
+   "B1"
+  ],
+  [
+   "team player",
+   "человек, умеющий работать в команде",
+   "/tiːm ˈpleɪə/",
+   "I'm a real team player.",
+   "Я хорошо работаю в команде.",
+   "B1"
+  ],
+  [
+   "notice period",
+   "срок отработки при увольнении",
+   "/ˈnəʊtɪs ˈpɪəriəd/",
+   "My notice period is one month.",
+   "Мне нужно отработать месяц.",
+   "B2"
+  ],
+  [
+   "benefits",
+   "льготы, соцпакет",
+   "/ˈbenɪfɪts/",
+   "What benefits does the company offer?",
+   "Какой соцпакет предлагает компания?",
+   "B1"
+  ],
+  [
+   "full-time",
+   "полный рабочий день",
+   "/ˌfʊl ˈtaɪm/",
+   "Is it a full-time job?",
+   "Это работа на полный день?",
+   "A2"
+  ],
+  [
+   "part-time",
+   "неполный рабочий день",
+   "/ˌpɑːt ˈtaɪm/",
+   "I work part-time.",
+   "Я работаю на полставки.",
+   "A2"
+  ]
+ ],
+ "texts": [
+  {
+   "title": "The interview",
+   "l": "B1",
+   "text": "So, tell me about yourself. — I've been working as a project manager for four years. In my current job I'm responsible for a team of six people. — Why are you applying for this position? — I'd like to work on bigger international projects, and your company is known for them. — What would you say is your main strength? — I'm well organised and I can work under pressure. Last year our team delivered a big project two weeks early. — And your weaknesses? — Sometimes I try to do everything myself, but I'm learning to delegate more. — Great. What's your notice period? — One month.",
+   "q": [
+    {
+     "q": "Сколько лет кандидат работает менеджером проектов?",
+     "o": [
+      "Четыре года",
+      "Шесть лет",
+      "Один год"
+     ],
+     "a": "Четыре года"
+    },
+    {
+     "q": "Почему он хочет в эту компанию?",
+     "o": [
+      "Хочет работать над крупными международными проектами",
+      "Там больше платят",
+      "Офис ближе к дому"
+     ],
+     "a": "Хочет работать над крупными международными проектами"
+    },
+    {
+     "q": "Какую слабость он называет?",
+     "o": [
+      "Старается всё делать сам",
+      "Опаздывает",
+      "Плохо работает в стрессе"
+     ],
+     "a": "Старается всё делать сам"
+    }
+   ]
+  }
+ ],
+ "id": "interview",
+ "title": "Собеседование на работу",
+ "level": "B1"
+}

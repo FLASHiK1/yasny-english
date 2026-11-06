@@ -1,0 +1,111 @@
+{
+ "words": [
+  [
+   "bedroom",
+   "спальня",
+   "/ˈbedruːm/",
+   "My bedroom is small but cosy.",
+   "Моя спальня маленькая, но уютная.",
+   "A1"
+  ],
+  [
+   "bathroom",
+   "ванная",
+   "/ˈbɑːθruːm/",
+   "The bathroom is next to the kitchen.",
+   "Ванная рядом с кухней.",
+   "A1"
+  ],
+  [
+   "living room",
+   "гостиная",
+   "/ˈlɪvɪŋ ruːm/",
+   "We watch TV in the living room.",
+   "Мы смотрим телевизор в гостиной.",
+   "A1"
+  ],
+  [
+   "fridge",
+   "холодильник",
+   "/frɪdʒ/",
+   "The milk is in the fridge.",
+   "Молоко в холодильнике.",
+   "A1"
+  ],
+  [
+   "washing machine",
+   "стиральная машина",
+   "/ˈwɒʃɪŋ məˈʃiːn/",
+   "The washing machine is broken.",
+   "Стиральная машина сломалась.",
+   "A2"
+  ],
+  [
+   "do the dishes",
+   "мыть посуду",
+   "/duː ðə ˈdɪʃɪz/",
+   "I'll do the dishes after dinner.",
+   "Я помою посуду после ужина.",
+   "A2"
+  ],
+  [
+   "do the laundry",
+   "стирать бельё",
+   "/duː ðə ˈlɔːndri/",
+   "I do the laundry on Sundays.",
+   "Я стираю по воскресеньям.",
+   "A2"
+  ],
+  [
+   "vacuum",
+   "пылесосить",
+   "/ˈvækjuːm/",
+   "Can you vacuum the living room?",
+   "Пропылесосишь гостиную?",
+   "A2"
+  ],
+  [
+   "tidy up",
+   "прибраться",
+   "/ˈtaɪdi ʌp/",
+   "Let's tidy up before the guests come.",
+   "Давай приберёмся до прихода гостей.",
+   "A2"
+  ],
+  [
+   "rubbish",
+   "мусор",
+   "/ˈrʌbɪʃ/",
+   "Please take out the rubbish.",
+   "Вынеси, пожалуйста, мусор.",
+   "A2"
+  ],
+  [
+   "light",
+   "свет",
+   "/laɪt/",
+   "Turn off the light, please.",
+   "Выключи свет, пожалуйста.",
+   "A1"
+  ],
+  [
+   "heating",
+   "отопление",
+   "/ˈhiːtɪŋ/",
+   "The heating doesn't work.",
+   "Отопление не работает.",
+   "A2"
+  ],
+  [
+   "landlord",
+   "арендодатель",
+   "/ˈlændlɔːd/",
+   "Our landlord fixed the heating.",
+   "Хозяин квартиры починил отопление.",
+   "B1"
+  ]
+ ],
+ "id": "home",
+ "title": "Дом и быт",
+ "level": "A1"
+}

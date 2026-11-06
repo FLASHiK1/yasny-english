@@ -379,6 +379,30 @@ body.onb main{padding-bottom:40px}
 .obplan span{color:var(--muted);font-size:14.5px}
 .choices .btn{min-height:48px}
 .grades .btn{min-height:56px}
+/* ---- v10: правила и знакомство со словом ---- */
+.deep{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.exlist{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px;font-size:15.5px}
+mark.okmark{background:var(--ok-soft);color:var(--ok);font-weight:600;border-radius:4px;padding:0 4px}
+.aiexp{display:flex;flex-direction:column;gap:10px}
+.aimsg{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;white-space:pre-wrap;font-size:15px;line-height:1.55}
+.aiq{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border-radius:14px;border-bottom-right-radius:4px;padding:8px 12px;max-width:85%}
+.bar{min-width:0}.chips{min-width:0;flex-shrink:1}
+@media (max-width:400px){.brand{font-size:15px}}
+[hidden]{display:none!important}
+.rsheet{position:fixed;inset:0;z-index:30;background:rgba(12,18,32,.45);display:flex;align-items:flex-end;justify-content:center;padding-top:env(safe-area-inset-top,0px)}
+.rsbox{position:relative;background:var(--bg);width:100%;max-width:680px;max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:22px max(18px,env(safe-area-inset-left,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-right,0px));animation:sheetup .28s ease-out;box-shadow:0 -10px 40px rgba(12,18,32,.25)}
+@media (min-width:700px){.rsheet{align-items:center}.rsbox{border-radius:20px;max-height:84vh}}
+@keyframes sheetup{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.rsc{margin-top:34px}
+.rsx{position:absolute;top:10px;right:12px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:22px;line-height:1;cursor:pointer;color:var(--ink)}
+.rsa{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom,0px));background:var(--bg);padding-block:12px 4px;margin-top:8px;border-top:1px solid var(--line)}
+body.noscroll{overflow:hidden}
+.rulehint{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 12px;border:1px dashed var(--line);border-radius:12px}
+.rulehint span{flex:1;min-width:0}
+.rulehint.new{border:1px solid var(--accent);background:var(--soft);border-style:solid}
+.rbtn{padding:2px 8px;font-size:12.5px;vertical-align:middle;text-transform:none;letter-spacing:0;color:var(--accent)}
+.introru{font-size:20px;font-weight:500}
+.packall{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-color:var(--accent);background:var(--soft)}
 /* ---- v9: анимации Ясика и помощник ---- */
 .yasik{overflow:visible}
 .yasik .ybody{transform-box:view-box;transform-origin:60px 98px}
@@ -1612,7 +1636,7 @@ const SCENES=[
 const KEY="yasny-eng-v1";
 function load(){try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):null}catch(e){return null}}
 function save(){S.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}if(typeof scheduleSync==="function")scheduleSync()}
-const DEF={cards:{},custom:[],lessons:{},tr:{},days:{},extraNew:{},mist:{},read:{},course:{},packs:{},verbs:{},sets:{},genTexts:[],writings:[],frozen:[],freezes:0,deleted:[],lvlLog:[],totalAns:0,level:null,levelSrc:null,test:null,lvlDismiss:0,settings:{newPerDay:10,voice:"en-US",goal:30,dir:"ru-en"}};
+const DEF={cards:{},custom:[],lessons:{},tr:{},days:{},extraNew:{},mist:{},read:{},course:{},packs:{},readRules:{},removedPacks:[],verbs:{},sets:{},genTexts:[],writings:[],frozen:[],freezes:0,deleted:[],lvlLog:[],totalAns:0,level:null,levelSrc:null,test:null,lvlDismiss:0,settings:{newPerDay:10,voice:"en-US",goal:30,dir:"ru-en"}};
 let S=Object.assign(JSON.parse(JSON.stringify(DEF)),load()||{});
 S.settings=Object.assign({},DEF.settings,S.settings||{});
 
@@ -1704,7 +1728,7 @@ function addedToday(){const d=dkey();return Object.values(S.cards).filter(c=>c.a
 function newLeft(){return Math.max(0,S.settings.newPerDay+(S.extraNew[dkey()]||0)-addedToday())}
 function dueWords(){const now=Date.now();return allWords().filter(w=>S.cards[w.id]&&S.cards[w.id].due<=now).sort((a,b)=>S.cards[a.id].due-S.cards[b.id].due)}
 function newWords(){const nw=allWords().filter(w=>!S.cards[w.id]),t=li(T());
-  const pr=w=>{const d=li(w.lvl)-t;return(w.theme?-0.5:0)+(d===0?0:d<0?-d:10+d)};
+  const pr=w=>{const d=li(w.lvl)-t;return(w.theme?(String(w.theme).startsWith("pack:")?0.5:-0.5):0)+(d===0?0:d<0?-d:10+d)};
   return nw.filter(w=>w.custom).concat(nw.filter(w=>!w.custom&&(!w.theme||(S.sets||{})[w.theme])).map((w,i)=>({w,i,p:pr(w)})).sort((a,b)=>a.p-b.p||a.i-b.i).map(x=>x.w))}
 function schedule(c0,g){
   const c=Object.assign({ease:2.5,ivl:0,reps:0,lapses:0,added:dkey()},c0||{});c.upd=Date.now();
@@ -1725,18 +1749,18 @@ function markIn(ex,en,blank){
 /* ===================== HEADER ===================== */
 function chips(){try{renderTabbar((location.hash||"#today").slice(1)||"today")}catch(e){}
   const st=streak(),due=dueWords().length;
-  $("#chips").innerHTML=`<span class="chip" title="Дней подряд">Серия: ${st} ${plural(st,["день","дня","дней"])}</span>`+(S.level?`<span class="chip" title="Рабочий уровень">${S.level}</span>`:"")+(dueMist().length?`<a class="chip warnchip" href="#mistakes" title="Ошибки к повтору">Ошибки: ${dueMist().length}</a>`:"")+(due?`<span class="chip" title="Карточки к повторению">Слова: ${due}</span>`:"");
+  $("#chips").innerHTML=`<span class="chip" title="Серия: дней подряд">Серия ${st}</span>`+(S.level?`<span class="chip" title="Рабочий уровень">${S.level}</span>`:"")+"";
 }
 
 /* ===================== VIEWS ===================== */
 const V=$("#view");
-const ROUTES=["today","mistakes","cards","grammar","translate","listen","words","test","read","speak","practice","verbs","course","library","hello","learn","train","profile","stats"];
+const ROUTES=["today","mistakes","cards","grammar","translate","listen","words","test","read","speak","practice","verbs","course","library","hello","learn","train","profile","stats","rules"];
 function route(){
   let r=(location.hash||"#today").slice(1);if(!ROUTES.includes(r))r="today";
   renderTabbar(r);setTimeout(checkAch,300);
   if(r!=="mistakes"&&MS&&MS.active&&!MS.cur)MS=null;
   try{speechSynthesis.cancel()}catch(e){}
-  ({today:viewToday,mistakes:viewMistakes,test:viewTest,read:viewRead,speak:viewSpeak,practice:viewPractice,course:viewCourse,library:viewLibrary,hello:viewHello,learn:viewLearn,train:viewTrain,profile:viewProfile,stats:viewStats,verbs:viewVerbs,cards:viewCards,grammar:viewGrammar,translate:viewTranslate,listen:viewListen,words:viewWords})[r]();
+  ({today:viewToday,mistakes:viewMistakes,test:viewTest,read:viewRead,speak:viewSpeak,practice:viewPractice,course:viewCourse,library:viewLibrary,hello:viewHello,learn:viewLearn,train:viewTrain,profile:viewProfile,stats:viewStats,rules:viewRules,verbs:viewVerbs,cards:viewCards,grammar:viewGrammar,translate:viewTranslate,listen:viewListen,words:viewWords})[r]();
   chips();syncUI();window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
@@ -1872,8 +1896,8 @@ function viewMistakes(){
       <div class="mgo">${due.length?`<button class="btn primary" id="mstart">Исправлять (${Math.min(15,due.length)})</button>`:`<span class="small muted">${nextTxt?"Следующий повтор: "+nextTxt:"Все ошибки исправлены"}</span>`}</div>
     </section>
     ${weak.length?`<section class="sheet"><h2>Слабые места</h2><p class="small muted" style="margin:-4px 0 12px">Темы, где сейчас больше всего неисправленных ошибок</p>
-      <div class="weak">${weak.map(([t,v])=>{const isL=LESSONS.some(l=>l.id===t);return `<div class="wrow"><div class="wname">${esc(topicName(t))}</div><div class="wbar"><i style="width:${v.n/wmax*100}%"></i></div><div class="wnum">${v.n}</div>${isL?`<button class="btn ghost small" data-rule="${t}">Правило</button>`:`<span></span>`}</div>`}).join("")}</div></section>`:""}
-    ${recent.length?`<section><h2>В работе</h2><div class="wl">${recent.map(m=>{const t=taskOf(m);return `<div class="mi"><div class="mtop"><span class="label">${esc(t.label)}</span><span class="sdots" title="Верных ответов подряд: ${m.s} из 3">${dots(m.s)}</span></div>
+      <div class="weak">${weak.map(([t,v])=>{const isL=LESSONS.some(l=>l.id===t);return `<div class="wrow"><div class="wname">${esc(topicName(t))}</div><div class="wbar"><i style="width:${v.n/wmax*100}%"></i></div><div class="wnum">${v.n}</div>${isL?`<button class="btn ghost small" data-rule-open="${t}">Правило</button>`:`<span></span>`}</div>`}).join("")}</div></section>`:""}
+    ${recent.length?`<section><h2>В работе</h2><div class="wl">${recent.map(m=>{const t=taskOf(m);return `<div class="mi"><div class="mtop"><span class="label">${esc(t.label)} ${ruleBtn(m)}</span><span class="sdots" title="Верных ответов подряд: ${m.s} из 3">${dots(m.s)}</span></div>
       <div class="mq">${esc(promptText(m))}</div>
       <div class="small"><span class="muted">Ты ответил:</span> <s class="bad-t">${m.last?esc(m.last):"не ответил"}</s> · <span class="muted">Верно:</span> <b>${esc(t.show)}</b>${m.n>1?` · <span class="muted">ошибок: ${m.n}</span>`:""}</div></div>`}).join("")}</div></section>`:""}
   </div>`;
@@ -1907,11 +1931,12 @@ function renderReview(){
     if(t.input!=="choice"&&m.k!=="word")fb+=`<div><div class="label" style="margin-bottom:4px">Правильно</div><div class="answer"><span style="font-size:18px;font-weight:500">${esc(r.best||t.show)}</span>${sayBtn(r.best||t.show)}</div></div>`;
     if(t.after)fb+=t.after();
     if(t.why)fb+=`<div class="why">${esc(t.why)}</div>`;
+    if(!r.ok&&ruleBtn(m))fb+=`<div class="row">${ruleBtn(m,"small")}<span class="small muted">Открой правило, если ошибка повторяется</span></div>`;
     if(m.prevLast!==undefined)fb+=`<div class="small muted">В прошлый раз ты ответил: ${m.prevLast?`«${esc(m.prevLast)}»`:"не ответил"}</div>`;
     fb+=`<div class="row"><button class="btn primary" id="rnext">${MS.queue.length?"Дальше":"Итог"}</button></div>`;
   }
   V.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:10px"><h1>${MS.quick?"Быстрый повтор":"Ошибки"}</h1><span class="small muted">осталось ${MS.queue.length+1}</span></div>
-  <div class="card"><div class="card-top"><span>${esc(t.label)}</span>${m.synthetic?"<span>слово к повторению</span>":`<span class="sdots" title="Верных ответов подряд">${[0,1,2].map(i=>`<i class="${i<m.s?"on":""}"></i>`).join("")}</span>`}</div>${inp}${fb}</div>`;
+  <div class="card"><div class="card-top"><span>${esc(t.label)} ${ruleBtn(m)}</span>${m.synthetic?"<span>слово к повторению</span>":`<span class="sdots" title="Верных ответов подряд">${[0,1,2].map(i=>`<i class="${i<m.s?"on":""}"></i>`).join("")}</span>`}</div>${inp}${fb}</div>`;
   const rin=$("#rin");
   if(rin&&!r){rin.focus();rin.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();answerReview(rin.value.trim())}}}
   const on=(id,f)=>{const el=$("#"+id);if(el)el.onclick=f};
@@ -1957,6 +1982,20 @@ function renderCard(){
   }
   const c=S.cards[w.id],isNew=!c,left=CS.queue.length;
   const top=`<div class="card-top"><span>${isNew?"Новое слово":"Повторение"}${w.custom?" · своё":w.lvl?" · "+w.lvl:""}${S.mist["word:"+w.id]&&!S.mist["word:"+w.id].done?" · была ошибка":""}</span><span>Осталось: ${left+1}</span></div>`;
+  CS.intro=CS.intro||{};
+  if(isNew&&!CS.intro[w.id]){
+    V.innerHTML=head+`<div class="card">${top}<div class="label">Новое слово — знакомься</div>
+    <div class="answer"><span class="prompt" style="margin:0">${esc(w.en)}</span>${sayBtn(w.en)}</div>${w.ipa?`<div class="ipa">${esc(w.ipa)}</div>`:""}
+    <div class="introru">${esc(w.ru)}</div>
+    ${w.ex?`<div class="example"><span class="row" style="gap:8px;flex-wrap:nowrap"><span>${markIn(w.ex,w.en,false)}</span>${sayBtn(w.ex,"Озвучить пример")}</span>${w.exru?`<span class="ru">${esc(w.exru)}</span>`:""}</div>`:""}
+    ${yasay("happy","Послушай и повтори вслух 2–3 раза. Через пару карточек я спрошу это слово — проверим, запомнилось ли.",56)}
+    <div class="row"><button class="btn primary" id="introok">Запомнил</button><button class="btn ghost" id="introknow">Я его уже знаю</button></div></div>`;
+    bindDir();
+    $("#introok").onclick=()=>{CS.intro[w.id]=true;CS.queue.splice(Math.min(2,CS.queue.length),0,w);nextCard()};
+    $("#introknow").onclick=()=>{CS.intro[w.id]=true;CS.queue.unshift(w);nextCard()};
+    $("#introok").focus();if(CS.introSaid!==w.id){CS.introSaid=w.id;setTimeout(()=>speak(w.en),80)}
+    return;
+  }
   let body="";
   const cm=dir==="ru-en"&&!CS.revealed&&(w.lvl==="A0"||li(T())===0)&&(!c||c.reps<2);
   if(cm){
@@ -2045,8 +2084,8 @@ function renderLesson(){
   if(GS.stage==="theory"){
     V.innerHTML=`${back}<h1 style="margin-top:8px">${esc(l.title)}</h1><p class="sub">${l.lvl} · ${l.ex.length} упражнений</p>
     <div class="sheet anim theory">${l.theory}</div>
-    <div class="row" style="margin-top:16px"><button class="btn primary" id="go">К упражнениям</button></div>`;
-    $("#go").onclick=()=>{GS.stage="ex";renderLesson()};
+    <div class="row" style="margin-top:16px"><button class="btn primary" id="go">К упражнениям</button><button class="btn" data-rule-open="${l.id}">Не понял — подробнее</button></div>`;
+    ruleRead(l.id);$("#go").onclick=()=>{GS.stage="ex";renderLesson()};
   }else if(GS.stage==="ex"){
     const e=l.ex[GS.items[GS.i]],done=GS.ans!==null;
     let q="";
@@ -2066,7 +2105,7 @@ function renderLesson(){
     }
     V.innerHTML=`${back}<div class="row" style="justify-content:space-between;margin:8px 0 10px"><h2 style="margin:0">${esc(l.title)}${GS.retry?" · работа над ошибками":""}</h2><span class="small muted">${GS.i+1} / ${GS.items.length}</span></div>
     <div class="progress" style="margin-bottom:16px"><i style="width:${GS.i/GS.items.length*100}%"></i></div>
-    <div class="card">${q}${fb}<details><summary>Правило</summary><div class="theory" style="margin-top:10px">${l.theory}</div></details></div>`;
+    <div class="card">${q}${fb}<div class="row"><button class="btn ghost small" data-rule-open="${l.id}">Правило и подробный разбор</button></div></div>`;
     if(e.type==="audio"&&!done&&GS.said!==GS.i){GS.said=GS.i;speak(e.say)}
     const gin=$("#gin");
     if(gin&&!done){gin.focus();gin.onkeydown=ev=>{if(ev.key==="Enter"){ev.preventDefault();answerG(gin.value.trim())}}}
@@ -2118,6 +2157,7 @@ function renderTr(){
     if(r.status!=="ok"&&r.user)fb+=`<div><div class="label" style="margin-bottom:4px">Сравнение с ближайшим вариантом</div><div class="diff">${wordDiff(r.user,r.best)}</div><div class="small muted">Жёлтым — чего не хватает, зачёркнуто — лишнее.</div></div>`;
     fb+=`<div><div class="label" style="margin-bottom:4px">Правильно</div><div class="answer"><span style="font-size:19px;font-weight:500">${esc(r.best)}</span>${sayBtn(r.best)}</div>${others.length?`<div class="small muted" style="margin-top:6px">Тоже верно:</div><ul class="variants">${others.map(v=>`<li>${esc(v)}</li>`).join("")}</ul>`:""}</div>`;
     if(s.note)fb+=`<div class="note">${esc(s.note)}</div>`;
+    if(validTopic(s.t))fb+=`<div class="row"><button class="btn ghost small" data-rule-open="${s.t}">Правило: ${esc(topicName(s.t))}</button></div>`;
     if(r.ai)fb+=aiTrBlock(r.ai);
     else if(r.status==="bad"&&r.user&&!AI.off)fb+=`<div class="row"><button class="btn" id="tai" ${TS.aiBusy?"disabled":""}>${TS.aiBusy?"ИИ проверяет…":"Мой вариант тоже верен? Спросить ИИ"}</button></div>${TS.aiErr?`<div class="small bad-t">${esc(TS.aiErr)}</div>`:""}`;
     fb+=`<div class="row"><button class="btn primary" id="tnext">${TS.i+1<TS.items.length?"Дальше":"Итог"}</button></div>`;
@@ -2125,6 +2165,7 @@ function renderTr(){
   V.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:10px"><h1>Перевод</h1><div class="row"><div class="seg" role="group" aria-label="Способ ответа"><button data-tm="tiles" aria-pressed="${trTiles()}">Из слов</button><button data-tm="type" aria-pressed="${!trTiles()}">Сам пишу</button></div><span class="small muted">${TS.i+1} / ${TS.items.length}</span></div></div>
   <div class="progress" style="margin-bottom:16px"><i style="width:${TS.i/TS.items.length*100}%"></i></div>
   <div class="card"><div class="label">Переведи на английский · ${s.l}${S.mist["tr:"+TS.items[TS.i]]&&!S.mist["tr:"+TS.items[TS.i]].done?" · была ошибка":""}</div><div class="prompt" style="font-size:clamp(21px,4.4vw,28px)">${esc(s.ru)}</div>
+  ${!r?ruleHint(s.t):""}
   <textarea id="tin" placeholder="Твой перевод" autocomplete="off" autocapitalize="off" spellcheck="false" ${r?"disabled":""}${tiles?" hidden":""}>${r?esc(r.user):""}</textarea>${tiles?'<div class="tline" id="tline"></div><div class="tpool" id="tpool"></div>':""}
   ${r?"":`<div class="row"><button class="btn primary" id="tchk">Проверить</button>${tiles?"":micBtn("tin")}<button class="btn ghost" id="tidk">Показать ответ</button><span class="small muted">Ctrl+Enter — проверить</span></div>`}
   ${fb}</div>`;
@@ -2377,6 +2418,7 @@ function mergeState(a,b){
   out.read=pick(newer.read,older.read,(o,n)=>(o.best||0)>(n.best||0));
   out.tr=pick(newer.tr,older.tr,(o,n)=>(o.n||0)>(n.n||0));
   out.packs=Object.assign({},older.packs||{},newer.packs||{});
+  out.readRules=Object.assign({},older.readRules||{},newer.readRules||{});
   out.course=pick(newer.course,older.course,(o,n)=>(o.right||0)>(n.right||0));
   out.verbs=pick(newer.verbs,older.verbs,(o,n)=>(o.n||0)>(n.n||0));
   out.sets=Object.assign({},older.sets||{},newer.sets||{});
@@ -3115,46 +3157,184 @@ function bindSay(){
 }
 
 /* ---------- БИБЛИОТЕКА НАБОРОВ ---------- */
-let LIB={idx:null,busy:false,err:"",working:""};
+const BUILTIN_PACKS=/*PACKS*/{"packs":[{"id":"travel-phrases","title":"Фразы для путешествий","desc":"Самолёт, отель, ресторан, транспорт: то, что нужно сказать в поездке","level":"A1","version":1,"file":"travel-phrases.json","contents":"15 фраз и 1 текст"},{"id":"home","title":"Дом и быт","desc":"Комнаты, техника и домашние дела: уборка, стирка, мусор","level":"A1","version":1,"file":"home.json","contents":"13 слов"},{"id":"small-talk","title":"Small talk: как поддержать разговор","desc":"Как начать разговор, поддержать его и вежливо закончить. Урок с упражнениями","level":"A2","version":1,"file":"small-talk.json","contents":"12 фраз, урок и текст"},{"id":"shopping","title":"Покупки и деньги","desc":"Магазин одежды, касса, скидки, возврат","level":"A2","version":1,"file":"shopping.json","contents":"13 слов и текст"},{"id":"tech","title":"Технологии и интернет","desc":"Телефон, приложения, аккаунты, соцсети","level":"B1","version":1,"file":"tech.json","contents":"14 слов"},{"id":"interview","title":"Собеседование на работу","desc":"Резюме, сильные стороны, опыт, условия — и текст-собеседование","level":"B1","version":1,"file":"interview.json","contents":"13 фраз и текст"},{"id":"business","title":"Деловой английский: письма и встречи","desc":"Фразы для рабочих писем, созвонов и совещаний","level":"B1","version":1,"file":"business.json","contents":"14 фраз и текст"},{"id":"grammar-plus","title":"Грамматика+: два новых урока","desc":"Present Perfect Continuous и особые случаи с артиклями","level":"B1","version":1,"file":"grammar-plus.json","contents":"2 урока, 13 упражнений"},{"id":"idioms","title":"Идиомы","desc":"Популярные выражения, которые не переводятся дословно","level":"B2","version":1,"file":"idioms.json","contents":"12 идиом"}],"data":{"travel-phrases":{"words":[["Excuse me","извините (чтобы обратиться)","/ɪkˈskjuːz miː/","Excuse me, where is the exit?","Извините, где выход?","A1"],["Where is the toilet?","где туалет?","/weər ɪz ðə ˈtɔɪlət/","Excuse me, where is the toilet?","Извините, где туалет?","A1"],["I'd like","я бы хотел","/aɪd laɪk/","I'd like a room for two nights.","Я бы хотел номер на две ночи.","A1"],["a single room","одноместный номер","/ə ˈsɪŋɡl ruːm/","Do you have a single room?","У вас есть одноместный номер?","A2"],["a double room","двухместный номер","/ə ˈdʌbl ruːm/","We booked a double room.","Мы забронировали двухместный номер.","A2"],["breakfast included","завтрак включён","/ˈbrekfəst ɪnˈkluːdɪd/","Is breakfast included?","Завтрак включён?","A2"],["one way ticket","билет в одну сторону","/wʌn weɪ ˈtɪkɪt/","A one way ticket to Paris, please.","Билет до Парижа в одну сторону, пожалуйста.","A2"],["What time does it leave?","во сколько отправляется?","/wɒt taɪm dʌz ɪt liːv/","The bus to Oxford — what time does it leave?","Автобус до Оксфорда — во сколько отправляется?","A1"],["gate","выход на посадку","/ɡeɪt/","Our flight leaves from gate 12.","Наш рейс вылетает с выхода 12.","A2"],["luggage","багаж","/ˈlʌɡɪdʒ/","Where can I get my luggage?","Где можно получить багаж?","A2"],["taxi","такси","/ˈtæksi/","Can you call a taxi for me?","Можете вызвать мне такси?","A1"],["How far is it?","как далеко это?","/haʊ fɑːr ɪz ɪt/","How far is it to the beach?","Далеко ли до пляжа?","A1"],["Could you help me?","не могли бы вы мне помочь?","/kʊd juː help miː/","Could you help me with my bag?","Не могли бы вы помочь мне с сумкой?","A1"],["I don't understand","я не понимаю","/aɪ dəʊnt ˌʌndəˈstænd/","Sorry, I don't understand. Can you repeat?","Извините, я не понимаю. Можете повторить?","A0"],["Can you speak more slowly?","можете говорить медленнее?","/kæn juː spiːk mɔː ˈsləʊli/","Can you speak more slowly, please?","Можете говорить медленнее, пожалуйста?","A1"]],"texts":[{"title":"At the hotel","l":"A1","text":"Good evening! I have a reservation. My name is Anna Petrova. — Good evening! Yes, a double room for three nights. Breakfast is included. It is from seven to ten in the restaurant. Here is your key. Your room is on the second floor. — Thank you! Is there Wi-Fi? — Yes, the password is on the card. Have a nice stay!","q":[{"q":"Сколько ночей забронировано?","o":["Три","Две","Одна"],"a":"Три"},{"q":"Во сколько завтрак?","o":["С семи до десяти","С восьми до одиннадцати","Завтрака нет"],"a":"С семи до десяти"},{"q":"Где пароль от Wi-Fi?","o":["На карточке","У администратора","В номере на столе"],"a":"На карточке"}]}],"id":"travel-phrases","title":"Фразы для путешествий","level":"A1"},"home":{"words":[["bedroom","спальня","/ˈbedruːm/","My bedroom is small but cosy.","Моя спальня маленькая, но уютная.","A1"],["bathroom","ванная","/ˈbɑːθruːm/","The bathroom is next to the kitchen.","Ванная рядом с кухней.","A1"],["living room","гостиная","/ˈlɪvɪŋ ruːm/","We watch TV in the living room.","Мы смотрим телевизор в гостиной.","A1"],["fridge","холодильник","/frɪdʒ/","The milk is in the fridge.","Молоко в холодильнике.","A1"],["washing machine","стиральная машина","/ˈwɒʃɪŋ məˈʃiːn/","The washing machine is broken.","Стиральная машина сломалась.","A2"],["do the dishes","мыть посуду","/duː ðə ˈdɪʃɪz/","I'll do the dishes after dinner.","Я помою посуду после ужина.","A2"],["do the laundry","стирать бельё","/duː ðə ˈlɔːndri/","I do the laundry on Sundays.","Я стираю по воскресеньям.","A2"],["vacuum","пылесосить","/ˈvækjuːm/","Can you vacuum the living room?","Пропылесосишь гостиную?","A2"],["tidy up","прибраться","/ˈtaɪdi ʌp/","Let's tidy up before the guests come.","Давай приберёмся до прихода гостей.","A2"],["rubbish","мусор","/ˈrʌbɪʃ/","Please take out the rubbish.","Вынеси, пожалуйста, мусор.","A2"],["light","свет","/laɪt/","Turn off the light, please.","Выключи свет, пожалуйста.","A1"],["heating","отопление","/ˈhiːtɪŋ/","The heating doesn't work.","Отопление не работает.","A2"],["landlord","арендодатель","/ˈlændlɔːd/","Our landlord fixed the heating.","Хозяин квартиры починил отопление.","B1"]],"id":"home","title":"Дом и быт","level":"A1"},"small-talk":{"words":[["How's it going?","как дела? (разговорное)","/haʊz ɪt ˈɡəʊɪŋ/","Hi Tom! How's it going?","Привет, Том! Как дела?","A2"],["Not bad","неплохо","/nɒt bæd/","Not bad, thanks. And you?","Неплохо, спасибо. А у тебя?","A1"],["What do you do?","чем ты занимаешься? (о работе)","/wɒt duː juː duː/","So, what do you do?","Так чем ты занимаешься?","A1"],["by the way","кстати","/baɪ ðə weɪ/","By the way, have you seen the new film?","Кстати, ты видел новый фильм?","A2"],["Really?","правда?","/ˈrɪəli/","Really? That's amazing!","Правда? Это потрясающе!","A1"],["That sounds great","звучит здорово","/ðæt saʊndz ɡreɪt/","A trip to Italy? That sounds great!","Поездка в Италию? Звучит здорово!","A2"],["I see","понятно","/aɪ siː/","I see. And how long have you worked there?","Понятно. А сколько ты там работаешь?","A2"],["Anyway","в общем, ладно","/ˈeniweɪ/","Anyway, I have to go now.","В общем, мне пора.","A2"],["Nice talking to you","приятно было поговорить","/naɪs ˈtɔːkɪŋ tə juː/","I have to go. Nice talking to you!","Мне пора. Приятно было поговорить!","A2"],["Take care","береги себя, пока","/teɪk keə/","See you soon. Take care!","До скорого. Береги себя!","A2"],["What about you?","а ты?","/wɒt əˈbaʊt juː/","I love hiking. What about you?","Я люблю походы. А ты?","A1"],["It depends","смотря как, по-разному","/ɪt dɪˈpendz/","Do you like big cities? — It depends.","Ты любишь большие города? — По-разному.","A2"]],"lessons":[{"id":"pk-smalltalk","lvl":"A2","title":"Small talk: поддержать разговор","desc":"Вопросы-эхо, реакции и вежливое завершение","theory":"<p>В английском разговор поддерживают короткими <b>реакциями<\/b> и <b>встречными вопросами<\/b>. Молчание или ответ одним словом звучит холодно.<\/p><ul><li>Реакции: <i>Really? That sounds great! I see. Oh no!<\/i><\/li><li>Встречный вопрос: <i>What about you? And you?<\/i><\/li><li>Вопросы-эхо: <i>I live in Spain. — Oh, do you?<\/i> (повторяем вспомогательный глагол)<\/li><li>Завершить: <i>Anyway, I have to go. Nice talking to you!<\/i><\/li><\/ul>","ex":[{"type":"choice","q":"— I've just come back from Japan. — ___","o":["Really? How was it?","Yes.","I know."],"a":"Really? How was it?","why":"Реакция + вопрос поддерживают разговор."},{"type":"choice","q":"— I work in a bank. — Oh, ___ you?","o":["do","are","have"],"a":"do","why":"Эхо-вопрос повторяет вспомогательный глагол: I work → do you?"},{"type":"choice","q":"— I'm going to Paris next week. — Oh, ___ you?","o":["are","do","will"],"a":"are","why":"I'm going → are you?"},{"type":"choice","q":"Как вежливо закончить разговор?","o":["Anyway, I have to go. Nice talking to you!","Bye. I go.","Stop talking, please."],"a":"Anyway, I have to go. Nice talking to you!","why":"Anyway + причина + Nice talking to you — вежливо."},{"type":"choice","q":"— I love hiking. ___","o":["What about you?","What you?","And what?"],"a":"What about you?","why":"What about you? — «А ты?»"},{"type":"choice","q":"— How's it going? — ___","o":["Not bad, thanks. And you?","I'm going home.","It goes."],"a":"Not bad, thanks. And you?","why":"How's it going? — «Как дела?», а не «куда идёшь»."}]}],"texts":[{"title":"Meeting a neighbour","l":"A2","text":"Hi! You're the new neighbour, right? I'm Mike from number twelve. — Oh, hi Mike! Yes, I'm Olga. We moved in last week. — Nice to meet you, Olga. How do you like the area? — It's great. It's quiet, and the park is really close. — Oh, do you run? I run there every morning. — Really? I've just started running! — Great, we can run together sometime. Anyway, I have to go to work. Nice talking to you! — You too. Take care!","q":[{"q":"Когда Ольга переехала?","o":["На прошлой неделе","Вчера","Месяц назад"],"a":"На прошлой неделе"},{"q":"Что Ольге нравится в районе?","o":["Тишина и парк рядом","Магазины","Много кафе"],"a":"Тишина и парк рядом"},{"q":"Что предлагает Майк?","o":["Бегать вместе","Пойти в кафе","Помочь с переездом"],"a":"Бегать вместе"}]}],"id":"small-talk","title":"Small talk: как поддержать разговор","level":"A2"},"shopping":{"words":[["cash","наличные","/kæʃ/","Can I pay in cash?","Можно оплатить наличными?","A2"],["card","карта (банковская)","/kɑːd/","I'll pay by card.","Я заплачу картой.","A1"],["keep the change","сдачи не надо","/kiːp ðə tʃeɪndʒ/","Here you are. Keep the change!","Вот, сдачи не надо!","A2"],["discount","скидка","/ˈdɪskaʊnt/","Is there a discount for students?","Есть скидка для студентов?","A2"],["on sale","со скидкой","/ɒn seɪl/","These shoes are on sale.","Эти туфли со скидкой.","A2"],["size","размер","/saɪz/","What size are you?","Какой у вас размер?","A1"],["try on","примерить","/traɪ ɒn/","Can I try on this jacket?","Можно примерить эту куртку?","A2"],["fitting room","примерочная","/ˈfɪtɪŋ ruːm/","Where is the fitting room?","Где примерочная?","A2"],["refund","возврат денег","/ˈriːfʌnd/","I'd like a refund, please.","Я бы хотел вернуть деньги.","B1"],["queue","очередь","/kjuː/","There's a long queue at the checkout.","На кассе длинная очередь.","A2"],["checkout","касса","/ˈtʃekaʊt/","Please pay at the checkout.","Оплатите на кассе, пожалуйста.","A2"],["bargain","выгодная покупка","/ˈbɑːɡən/","This coat was a real bargain!","Это пальто — настоящая находка!","B1"],["save up","копить","/seɪv ʌp/","I'm saving up for a new laptop.","Я коплю на новый ноутбук.","B1"]],"texts":[{"title":"In a clothes shop","l":"A2","text":"Excuse me, can I try on this jacket? — Of course. What size are you? — Medium, I think. — Here you are. The fitting room is over there. … How is it? — It's a bit small. Do you have it in large? — Yes, here's a large one. And good news: it's on sale today, thirty percent off. — Great! I'll take it. Can I pay by card? — Sure. Would you like a bag? — No, thanks. I have one.","q":[{"q":"Какой размер подошёл покупателю?","o":["Большой (large)","Средний (medium)","Маленький (small)"],"a":"Большой (large)"},{"q":"Какая скидка на куртку?","o":["30%","50%","Скидки нет"],"a":"30%"},{"q":"Как покупатель платит?","o":["Картой","Наличными","Не платит"],"a":"Картой"}]}],"id":"shopping","title":"Покупки и деньги","level":"A2"},"tech":{"words":[["download","скачать","/ˌdaʊnˈləʊd/","Download the app for free.","Скачай приложение бесплатно.","A2"],["upload","загрузить (в сеть)","/ˌʌpˈləʊd/","I uploaded the photos yesterday.","Я загрузил фото вчера.","A2"],["password","пароль","/ˈpɑːswɜːd/","Never share your password.","Никому не сообщай свой пароль.","A2"],["log in","войти (в аккаунт)","/lɒɡ ɪn/","I can't log in to my account.","Не могу войти в аккаунт.","A2"],["sign up","зарегистрироваться","/saɪn ʌp/","Sign up with your email.","Зарегистрируйся по почте.","A2"],["screen","экран","/skriːn/","My phone screen is broken.","У меня разбит экран телефона.","A2"],["battery","аккумулятор","/ˈbætəri/","My battery is almost dead.","У меня почти сел аккумулятор.","A2"],["charge","заряжать","/tʃɑːdʒ/","I need to charge my phone.","Мне нужно зарядить телефон.","A2"],["settings","настройки","/ˈsetɪŋz/","Check your privacy settings.","Проверь настройки конфиденциальности.","B1"],["app","приложение","/æp/","This app helps me learn English.","Это приложение помогает мне учить английский.","A2"],["crash","вылетать (о программе)","/kræʃ/","The game keeps crashing.","Игра постоянно вылетает.","B1"],["notification","уведомление","/ˌnəʊtɪfɪˈkeɪʃn/","Turn off notifications at night.","Выключай уведомления на ночь.","B1"],["scroll","листать (ленту)","/skrəʊl/","I scroll social media too much.","Я слишком много листаю соцсети.","B1"],["online","онлайн, в сети","/ˌɒnˈlaɪn/","I buy most things online.","Почти всё я покупаю онлайн.","A2"]],"id":"tech","title":"Технологии и интернет","level":"B1"},"interview":{"words":[["CV","резюме","/ˌsiː ˈviː/","Please send us your CV.","Пришлите, пожалуйста, ваше резюме.","B1"],["apply for","подавать заявку на","/əˈplaɪ fɔː/","I'm applying for a job in marketing.","Я подаю заявку на работу в маркетинге.","B1"],["position","должность","/pəˈzɪʃn/","Why are you interested in this position?","Почему вас интересует эта должность?","B1"],["strengths","сильные стороны","/streŋθs/","What are your main strengths?","Каковы ваши главные сильные стороны?","B1"],["weaknesses","слабые стороны","/ˈwiːknəsɪz/","Tell me about your weaknesses.","Расскажите о своих слабых сторонах.","B1"],["be responsible for","отвечать за","/biː rɪˈspɒnsəbl fɔː/","I was responsible for a team of five.","Я отвечал за команду из пяти человек.","B1"],["achievement","достижение","/əˈtʃiːvmənt/","What's your biggest achievement?","Какое ваше самое большое достижение?","B1"],["work under pressure","работать в условиях стресса","/wɜːk ˈʌndə ˈpreʃə/","I can work under pressure.","Я умею работать под давлением.","B1"],["team player","человек, умеющий работать в команде","/tiːm ˈpleɪə/","I'm a real team player.","Я хорошо работаю в команде.","B1"],["notice period","срок отработки при увольнении","/ˈnəʊtɪs ˈpɪəriəd/","My notice period is one month.","Мне нужно отработать месяц.","B2"],["benefits","льготы, соцпакет","/ˈbenɪfɪts/","What benefits does the company offer?","Какой соцпакет предлагает компания?","B1"],["full-time","полный рабочий день","/ˌfʊl ˈtaɪm/","Is it a full-time job?","Это работа на полный день?","A2"],["part-time","неполный рабочий день","/ˌpɑːt ˈtaɪm/","I work part-time.","Я работаю на полставки.","A2"]],"texts":[{"title":"The interview","l":"B1","text":"So, tell me about yourself. — I've been working as a project manager for four years. In my current job I'm responsible for a team of six people. — Why are you applying for this position? — I'd like to work on bigger international projects, and your company is known for them. — What would you say is your main strength? — I'm well organised and I can work under pressure. Last year our team delivered a big project two weeks early. — And your weaknesses? — Sometimes I try to do everything myself, but I'm learning to delegate more. — Great. What's your notice period? — One month.","q":[{"q":"Сколько лет кандидат работает менеджером проектов?","o":["Четыре года","Шесть лет","Один год"],"a":"Четыре года"},{"q":"Почему он хочет в эту компанию?","o":["Хочет работать над крупными международными проектами","Там больше платят","Офис ближе к дому"],"a":"Хочет работать над крупными международными проектами"},{"q":"Какую слабость он называет?","o":["Старается всё делать сам","Опаздывает","Плохо работает в стрессе"],"a":"Старается всё делать сам"}]}],"id":"interview","title":"Собеседование на работу","level":"B1"},"business":{"words":[["I hope this email finds you well","надеюсь, у вас всё хорошо (начало письма)","/aɪ həʊp ðɪs ˈiːmeɪl faɪndz juː wel/","Hi Tom, I hope this email finds you well.","Привет, Том, надеюсь, у тебя всё хорошо.","B1"],["I'm writing to","пишу, чтобы…","/aɪm ˈraɪtɪŋ tə/","I'm writing to confirm our meeting.","Пишу, чтобы подтвердить нашу встречу.","B1"],["Please find attached","во вложении","/pliːz faɪnd əˈtætʃt/","Please find attached the report.","Отчёт во вложении.","B1"],["Let me know","дайте знать","/let miː nəʊ/","Let me know if you have any questions.","Дайте знать, если будут вопросы.","A2"],["at your earliest convenience","как только сможете","/ət jɔːr ˈɜːliɪst kənˈviːniəns/","Please reply at your earliest convenience.","Пожалуйста, ответьте, как только сможете.","B2"],["Best regards","с уважением (в конце письма)","/best rɪˈɡɑːdz/","Best regards, Anna","С уважением, Анна","A2"],["agenda","повестка","/əˈdʒendə/","Let's look at the agenda.","Давайте посмотрим повестку.","B1"],["to schedule a meeting","назначить встречу","/tə ˈʃedjuːl ə ˈmiːtɪŋ/","Can we schedule a meeting for Monday?","Можем назначить встречу на понедельник?","B1"],["to postpone","перенести (на позже)","/tə pəˈspəʊn/","We need to postpone the call.","Нам нужно перенести созвон.","B1"],["Can you hear me?","вы меня слышите?","/kæn juː hɪə miː/","Sorry, can you hear me now?","Извините, теперь меня слышно?","A2"],["You're on mute","у вас выключен микрофон","/jɔːr ɒn mjuːt/","Tom, I think you're on mute.","Том, кажется, у тебя выключен микрофон.","B1"],["to sum up","подводя итог","/tə sʌm ʌp/","To sum up, we need two more weeks.","Подводя итог: нам нужно ещё две недели.","B1"],["action items","задачи по итогам встречи","/ˈækʃn ˈaɪtəmz/","I'll send the action items after the call.","Я пришлю задачи после созвона.","B2"],["to be on the same page","одинаково понимать ситуацию","/tə biː ɒn ðə seɪm peɪdʒ/","Let's make sure we're on the same page.","Давайте убедимся, что мы понимаем друг друга.","B2"]],"texts":[{"title":"An email to a colleague","l":"B1","text":"Hi Sarah, I hope this email finds you well. I'm writing to confirm our meeting with the client on Thursday at 10 a.m. Please find attached the latest version of the presentation. Unfortunately, Mark can't join us, so we may need to postpone the second part of the discussion until next week. Could you please check the agenda and let me know if anything is missing? I'd also appreciate it if you could prepare a short summary of the budget. Thanks in advance. Best regards, Dmitry","q":[{"q":"Зачем Дмитрий пишет письмо?","o":["Подтвердить встречу с клиентом","Отменить проект","Попросить отпуск"],"a":"Подтвердить встречу с клиентом"},{"q":"Что приложено к письму?","o":["Презентация","Договор","Счёт"],"a":"Презентация"},{"q":"О чём Дмитрий просит Сару?","o":["Проверить повестку и подготовить сводку бюджета","Позвонить клиенту","Забронировать переговорную"],"a":"Проверить повестку и подготовить сводку бюджета"}]}],"id":"business","title":"Деловой английский: письма и встречи","level":"B1"},"grammar-plus":{"lessons":[{"id":"pk-ppc","lvl":"B1","title":"Present Perfect Continuous","desc":"Давно и до сих пор: have been + -ing","theory":"<p><b>have / has been + глагол с -ing<\/b> — действие началось в прошлом и <b>продолжается до сих пор<\/b> или только что закончилось, и виден результат.<\/p><ul><li><span class=\"ex\">I've been waiting for an hour!<\/span> — Я жду уже час!<\/li><li><span class=\"ex\">She's tired because she's been running.<\/span> — она бегала, поэтому устала.<\/li><\/ul><p>Вопрос «как долго?»: <b>How long have you been learning English?<\/b><\/p><p>Глаголы состояния (know, like, want, believe) в Continuous не ставят: <i>I've known him for years<\/i>, а не <i>I've been knowing<\/i>.<\/p>","ex":[{"q":"I ___ (wait) for you for an hour!","a":["have been waiting","'ve been waiting"],"why":"Началось час назад и продолжается → have been + -ing."},{"q":"She is tired because she ___ (run).","a":["has been running","'s been running"],"why":"Результат сейчас (устала) от недавнего длительного действия."},{"q":"How long ___ (you / learn) English?","a":["have you been learning"],"why":"How long + действие до сих пор → Present Perfect Continuous."},{"q":"It ___ (rain) since morning.","a":["has been raining","'s been raining"],"why":"С утра и до сих пор."},{"q":"I ___ (know) him for ten years.","a":["have known","'ve known"],"why":"Know — глагол состояния, только Present Perfect, без -ing."},{"q":"They ___ (work) on this project since May.","a":["have been working","'ve been working","have worked","'ve worked"],"why":"С мая и до сих пор: подходят обе формы, Continuous подчёркивает процесс."}]},{"id":"pk-art2","lvl":"B1","title":"Артикли: особые случаи","desc":"Реки, страны, инструменты, спорт, school и the school","theory":"<div class=\"tbl\"><table><tr><th>С the<\/th><th>Без артикля<\/th><\/tr><tr><td>реки, моря, океаны: the Thames, the Pacific<\/td><td>озёра и отдельные горы: Lake Baikal, Everest<\/td><\/tr><tr><td>страны-союзы: the USA, the UK<\/td><td>большинство стран: Russia, France<\/td><\/tr><tr><td>музыкальные инструменты: play the guitar<\/td><td>спорт и игры: play football, play chess<\/td><\/tr><\/table><\/div><p><b>go to school / work / bed / hospital<\/b> без артикля — когда идём туда по назначению (учиться, работать, спать, лечиться). С <b>the<\/b> — когда это просто здание: <i>Mum went to the school to talk to the teacher.<\/i><\/p>","ex":[{"type":"choice","q":"We sailed down ___ Thames.","o":["the","—","a"],"a":"the","why":"Реки — с the."},{"type":"choice","q":"She plays ___ piano.","o":["the","—","a"],"a":"the","why":"Музыкальные инструменты — с the."},{"type":"choice","q":"I play ___ football on Sundays.","o":["—","the","a"],"a":"—","why":"Спорт — без артикля."},{"type":"choice","q":"He lives in ___ USA.","o":["the","—","a"],"a":"the","why":"The USA — «Соединённые Штаты», союз штатов → the."},{"type":"choice","q":"They climbed ___ Everest.","o":["—","the","a"],"a":"—","why":"Отдельная гора — без артикля."},{"type":"choice","q":"Kids go to ___ school at eight.","o":["—","the","a"],"a":"—","why":"Идут учиться (по назначению) → без артикля."},{"type":"choice","q":"Mum went to ___ school to talk to the teacher.","o":["the","—","a"],"a":"the","why":"Мама идёт в здание школы, не учиться → the."}]}],"id":"grammar-plus","title":"Грамматика+: два новых урока","level":"B1"},"idioms":{"words":[["a piece of cake","проще простого","/ə piːs əv keɪk/","The test was a piece of cake.","Тест был проще простого.","B1"],["break the ice","разрядить обстановку, начать разговор","/breɪk ði aɪs/","He told a joke to break the ice.","Он пошутил, чтобы разрядить обстановку.","B2"],["hit the books","засесть за учёбу","/hɪt ðə bʊks/","I have to hit the books tonight.","Сегодня мне надо засесть за учёбу.","B2"],["once in a blue moon","очень редко","/wʌns ɪn ə bluː muːn/","I eat fast food once in a blue moon.","Я ем фастфуд крайне редко.","B2"],["cost an arm and a leg","стоить целое состояние","/kɒst ən ɑːm ənd ə leɡ/","That car cost an arm and a leg.","Эта машина стоила целое состояние.","B2"],["call it a day","закончить на сегодня","/kɔːl ɪt ə deɪ/","Let's call it a day.","Давай на сегодня закончим.","B2"],["the ball is in your court","теперь решать тебе","/ðə bɔːl ɪz ɪn jɔː kɔːt/","I've made my offer. The ball is in your court.","Я сделал предложение. Теперь решать тебе.","B2"],["get cold feet","струсить в последний момент","/ɡet kəʊld fiːt/","He got cold feet before the wedding.","Перед свадьбой он струсил.","B2"],["sleep on it","обдумать до завтра","/sliːp ɒn ɪt/","Don't decide now. Sleep on it.","Не решай сейчас. Утро вечера мудренее.","B2"],["not my cup of tea","это не моё","/nɒt maɪ kʌp əv tiː/","Horror films are not my cup of tea.","Ужастики — это не моё.","B2"],["better late than never","лучше поздно, чем никогда","/ˈbetə leɪt ðən ˈnevə/","You came! Better late than never.","Ты пришёл! Лучше поздно, чем никогда.","B1"],["speak of the devil","лёгок на помине","/spiːk əv ðə ˈdevl/","Speak of the devil! We were just talking about you.","Лёгок на помине! Мы как раз о тебе говорили.","B2"]],"id":"idioms","title":"Идиомы","level":"B2"}}}/*END_PACKS*/;
+let LIB={idx:null,busy:false,err:"",working:"",remote:false};
 function packsURL(){return window.__PACKS_URL||""}
-function packTexts(){const out=[];for(const id of Object.keys(S.packs||{})){const p=S.packs[id]&&S.packs[id].data;(p&&Array.isArray(p.texts)?p.texts:[]).forEach((t,i)=>{if(t&&t.text&&Array.isArray(t.q))out.push(Object.assign({key:"p-"+id+"-"+i,l:p.level||"A2"},t))})}return out}
-function applyPacks(){
-  for(const id of Object.keys(S.packs||{})){const p=S.packs[id]&&S.packs[id].data;if(!p)continue;
-    (Array.isArray(p.words)?p.words:[]).forEach(w=>{if(Array.isArray(w)&&w[0]&&w[1]&&!BASE_WORDS.some(x=>x.id===w[0]))BASE_WORDS.push(Object.assign(mkW(w,LEVELS.includes(w[5])?w[5]:(p.level||"A2")),{theme:"pack:"+id}))});
-    (Array.isArray(p.lessons)?p.lessons:[]).forEach(l=>{if(l&&l.id&&Array.isArray(l.ex)&&!LESSONS.some(x=>x.id===l.id))LESSONS.push(Object.assign({lvl:p.level||"A2",desc:"",theory:""},l,{pack:id}))});
-  }
-  LESSONS.sort((a,b)=>LEVELS.indexOf(a.lvl)-LEVELS.indexOf(b.lvl));
+function packData(id){const i=(S.packs||{})[id];return (i&&i.data)||BUILTIN_PACKS.data[id]||null}
+function packTexts(){const out=[];for(const id of Object.keys(S.packs||{})){const p=packData(id);(p&&Array.isArray(p.texts)?p.texts:[]).forEach((t,i)=>{if(t&&t.text&&Array.isArray(t.q))out.push(Object.assign({key:"p-"+id+"-"+i,l:p.level||"A2"},t))})}return out}
+function applyPackData(id,p){
+  if(!p)return;
+  (Array.isArray(p.words)?p.words:[]).forEach(w=>{if(Array.isArray(w)&&w[0]&&w[1]&&!BASE_WORDS.some(x=>x.id===w[0]))BASE_WORDS.push(Object.assign(mkW(w,LEVELS.includes(w[5])?w[5]:(p.level||"A2")),{theme:"pack:"+id}))});
+  (Array.isArray(p.lessons)?p.lessons:[]).forEach(l=>{if(l&&l.id&&Array.isArray(l.ex)&&!LESSONS.some(x=>x.id===l.id))LESSONS.push(Object.assign({lvl:p.level||"A2",desc:"",theory:""},l,{pack:id}))});
 }
+function sortLessons(){LESSONS.sort((a,b)=>LEVELS.indexOf(a.lvl)-LEVELS.indexOf(b.lvl))}
+function applyPacks(){for(const id of Object.keys(S.packs||{}))applyPackData(id,packData(id));sortLessons()}
+// Встроенные наборы ставятся сами (и обновляются), кроме тех, что пользователь удалил
+function autoPacks(){S.packs=S.packs||{};S.removedPacks=S.removedPacks||[];let ch=false;
+  for(const p of BUILTIN_PACKS.packs){if(S.removedPacks.includes(p.id))continue;const i=S.packs[p.id];
+    if(!i||(!i.data&&(p.version||1)>(i.version||1))){if(BUILTIN_PACKS.data[p.id]){S.packs[p.id]={version:p.version||1,title:p.title,builtin:true};S.sets=S.sets||{};S.sets["pack:"+p.id]=true;ch=true}}}
+  if(ch)save()}
+function unapplyPack(id){for(let i=BASE_WORDS.length-1;i>=0;i--)if(BASE_WORDS[i].theme==="pack:"+id)BASE_WORDS.splice(i,1);for(let i=LESSONS.length-1;i>=0;i--)if(LESSONS[i].pack===id)LESSONS.splice(i,1)}
+function libList(){return LIB.idx||BUILTIN_PACKS.packs}
 async function loadLib(){
-  LIB.busy=true;LIB.err="";viewLibrary();
-  try{const r=await fetch(packsURL()+"index.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();LIB.idx=Array.isArray(j.packs)?j.packs:[]}
-  catch(e){LIB.err="Не удалось загрузить список наборов. Проверь интернет и нажми «Обновить список»."}
+  if(!packsURL()){LIB.idx=BUILTIN_PACKS.packs;LIB.remote=false;return}
+  LIB.busy=true;
+  try{const r=await fetch(packsURL()+"index.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();if(!Array.isArray(j.packs))throw 0;LIB.idx=j.packs;LIB.remote=true}
+  catch(e){LIB.idx=BUILTIN_PACKS.packs;LIB.remote=false}
   LIB.busy=false;if((location.hash||"").slice(1)==="library")viewLibrary();
 }
-async function installPack(p){
-  LIB.working=p.id;LIB.err="";viewLibrary();
-  try{const r=await fetch(packsURL()+p.file+"?v="+(p.version||1),{cache:"no-store"});if(!r.ok)throw 0;const d=await r.json();
-    if(!d||typeof d!=="object"||!(d.words||d.texts||d.lessons))throw 0;
-    S.packs=S.packs||{};S.packs[p.id]={version:p.version||1,title:p.title,data:d};S.sets=S.sets||{};S.sets["pack:"+p.id]=true;save();
-    toast("Установлено: "+p.title);setTimeout(()=>location.reload(),500)}
-  catch(e){LIB.working="";LIB.err="Не удалось скачать «"+p.title+"». Попробуй ещё раз.";viewLibrary()}
+async function fetchPack(p){
+  if(LIB.remote&&packsURL()){try{const r=await fetch(packsURL()+p.file+"?v="+(p.version||1),{cache:"no-store"});if(r.ok){const d=await r.json();if(d&&typeof d==="object"&&(d.words||d.texts||d.lessons))return d}}catch(e){}}
+  return BUILTIN_PACKS.data[p.id]||null;
 }
+function installData(p,d){if(S.packs&&S.packs[p.id])unapplyPack(p.id);S.packs=S.packs||{};S.removedPacks=(S.removedPacks||[]).filter(x=>x!==p.id);S.packs[p.id]=d===BUILTIN_PACKS.data[p.id]?{version:p.version||1,title:p.title,builtin:true}:{version:p.version||1,title:p.title,data:d};S.sets=S.sets||{};S.sets["pack:"+p.id]=true;applyPackData(p.id,d);sortLessons()}
+async function installPack(p){LIB.working=p.id;LIB.err="";viewLibrary();const d=await fetchPack(p);
+  if(!d)LIB.err="Не удалось скачать «"+p.title+"». Проверь интернет и попробуй ещё раз.";else{installData(p,d);save();CS=null;toast("Установлено: "+p.title)}
+  LIB.working="";viewLibrary()}
+async function installAll(){
+  const todo=libList().filter(p=>{const i=(S.packs||{})[p.id];return !i||(p.version||1)>(i.version||1)});
+  LIB.working="all";LIB.err="";viewLibrary();let n=0;
+  for(const p of todo){const d=await fetchPack(p);if(d){installData(p,d);n++}}
+  save();CS=null;LIB.working="";toast(n?`Установлено наборов: ${n}`:"Не удалось скачать наборы");viewLibrary();
+}
+function packCounts(p){const d=packData(p.id)||BUILTIN_PACKS.data[p.id];if(!d)return p.contents||"";
+  const parts=[];if(d.words&&d.words.length)parts.push(d.words.length+" "+plural(d.words.length,["слово","слова","слов"]));if(d.lessons&&d.lessons.length)parts.push(d.lessons.length+" "+plural(d.lessons.length,["урок","урока","уроков"]));if(d.texts&&d.texts.length)parts.push(d.texts.length+" "+plural(d.texts.length,["текст","текста","текстов"]));return parts.join(" · ")}
 function viewLibrary(){
-  if(!packsURL()){V.innerHTML=`<h1>Библиотека</h1><p class="sub">Дополнительные наборы слов, уроков и текстов скачиваются в приложении для телефона.</p>`;return}
-  if(!LIB.idx&&!LIB.busy&&!LIB.err){loadLib();return}
-  const inst=S.packs||{};
-  const extra=Object.keys(inst).filter(id=>!(LIB.idx||[]).some(p=>p.id===id));
-  V.innerHTML=`<div class="row" style="justify-content:space-between"><h1>Библиотека</h1><button class="btn ghost small" id="librefresh" ${LIB.busy?"disabled":""}>Обновить список</button></div>
-  <p class="sub">Дополнительные наборы. После установки слова попадут в карточки, уроки — в «Грамматику», тексты — в «Чтение». Новые наборы появляются здесь без обновления приложения.</p>
-  ${LIB.busy?'<div class="sheet muted">Загружаю список…</div>':""}${LIB.err?`<div class="verdict bad"><span>${esc(LIB.err)}</span></div>`:""}
-  <div class="stack">${(LIB.idx||[]).map(p=>{const i=inst[p.id];const upd=i&&(p.version||1)>(i.version||1);
+  if(!LIB.idx&&!LIB.busy){loadLib().then(()=>{if((location.hash||"").slice(1)==="library")viewLibrary()});if(!LIB.idx){V.innerHTML=`<h1>Библиотека</h1><div class="sheet muted">Загружаю список…</div>`;return}}
+  const inst=S.packs||{},list=libList();
+  const todo=list.filter(p=>{const i=inst[p.id];return !i||(p.version||1)>(i.version||1)}).length;
+  const extra=Object.keys(inst).filter(id=>!list.some(p=>p.id===id));
+  V.innerHTML=`<h1>Библиотека</h1>
+  <p class="sub">Тематические наборы уже встроены в приложение: их слова идут в карточки после основных слов твоего уровня, уроки — в «Грамматику» и справочник, тексты — в «Чтение». Ненужный набор можно удалить, а потом вернуть.${packsURL()?" Новые наборы появляются здесь без обновления приложения.":""}</p>
+  <div class="stack">
+  ${todo?`<section class="sheet packall">${yasik("happy",52,{teacher:false,anim:"idle"})}<div style="min-width:0;flex:1"><b>Установить всё сразу</b><div class="small muted">${todo} ${plural(todo,["набор","набора","наборов"])}: слова, уроки и тексты для всех уровней</div></div><button class="btn primary" id="liball" ${LIB.working?"disabled":""}>${LIB.working==="all"?"Устанавливаю…":"Установить все"}</button></section>`:`<div class="verdict ok">Все наборы установлены</div>`}
+  ${LIB.err?`<div class="verdict bad"><span>${esc(LIB.err)}</span></div>`:""}
+  ${list.map(p=>{const i=inst[p.id];const upd=i&&(p.version||1)>(i.version||1);
     return `<section class="sheet packc"><div style="min-width:0"><div class="row" style="gap:8px"><b>${esc(p.title)}</b>${p.level?`<span class="pill new">${esc(p.level)}</span>`:""}${i?`<span class="pill known">установлен</span>`:""}</div>
-    <p class="small muted" style="margin:4px 0 0">${esc(p.desc||"")}</p>${p.contents?`<p class="small" style="margin:4px 0 0">${esc(p.contents)}</p>`:""}</div>
-    <div class="row">${LIB.working===p.id?'<span class="small muted">Скачиваю…</span>':i?`${upd?`<button class="btn primary" data-inst="${esc(p.id)}">Обновить</button>`:""}<button class="btn ghost" data-rm="${esc(p.id)}">Удалить</button>`:`<button class="btn primary" data-inst="${esc(p.id)}">Установить</button>`}</div></section>`}).join("")}
-  ${extra.map(id=>`<section class="sheet packc"><div><b>${esc(inst[id].title||id)}</b> <span class="pill known">установлен</span></div><button class="btn ghost" data-rm="${esc(id)}">Удалить</button></section>`).join("")}</div>`;
-  const rf=$("#librefresh");if(rf)rf.onclick=()=>{LIB.idx=null;loadLib()};
-  V.querySelectorAll("[data-inst]").forEach(b=>b.onclick=()=>{const p=(LIB.idx||[]).find(x=>x.id===b.dataset.inst);if(p)installPack(p)});
-  V.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{const id=b.dataset.rm;delete S.packs[id];if(S.sets)delete S.sets["pack:"+id];save();toast("Набор удалён");setTimeout(()=>location.reload(),500)});
+    <p class="small muted" style="margin:4px 0 0">${esc(p.desc||"")}</p><p class="small" style="margin:4px 0 0">${esc(packCounts(p))}</p></div>
+    <div class="row">${LIB.working===p.id?'<span class="small muted">Устанавливаю…</span>':i?`${upd?`<button class="btn primary" data-inst="${esc(p.id)}">Обновить</button>`:""}<button class="btn ghost" data-rm="${esc(p.id)}">Удалить</button>`:`<button class="btn" data-inst="${esc(p.id)}" ${LIB.working?"disabled":""}>Установить</button>`}</div></section>`}).join("")}
+  ${extra.map(id=>`<section class="sheet packc"><div><b>${esc(inst[id].title||id)}</b> <span class="pill known">установлен</span></div><button class="btn ghost" data-rm="${esc(id)}">Удалить</button></section>`).join("")}
+  </div>`;
+  const all=$("#liball");if(all)all.onclick=installAll;
+  V.querySelectorAll("[data-inst]").forEach(b=>b.onclick=()=>{const p=list.find(x=>x.id===b.dataset.inst);if(p)installPack(p)});
+  V.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{const id=b.dataset.rm;unapplyPack(id);delete S.packs[id];S.removedPacks=[...new Set((S.removedPacks||[]).concat(id))];if(S.sets)delete S.sets["pack:"+id];save();CS=null;toast("Набор удалён");viewLibrary()});
+}
+
+/* ---------- ТЕОРИЯ: правила под рукой ---------- */
+function ruleRead(id){S.readRules=S.readRules||{};if(!S.readRules[id]){S.readRules[id]=dkey();save()}}
+function ruleKnown(id){return !!((S.readRules||{})[id]||S.lessons[id])}
+function sheetEl(){
+  let el=document.getElementById("rsheet");
+  if(!el){el=document.createElement("div");el.id="rsheet";el.className="rsheet";el.hidden=true;
+    el.innerHTML='<div class="rsbox" role="dialog" aria-modal="true" aria-labelledby="rstitle"><button class="rsx" aria-label="Закрыть">×</button><div class="rsc"></div><div class="rsa row"></div></div>';
+    document.body.appendChild(el);
+    el.addEventListener("click",e=>{if(e.target===el||e.target.closest(".rsx"))closeSheet()});
+    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!el.hidden)closeSheet()});}
+  return el;
+}
+function showSheet(html,acts){
+  const el=sheetEl();acts=acts||[];el.querySelector(".rsc").innerHTML=html;const a=el.querySelector(".rsa");
+  a.innerHTML=acts.map((x,i)=>`<button class="btn ${i===0?"primary":""}" data-act="${i}">${esc(x.t)}</button>`).join("")+`<button class="btn ghost" data-close>Понятно, к заданию</button>`;
+  a.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{closeSheet();acts[+b.dataset.act].go()});
+  a.querySelector("[data-close]").onclick=closeSheet;
+  el.hidden=false;document.body.classList.add("noscroll");el.querySelector(".rsbox").scrollTop=0;setTimeout(()=>{const x=el.querySelector(".rsx");if(x)x.focus()},30);
+}
+function closeSheet(){const el=document.getElementById("rsheet");if(el&&!el.hidden){el.hidden=true;document.body.classList.remove("noscroll")}}
+window.addEventListener("hashchange",closeSheet);
+function exampleHTML(e){
+  const ans=e.o?e.a:e.a[0];
+  if(e.type==="audio")return "";
+  if(e.q.includes("___")){const parts=e.q.split("___");const after=(parts[1]||"").replace(/^\s*\([^)]*\)/,"");
+    const hint=((parts[1]||"").match(/^\s*\(([^)]*)\)/)||[])[1];
+    return `<li><div>${esc(parts[0])}<mark class="okmark">${esc(ans==="—"?"без артикля":ans)}</mark>${esc(after)}${hint?` <span class="small muted">(${esc(hint)})</span>`:""}</div>${e.why?`<div class="small muted">${esc(e.why)}</div>`:""}</li>`}
+  return `<li><div>${esc(e.q)} → <mark class="okmark">${esc(ans)}</mark></div>${e.why?`<div class="small muted">${esc(e.why)}</div>`:""}</li>`;
+}
+function md2html(t){return esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^#+\s*(.+)$/gm,"<b>$1</b>")}
+function ruleSheet(meta){
+  const ex=(meta.ex||[]).map(exampleHTML).filter(Boolean);
+  showSheet(`${yasay("think",meta.say,56)}
+  <div class="label" style="margin-top:12px">${esc(meta.label)}</div><h2 id="rstitle" style="margin:4px 0 10px">${esc(meta.title)}</h2><div class="theory">${meta.theory}</div>
+  ${meta.extra||""}
+  <div class="deep">
+    <div class="label">Не до конца понятно?</div>
+    <div class="row">${ex.length?`<button class="btn" id="rsex">Разобрать на примерах</button>`:""}${AI.off?"":`<button class="btn" id="rsai">Не понял — объясни проще</button>`}</div>
+    <div id="rsexout" hidden><ol class="exlist">${ex.join("")}</ol></div>
+    <div id="rsaiout" class="aiexp" hidden></div>
+    ${AI.off?"":`<div id="rsask" class="row" hidden><input type="text" id="rsq" placeholder="Спроси Ясика про это правило" style="flex:1;min-width:180px" autocomplete="off"><button class="btn" id="rsqgo">Спросить</button></div>`}
+  </div>`,meta.acts||[]);
+  const on=(id,f)=>{const el=document.getElementById(id);if(el)el.onclick=f};
+  on("rsex",()=>{const o=document.getElementById("rsexout");o.hidden=!o.hidden;document.getElementById("rsex").textContent=o.hidden?"Разобрать на примерах":"Скрыть примеры"});
+  const theoryText=stripTags(meta.theory).replace(/\s+/g," ").trim().slice(0,3000);
+  const exText=(meta.ex||[]).filter(e=>e.type!=="audio").slice(0,8).map(e=>e.q+" → "+(e.o?e.a:e.a[0])).join("; ");
+  const ask=async(prompt,out,append)=>{
+    const box=document.getElementById(out);box.hidden=false;
+    const holder=document.createElement("div");holder.className="aimsg";holder.innerHTML=`<span class="muted">Ясик думает… обычно 5–20 секунд</span>`;
+    if(!append)box.innerHTML="";box.appendChild(holder);
+    try{await aiText(prompt,{onText:({text})=>{holder.innerHTML=md2html(text)}});const a=document.getElementById("rsask");if(a)a.hidden=false}
+    catch(e){holder.innerHTML=`<span class="bad-t">${esc(aiErr(e)||"Не получилось")}</span>`}
+  };
+  on("rsai",()=>{document.getElementById("rsai").disabled=true;
+    ask(`Ты — Ясик, добрый и терпеливый учитель английского для русскоговорящих. Ученик (уровень ${T()}) прочитал правило и не понял его. Объясни ещё раз ПРОЩЕ и подробнее, по-русски, для уровня ${T()}.
+Правило «${meta.title}»: ${theoryText}
+Примеры из урока: ${exText}
+Структура ответа:
+1) Суть в 1–2 предложениях простыми словами, лучше с бытовым сравнением.
+2) Как узнать, что нужно именно это правило: 2–3 признака-подсказки.
+3) 5 новых примеров: английская фраза — перевод — почему так.
+4) Типичная ошибка русскоговорящих и как её избежать.
+5) Мини-проверка: 2 коротких вопроса, ответы в самом конце.
+Пиши коротко и дружелюбно, без таблиц. Пункты отделяй пустой строкой, списки — с «•».`,"rsaiout",false)});
+  on("rsqgo",()=>{const q=(document.getElementById("rsq").value||"").trim();if(!q)return;document.getElementById("rsq").value="";
+    const box=document.getElementById("rsaiout");const qd=document.createElement("div");qd.className="aiq";qd.textContent=q;box.hidden=false;box.appendChild(qd);
+    ask(`Ты — Ясик, добрый учитель английского для русскоговорящих. Ученик уровня ${T()} разбирает правило «${meta.title}» (${theoryText.slice(0,1500)}) и спрашивает: «${q.slice(0,500)}». Ответь по-русски коротко и понятно, с 1–3 примерами на английском с переводом. Без таблиц.`,"rsaiout",true)});
+  const qi=document.getElementById("rsq");if(qi)qi.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();document.getElementById("rsqgo").click()}};
+}
+function openRule(id){
+  const l=LESSONS.find(x=>x.id===id);if(!l)return;const first=!ruleKnown(id);ruleRead(id);const r=S.lessons[id];
+  const inLesson=(location.hash||"").slice(1)==="grammar"&&GS&&GS.active&&GS.l.id===id;
+  ruleSheet({title:l.title,label:l.lvl+" · правило",theory:l.theory,ex:l.ex,
+    say:first?"Это правило мы ещё не разбирали. Прочитай примеры вслух — в них вся суть. Если непонятно, нажми внизу «Разобрать на примерах».":"Вот правило. Посмотри примеры и возвращайся к заданию.",
+    extra:r?`<p class="small muted">Упражнения по правилу: лучший результат ${r.best} из ${r.total}</p>`:"",
+    acts:inLesson?[]:[{t:r?"Повторить упражнения":"Упражнения по правилу",go:()=>{location.hash="#grammar";setTimeout(()=>{openLesson(id);window.scrollTo(0,0)},0)}}]});
+}
+function openCourseRule(n){
+  const L=COURSE[n-1];if(!L)return;
+  ruleSheet({title:L.t,label:"Курс · урок "+n,theory:L.r,ex:L.rx.concat(L.tr.map(t=>({q:t.ru,a:[expand(t.en[0])[0]],why:t.note||""}))),
+    say:"Правило из урока курса. Прочитай и посмотри примеры.",
+    acts:[{t:"Открыть урок",go:()=>{location.hash="#course";setTimeout(()=>{openCourseLesson(n);window.scrollTo(0,0)},0)}}]});
+}
+document.addEventListener("click",e=>{
+  const a=e.target.closest("[data-rule-open]");if(a){e.preventDefault();openRule(a.dataset.ruleOpen);return}
+  const c=e.target.closest("[data-course-rule]");if(c){e.preventDefault();openCourseRule(+c.dataset.courseRule)}
+});
+function ruleBtn(m,cls){
+  cls=cls||"ghost small";
+  if(validTopic(m.t))return `<button class="btn ${cls} rbtn" data-rule-open="${m.t}">Правило</button>`;
+  if(m.k==="course")return `<button class="btn ${cls} rbtn" data-course-rule="${String(m.ref).split(":")[0]}">Правило урока</button>`;
+  return "";
+}
+function ruleHint(t){
+  if(!validTopic(t))return"";
+  return ruleKnown(t)
+    ?`<div class="rulehint"><span class="small muted">Правило: ${esc(topicName(t))}</span><button class="btn ghost small" data-rule-open="${t}">Посмотреть</button></div>`
+    :`<div class="rulehint new">${yasik("think",40,{teacher:false,anim:"idle"})}<span>Здесь работает правило <b>«${esc(topicName(t))}»</b>, а мы его ещё не разбирали.</span><button class="btn small primary" data-rule-open="${t}">Прочитать</button></div>`;
+}
+let RQ="";
+function stripTags(h){return String(h||"").replace(/<[^>]+>/g," ")}
+function viewRules(){
+  const q=RQ.trim().toLowerCase(),L=T();
+  const match=l=>!q||(l.title+" "+l.desc+" "+stripTags(l.theory)).toLowerCase().includes(q);
+  const st=l=>S.lessons[l.id]?["good","пройдено"]:(S.readRules||{})[l.id]?["mid","прочитано"]:["none","новое"];
+  const cs=COURSE.filter(c=>!q||(c.t+" "+c.g+" "+stripTags(c.r)).toLowerCase().includes(q));
+  const order=[L].concat(LEVELS.filter(x=>x!==L));
+  V.innerHTML=`<h1>Справочник правил</h1><p class="sub">Все правила в одном месте. Прочитай правило, а потом закрепи упражнениями. Из любого задания и из «Ошибок» правило открывается кнопкой «Правило».</p>
+  <input type="text" id="rq" placeholder="Поиск: артикли, Present Perfect, can…" value="${esc(RQ)}" style="margin-bottom:14px" autocomplete="off">
+  <div class="stack">${order.map(lv=>{const ls=LESSONS.filter(l=>l.lvl===lv&&match(l));if(!ls.length)return"";
+    return `<section><div class="lvlhead"><h2 style="margin:0">${lv} · ${LVLNAME[lv]}</h2>${lv===L?'<span class="pill lv-now">твой уровень</span>':""}</div><div class="lessons">${ls.map(l=>{const s2=st(l);return `<button class="lesson" data-rule-open="${l.id}"><span class="lvl">${l.lvl}</span><span><span class="t">${esc(l.title)}</span><br><span class="d">${esc(l.desc)}</span></span><span class="score ${s2[0]}">${s2[1]}</span></button>`}).join("")}</div></section>`}).join("")}
+  ${cs.length?`<section><div class="lvlhead"><h2 style="margin:0">Курс с нуля</h2></div><div class="lessons">${cs.map(c=>`<button class="lesson" data-course-rule="${c.n}"><span class="lvl">${c.n}</span><span><span class="t">${esc(c.t)}</span><br><span class="d">${esc(c.g)}</span></span><span class="score ${courseDone(c.n)?"good":"none"}">${courseDone(c.n)?"пройден":"урок "+c.n}</span></button>`).join("")}</div></section>`:""}
+  ${!q||LESSONS.some(match)||cs.length?"":`<div class="sheet muted">Ничего не нашлось. Попробуй другое слово.</div>`}
+  </div>`;
+  const i=$("#rq");i.oninput=()=>{RQ=i.value;const pos=i.selectionStart;viewRules();const j=$("#rq");j.focus();try{j.setSelectionRange(pos,pos)}catch(e){}};
 }
 
 /* ===================== ЯСИК — маскот и учитель ===================== */
@@ -3345,12 +3525,12 @@ function resultHTML(o){
 /* ===================== НАВИГАЦИЯ: нижняя панель ===================== */
 const TABS=[
 {id:"today",t:"Сегодня",icon:'<path d="M4 10.5 12 4l8 6.5V20H15v-6H9v6H4z"/>',routes:["today"]},
-{id:"learn",t:"Учить",icon:'<path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v15H7.5A2.5 2.5 0 0 0 5 20.5zM5 20.5A2.5 2.5 0 0 1 7.5 18H19v3H7.5"/>',routes:["learn","course","cards","grammar","verbs","test"]},
+{id:"learn",t:"Учить",icon:'<path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v15H7.5A2.5 2.5 0 0 0 5 20.5zM5 20.5A2.5 2.5 0 0 1 7.5 18H19v3H7.5"/>',routes:["learn","course","cards","grammar","verbs","test","rules"]},
 {id:"train",t:"Практика",icon:'<path d="M4 5h16v11H10l-4 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/>',routes:["train","translate","practice","listen","read","speak"]},
 {id:"mistakes",t:"Ошибки",icon:'<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/><path d="M12 8v5M12 16v.5"/>',routes:["mistakes"]},
 {id:"profile",t:"Профиль",icon:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',routes:["profile","words","library","stats"]}
 ];
-const CRUMB={course:"learn",cards:"learn",grammar:"learn",verbs:"learn",test:"learn",translate:"train",practice:"train",listen:"train",read:"train",speak:"train",words:"profile",library:"profile",stats:"profile"};
+const CRUMB={rules:"learn",course:"learn",cards:"learn",grammar:"learn",verbs:"learn",test:"learn",translate:"train",practice:"train",listen:"train",read:"train",speak:"train",words:"profile",library:"profile",stats:"profile"};
 function tabFor(r){return (TABS.find(t=>t.routes.includes(r))||TABS[0]).id}
 function renderTabbar(r){
   const bar=$("#tabbar");if(!bar)return;const cur=tabFor(r),md=dueMist().length;
@@ -3459,6 +3639,7 @@ function viewToday(){
   if(na.k!=="course"&&cn&&(li(L)<=1||Object.keys(S.course||{}).length))more.push(["#course",`Курс: урок ${cn.n}`,cn.t]);
   if(na.k!=="quick"&&na.k!=="mist"&&md)more.push(["#mistakes","Ошибки",`${md} к повтору`]);
   if(na.k!=="cards"&&dw)more.push(["#cards","Карточки",`${dw} к повторению`]);
+  const ur=LESSONS.find(l=>li(l.lvl)<=li(L)&&!ruleKnown(l.id));if(ur)more.unshift(["#rules","Правило дня",ur.title,ur.id]);
   if(!AI.off)more.push(["#practice","Разговор с ИИ","Кафе, отель, собеседование"]);
   more.push(["#read","Чтение","Текст на твоём уровне"]);
   more.push(["#speak","Произношение",micAvail()?"Скажи вслух — я послушаю":"Различай звуки на слух"]);
@@ -3477,7 +3658,7 @@ function viewToday(){
     </section>
     ${S.freezeNote===dkey(Date.now()-DAY)?yasay("happy","Вчера ты пропустил день, но я сохранил твою серию заморозкой. Их дают за каждые 7 дней подряд.",56):""}
     ${S.level?levelPanel():""}
-    <section><div class="label" style="margin:4px 0 8px">Ещё на сегодня</div><div class="morelist">${more.slice(0,5).map(([h,t,d])=>`<a class="morei" href="${h}"><b>${esc(t)}</b><span>${esc(d)}</span><i>›</i></a>`).join("")}</div></section>
+    <section><div class="label" style="margin:4px 0 8px">Ещё на сегодня</div><div class="morelist">${more.slice(0,5).map(([h,t,d,rid])=>`<a class="morei" href="${h}"${rid?` data-rule-open="${rid}"`:""}><b>${esc(t)}</b><span>${esc(d)}</span><i>›</i></a>`).join("")}</div></section>
     <div class="small muted" data-sync></div>
   </div>`;
   $("#go").onclick=na.go;
@@ -3492,6 +3673,7 @@ function viewLearn(){
   V.innerHTML=`<h1>Учить</h1><p class="sub">Новое: слова, правила, курс. Уровень ${T()}.</p><div class="tiles">
   ${tile("#course","Курс с нуля",cn?`Урок ${cn.n} из ${COURSE.length}: ${cn.t}`:"Курс пройден",cd?cd+"/"+COURSE.length:"")}
   ${tile("#cards","Карточки",dw||nl?`${dw} к повторению · ${nl} новых`:"На сегодня всё повторено",dw||"")}
+  ${tile("#rules","Справочник правил",`${LESSONS.length+COURSE.length} правил · прочитано ${Object.keys(S.readRules||{}).length}`)}
   ${tile("#grammar","Грамматика",`${LESSONS.length} уроков · пройдено ${ld}`)}
   ${tile("#verbs","Неправильные глаголы",`${verbPool().length} глаголов для уровня ${T()}`)}
   ${tile("#test","Тест уровня",S.test?"Пройден — можно пройти заново":"5 минут, подстроит всё под тебя")}
@@ -3514,7 +3696,7 @@ function viewProfile(){
   <div class="tiles">
   ${tile("#stats","Статистика","Графики, точность, прогресс по уровням")}
   ${tile("#words","Слова и настройки","Мои слова, наборы, цель дня, перенос прогресса")}
-  ${packsURL()?tile("#library","Библиотека","Скачать новые наборы слов и уроков"):""}
+  ${tile("#library","Библиотека",`Тематические наборы: установлено ${Object.keys(S.packs||{}).length}`)}
   </div>
   <section><h2>Достижения</h2><div class="achs">${ACH.map(a=>{const on=(S.ach||{})[a.id];return `<div class="achi ${on?"on":""}" title="${esc(a.d)}">${medal(!!on,44)}<b>${esc(a.t)}</b><span>${esc(a.d)}</span></div>`}).join("")}</div></section>
   <details class="sheet"><summary>Как устроено обучение</summary><div class="theory" style="margin-top:10px">
@@ -3626,7 +3808,7 @@ function renderWL(){
   $("#wl").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const id=b.dataset.del;S.custom=S.custom.filter(c=>c.id!==id);S.deleted=(S.deleted||[]).concat(id);delete S.cards[id];save();renderWL()});
 }
 
-applyPacks();applyFreeze();
+autoPacks();applyPacks();applyFreeze();
 new MutationObserver(()=>queueMicrotask(()=>{mascotize();budCheck()})).observe(V,{childList:true,subtree:true});
 if(!S.onboarded&&!(S.totalAns>0)&&location.hash!=="#hello")location.hash="#hello";else route();
 initSync();

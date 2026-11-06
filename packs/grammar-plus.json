@@ -1,0 +1,151 @@
+{
+ "lessons": [
+  {
+   "id": "pk-ppc",
+   "lvl": "B1",
+   "title": "Present Perfect Continuous",
+   "desc": "Давно и до сих пор: have been + -ing",
+   "theory": "<p><b>have / has been + глагол с -ing</b> — действие началось в прошлом и <b>продолжается до сих пор</b> или только что закончилось, и виден результат.</p><ul><li><span class=\"ex\">I've been waiting for an hour!</span> — Я жду уже час!</li><li><span class=\"ex\">She's tired because she's been running.</span> — она бегала, поэтому устала.</li></ul><p>Вопрос «как долго?»: <b>How long have you been learning English?</b></p><p>Глаголы состояния (know, like, want, believe) в Continuous не ставят: <i>I've known him for years</i>, а не <i>I've been knowing</i>.</p>",
+   "ex": [
+    {
+     "q": "I ___ (wait) for you for an hour!",
+     "a": [
+      "have been waiting",
+      "'ve been waiting"
+     ],
+     "why": "Началось час назад и продолжается → have been + -ing."
+    },
+    {
+     "q": "She is tired because she ___ (run).",
+     "a": [
+      "has been running",
+      "'s been running"
+     ],
+     "why": "Результат сейчас (устала) от недавнего длительного действия."
+    },
+    {
+     "q": "How long ___ (you / learn) English?",
+     "a": [
+      "have you been learning"
+     ],
+     "why": "How long + действие до сих пор → Present Perfect Continuous."
+    },
+    {
+     "q": "It ___ (rain) since morning.",
+     "a": [
+      "has been raining",
+      "'s been raining"
+     ],
+     "why": "С утра и до сих пор."
+    },
+    {
+     "q": "I ___ (know) him for ten years.",
+     "a": [
+      "have known",
+      "'ve known"
+     ],
+     "why": "Know — глагол состояния, только Present Perfect, без -ing."
+    },
+    {
+     "q": "They ___ (work) on this project since May.",
+     "a": [
+      "have been working",
+      "'ve been working",
+      "have worked",
+      "'ve worked"
+     ],
+     "why": "С мая и до сих пор: подходят обе формы, Continuous подчёркивает процесс."
+    }
+   ]
+  },
+  {
+   "id": "pk-art2",
+   "lvl": "B1",
+   "title": "Артикли: особые случаи",
+   "desc": "Реки, страны, инструменты, спорт, school и the school",
+   "theory": "<div class=\"tbl\"><table><tr><th>С the</th><th>Без артикля</th></tr><tr><td>реки, моря, океаны: the Thames, the Pacific</td><td>озёра и отдельные горы: Lake Baikal, Everest</td></tr><tr><td>страны-союзы: the USA, the UK</td><td>большинство стран: Russia, France</td></tr><tr><td>музыкальные инструменты: play the guitar</td><td>спорт и игры: play football, play chess</td></tr></table></div><p><b>go to school / work / bed / hospital</b> без артикля — когда идём туда по назначению (учиться, работать, спать, лечиться). С <b>the</b> — когда это просто здание: <i>Mum went to the school to talk to the teacher.</i></p>",
+   "ex": [
+    {
+     "type": "choice",
+     "q": "We sailed down ___ Thames.",
+     "o": [
+      "the",
+      "—",
+      "a"
+     ],
+     "a": "the",
+     "why": "Реки — с the."
+    },
+    {
+     "type": "choice",
+     "q": "She plays ___ piano.",
+     "o": [
+      "the",
+      "—",
+      "a"
+     ],
+     "a": "the",
+     "why": "Музыкальные инструменты — с the."
+    },
+    {
+     "type": "choice",
+     "q": "I play ___ football on Sundays.",
+     "o": [
+      "—",
+      "the",
+      "a"
+     ],
+     "a": "—",
+     "why": "Спорт — без артикля."
+    },
+    {
+     "type": "choice",
+     "q": "He lives in ___ USA.",
+     "o": [
+      "the",
+      "—",
+      "a"
+     ],
+     "a": "the",
+     "why": "The USA — «Соединённые Штаты», союз штатов → the."
+    },
+    {
+     "type": "choice",
+     "q": "They climbed ___ Everest.",
+     "o": [
+      "—",
+      "the",
+      "a"
+     ],
+     "a": "—",
+     "why": "Отдельная гора — без артикля."
+    },
+    {
+     "type": "choice",
+     "q": "Kids go to ___ school at eight.",
+     "o": [
+      "—",
+      "the",
+      "a"
+     ],
+     "a": "—",
+     "why": "Идут учиться (по назначению) → без артикля."
+    },
+    {
+     "type": "choice",
+     "q": "Mum went to ___ school to talk to the teacher.",
+     "o": [
+      "the",
+      "—",
+      "a"
+     ],
+     "a": "the",
+     "why": "Мама идёт в здание школы, не учиться → the."
+    }
+   ]
+  }
+ ],
+ "id": "grammar-plus",
+ "title": "Грамматика+: два новых урока",
+ "level": "B1"
+}

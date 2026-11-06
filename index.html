@@ -380,6 +380,11 @@ body.onb main{padding-bottom:40px}
 .choices .btn{min-height:48px}
 .grades .btn{min-height:56px}
 /* ---- v10: правила и знакомство со словом ---- */
+.issues{display:flex;flex-wrap:wrap;gap:6px}
+.iss{font-size:13.5px;border-radius:8px;padding:4px 9px;line-height:1.35}
+.iss.t{background:var(--warn-soft);color:var(--warn)}
+.iss.g{background:var(--bad-soft);color:var(--bad)}
+.iss b{font-weight:600}.iss s{opacity:.8}
 .gembtn{color:var(--accent)}
 .gembtn.primary{color:var(--accent-ink)}
 .gemback summary{font-size:14.5px}
@@ -1690,14 +1695,110 @@ function expand(s){
 }
 function lev(a,b){const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=Array.from({length:n+1},(_,i)=>i);
   for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
-// returns {status:'ok'|'typo'|'bad', best:originalVariant}
+/* ---------- РАЗБОР ОТВЕТА: опечатка или ошибка по теме ---------- */
+const W_ART=new Set(["a","an","the"]);
+const W_PREP=new Set(["in","on","at","to","for","of","by","with","from","into","about","under","between","after","before","since","during","near","over"]);
+const W_AUX=new Set(["is","am","are","was","were","be","been","being","do","does","did","have","has","had","will","would","shall","should","can","could","may","might","must","not"]);
+let IRR_MAP=null;
+function irrMap(){if(IRR_MAP)return IRR_MAP;IRR_MAP=new Map();VERBS.forEach(v=>{[v[0],...v[1].split("|"),...v[2].split("|")].forEach(f=>{if(!IRR_MAP.has(f))IRR_MAP.set(f,v[0])})});return IRR_MAP}
+function lemmas(w){
+  const out=new Set([w]);const irr=irrMap().get(w);if(irr)out.add(irr);
+  if(w.endsWith("ies")&&w.length>4)out.add(w.slice(0,-3)+"y");
+  if(w.endsWith("ied")&&w.length>4)out.add(w.slice(0,-3)+"y");
+  if(w.endsWith("es")&&w.length>3)out.add(w.slice(0,-2));
+  if(w.endsWith("s")&&w.length>2)out.add(w.slice(0,-1));
+  if(w.endsWith("ed")&&w.length>3){out.add(w.slice(0,-2));out.add(w.slice(0,-1));if(/(.)\1ed$/.test(w))out.add(w.slice(0,-3))}
+  if(w.endsWith("ing")&&w.length>4){out.add(w.slice(0,-3));out.add(w.slice(0,-3)+"e");if(/(.)\1ing$/.test(w))out.add(w.slice(0,-4))}
+  if(w.endsWith("er")&&w.length>3){out.add(w.slice(0,-2));out.add(w.slice(0,-1));if(/(.)\1er$/.test(w))out.add(w.slice(0,-3))}
+  if(w.endsWith("est")&&w.length>4){out.add(w.slice(0,-3));out.add(w.slice(0,-2))}
+  if(w.endsWith("ier"))out.add(w.slice(0,-3)+"y");
+  [...out].forEach(x=>{const i=irrMap().get(x);if(i)out.add(i)});
+  return out;
+}
+function sfxClass(w){if(irrMap().has(w)&&irrMap().get(w)!==w)return"irr";if(/ing$/.test(w))return"ing";if(/ed$/.test(w))return"ed";if(/est$/.test(w))return"est";if(/er$/.test(w))return"er";if(/s$/.test(w))return"s";return"base"}
+function isForm(a,b){if(a===b)return false;if(sfxClass(a)===sfxClass(b)&&spellClose(a,b))return false;const la=lemmas(a),lb=lemmas(b);for(const x of la)if(lb.has(x))return true;return false}
+function spellClose(a,b){if(a===b)return false;const L=Math.max(a.length,b.length);if(L<=3)return a.length===b.length&&L>=2&&a.split("").sort().join("")===b.split("").sort().join("");const d=lev(a,b);return L<=5?d<=1:L<=9?d<=2:d<=3}
+function funcKind(w){return W_ART.has(w)?"art":W_PREP.has(w)?"prep":W_AUX.has(w)?"aux":null}
+// Пословное выравнивание ответа с эталоном
+function alignWords(u,t){
+  const n=u.length,m=t.length,D=[],B=[];
+  for(let i=0;i<=n;i++){D.push(new Array(m+1).fill(0));B.push(new Array(m+1).fill(null))}
+  for(let i=1;i<=n;i++){D[i][0]=i;B[i][0]="del"}for(let j=1;j<=m;j++){D[0][j]=j;B[0][j]="ins"}
+  const sub=(a,b)=>a===b?[0,"eq"]:(isForm(a,b)?[0.8,"form"]:(spellClose(a,b)&&!funcKind(a)&&!funcKind(b))?[0.35,"typo"]:[1.6,"sub"]);
+  for(let i=1;i<=n;i++)for(let j=1;j<=m;j++){
+    const [c,k]=sub(u[i-1],t[j-1]);let best=D[i-1][j-1]+c,op=k;
+    if(D[i-1][j]+1<best){best=D[i-1][j]+1;op="del"}
+    if(D[i][j-1]+1<best){best=D[i][j-1]+1;op="ins"}
+    D[i][j]=best;B[i][j]=op}
+  const ops=[];let i=n,j=m;
+  while(i>0||j>0){const op=B[i][j];
+    if(op==="del"){ops.push({op,u:u[i-1]});i--}else if(op==="ins"){ops.push({op,t:t[j-1]});j--}
+    else{ops.push({op,u:u[i-1],t:t[j-1]});i--;j--}}
+  return{cost:D[n][m],ops:ops.reverse()};
+}
+function classifyAnswer(user,target){
+  const u=norm(user).split(" ").filter(Boolean),t=norm(target).split(" ").filter(Boolean);
+  if(!u.length)return{status:"bad",cost:99,issues:[]};
+  const {cost,ops}=alignWords(u,t);const issues=[];
+  const sameBag=u.length===t.length&&u.slice().sort().join(" ")===t.slice().sort().join(" ")&&u.join(" ")!==t.join(" ");
+  if(sameBag)return{status:"bad",cost:cost,issues:[{type:"g",k:"order"}],order:true};
+  for(const o of ops){
+    if(o.op==="eq")continue;
+    if(o.op==="typo")issues.push({type:"typo",k:"typo",u:o.u,t:o.t});
+    else if(o.op==="form")issues.push({type:"g",k:"form",u:o.u,t:o.t});
+    else if(o.op==="sub")issues.push({type:"g",k:funcKind(o.t)||funcKind(o.u)||"word",u:o.u,t:o.t});
+    else if(o.op==="ins")issues.push({type:"g",k:funcKind(o.t)?funcKind(o.t)+"-miss":"miss",t:o.t});
+    else if(o.op==="del")issues.push({type:"g",k:funcKind(o.u)?funcKind(o.u)+"-extra":"extra",u:o.u});
+  }
+  if(!issues.length)return{status:"ok",cost:0,issues};
+  return{status:issues.every(x=>x.type==="typo")?"typo":"bad",cost,issues};
+}
+const ISS_LABEL={typo:"Опечатка",form:"Форма слова",art:"Артикль",prep:"Предлог",aux:"Вспомогательный глагол",word:"Другое слово",miss:"Пропущено слово","art-miss":"Пропущен артикль","prep-miss":"Пропущен предлог","aux-miss":"Пропущен вспомогательный глагол",extra:"Лишнее слово","art-extra":"Лишний артикль","prep-extra":"Лишний предлог","aux-extra":"Лишний вспомогательный глагол",order:"Порядок слов"};
+function issueExplain(r){
+  if(!r||!r.issues||!r.issues.length)return"";
+  if(r.status==="typo"){const w=r.issues.map(i=>"«"+i.t+"»").join(", ");return `Смысл и грамматика верные — только опечатка в ${r.issues.length>1?"словах":"слове"} ${w}. Опечатки я не считаю ошибкой, но если слово повторится с ошибкой, потренируем его написание.`}
+  const g=r.issues.find(i=>i.type==="g");if(!g)return"";
+  const q=x=>"«"+x+"»";
+  switch(g.k){
+    case "order":return"Все слова на месте, но порядок другой. В английском порядок строгий: кто → что делает → что/кого → где → когда. В вопросе вспомогательный глагол стоит перед подлежащим.";
+    case "form":return `Слово правильное, но форма другая: нужно ${q(g.t)}, а не ${q(g.u)}. Проверь время, окончание -s/-ed/-ing или неправильный глагол.`;
+    case "art":return `Артикль: здесь нужно ${q(g.t)}, а не ${q(g.u)}.`;
+    case "prep":return `Предлог: здесь ${q(g.t)}, а не ${q(g.u)}. Предлоги часто не совпадают с русскими — их лучше запоминать вместе со словом.`;
+    case "aux":return `Вспомогательный глагол: нужно ${q(g.t)}, а не ${q(g.u)}. Он зависит от времени и от того, кто действует (he/she — does, has, is).`;
+    case "art-miss":return `Пропущен артикль ${q(g.t)}. В русском артиклей нет, поэтому их легко забыть.`;
+    case "prep-miss":return `Пропущен предлог ${q(g.t)}.`;
+    case "aux-miss":return `Пропущен вспомогательный глагол ${q(g.t)}. Без него английское предложение не строится, хотя по-русски он не нужен.`;
+    case "miss":return `Пропущено слово ${q(g.t)}.`;
+    case "art-extra":return `Лишний артикль ${q(g.u)}: здесь артикль не нужен.`;
+    case "prep-extra":return `Лишний предлог ${q(g.u)}.`;
+    case "aux-extra":return `Лишний вспомогательный глагол ${q(g.u)}.`;
+    case "extra":return `Лишнее слово ${q(g.u)}.`;
+    default:return `Слово ${q(g.u)} здесь не подходит, нужно ${q(g.t)}.`;
+  }
+}
+function issuesHTML(r,withWhy){
+  if(!r||!r.issues||!r.issues.length)return"";
+  const chips=r.issues.slice(0,4).map(i=>`<span class="iss ${i.type==="typo"?"t":"g"}"><b>${ISS_LABEL[i.k]||"Ошибка"}</b>${i.u||i.t?" ":""}${i.u&&i.t?`<s>${esc(i.u)}</s> → <b>${esc(i.t)}</b>`:i.t?`<b>${esc(i.t)}</b>`:i.u?`<s>${esc(i.u)}</s>`:""}</span>`).join("");
+  return `<div class="issues">${chips}</div>`+(withWhy?`<div class="why">${esc(issueExplain(r))}</div>`:"");
+}
+// Повторяющиеся опечатки → тренировка написания
+function recordTypos(r){
+  if(!r||r.status!=="typo")return;
+  const d=dkey();S.typos=S.typos||{};S.typos[d]=(S.typos[d]||0)+r.issues.length;
+  const ks=Object.keys(S.typos).sort();while(ks.length>30)delete S.typos[ks.shift()];
+  S.spell=S.spell||{};
+  r.issues.forEach(i=>{const w=i.t;S.spell[w]=(S.spell[w]||0)+1;if(S.spell[w]>=2)mistake("spell",w,false,i.u,{t:"spell",l:T()})});
+}
+// Общая проверка ответа (по всем вариантам выбирает ближайший)
 function check(user,variants,tol=true){
-  const u=norm(user);let best=variants[0],bd=1e9;
-  for(const v of variants){const d=lev(u,norm(v));if(d<bd){bd=d;best=v}}
-  if(bd===0)return{status:"ok",best};
-  const L=norm(best).length;const lim=L<=5?1:Math.max(1,Math.round(L*0.06));
-  if(tol&&bd<=lim&&u.length>0)return{status:"typo",best};
-  return{status:"bad",best};
+  let best=null;
+  for(const v of variants){const c=classifyAnswer(user,v);c.best=v;
+    const rank=c.status==="ok"?0:c.status==="typo"?1:2;
+    if(!best||rank<best.rank||(rank===best.rank&&c.cost<best.cost)){best=c;best.rank=rank}}
+  if(!best)return{status:"bad",best:variants[0],issues:[]};
+  if(best.status==="typo"&&!tol)best.status="bad";
+  if(best.status==="typo")recordTypos(best);
+  return best;
 }
 function wordDiff(user,target){
   const a=norm(user).split(" ").filter(Boolean),bOrig=target.replace(/[.,!?;:]/g,"").split(/\s+/).filter(Boolean),b=bOrig.map(w=>norm(w));
@@ -1846,7 +1947,7 @@ function answerTest(v){
 }
 
 /* ---------- MISTAKES ---------- */
-const TOPIC_EXTRA={course:"Курс с нуля",write:"Письмо",chat:"Разговор",read:"Чтение",pair:"Различение звуков",vocab:"Слова",listen:"Восприятие на слух",tr:"Перевод фраз",quiz:"Тест уровня"};
+const TOPIC_EXTRA={spell:"Написание слов",course:"Курс с нуля",write:"Письмо",chat:"Разговор",read:"Чтение",pair:"Различение звуков",vocab:"Слова",listen:"Восприятие на слух",tr:"Перевод фраз",quiz:"Тест уровня"};
 function topicName(t){const l=LESSONS.find(x=>x.id===t);return l?l.title:(TOPIC_EXTRA[t]||"Разное")}
 function wordById(id){return allWords().find(w=>w.id===id)}
 function taskOf(m){
@@ -1863,6 +1964,8 @@ function taskOf(m){
     if(d.type==="choice"||d.type==="audio")return{label:lb,input:"choice",prompt:d.type==="audio"?audioQ(d.say):(d.say?`<div class="row">${sayBtn(d.say)}</div>`:""),q:d.type==="audio"?"":d.q,options:d.o,answers:[d.a],why:d.why,show:d.a,autoSay:d.type==="audio"?d.say:null};
     if(d.type==="fill")return{label:lb,input:"inline",q:d.q,answers:d.a,why:d.why,show:d.a[0]};
     const vars=d.en?d.en.flatMap(expand):d.a;return{label:lb,prompt:`<div class="label">Переведи на английский</div><div class="prompt" style="font-size:clamp(21px,4.4vw,28px)">${esc(d.ru||d.q)}</div>`,input:"text",answers:vars,tol:true,diff:true,show:vars[0]}}
+  if(m.k==="spell"){const w=ref,f=lookup(w);
+    return{label:"Написание слова",prompt:`<div class="label">Как пишется слово?</div><div class="answer">${sayBtn(w)}<span class="muted">${f?esc(f.ru):"послушай и напиши"}</span></div><div class="small muted">Это слово ты дважды написал(а) с опечаткой. Послушай и напиши его без ошибок.</div>`,input:"text",answers:[w],tol:false,show:w,autoSay:w,why:"Проговори слово по буквам вслух и напиши ещё раз — так написание запоминается быстрее."}}
   if(m.k==="ai"){const d=m.data;if(!d)return null;const ctx=esc(d.ctx||d.wrong).replace(esc(d.wrong),`<mark class="errmark">${esc(d.wrong)}</mark>`);
     return{label:d.src==="chat"?"Из разговора":"Из письма",prompt:`<div class="label">Исправь ошибку</div><div class="q" style="font-size:18px">${ctx}</div><div class="small muted">Напиши правильный вариант выделенного фрагмента</div>`,input:"text",answers:[d.right],tol:true,show:d.right,why:d.why}}
   if(m.k==="verb"){const v=VERBS.find(x=>x[0]===ref);if(!v)return null;
@@ -1873,7 +1976,7 @@ function taskOf(m){
     return{label:"Звуки",input:"choice",prompt:audioQ(w),q:"",options:pr,answers:[w],show:w,autoSay:w}}
   return null;
 }
-function promptText(m){const t=taskOf(m);if(!t)return"";if(m.k==="course")return m.data.q||m.data.ru||"Курс";if(m.k==="ai")return m.data.ctx||m.data.wrong;if(m.k==="verb")return m.ref+" — …";if(m.k==="word")return wordById(m.ref).ru;if(m.k==="tr")return t.ru;if(m.k==="listen")return"Диктант";if(m.k==="pair")return"Различи на слух: "+PAIRS[+m.ref.split(":")[0]].join(" / ");return t.q||t.label}
+function promptText(m){const t=taskOf(m);if(!t)return"";if(m.k==="spell")return"Написание: "+m.ref;if(m.k==="course")return m.data.q||m.data.ru||"Курс";if(m.k==="ai")return m.data.ctx||m.data.wrong;if(m.k==="verb")return m.ref+" — …";if(m.k==="word")return wordById(m.ref).ru;if(m.k==="tr")return t.ru;if(m.k==="listen")return"Диктант";if(m.k==="pair")return"Различи на слух: "+PAIRS[+m.ref.split(":")[0]].join(" / ");return t.q||t.label}
 function dueMist(){const now=Date.now();return Object.values(S.mist).filter(m=>!m.done&&m.due<=now&&taskOf(m)).sort((a,b)=>b.n-a.n||a.due-b.due)}
 let MS=null;
 function viewMistakes(){
@@ -1892,6 +1995,7 @@ function viewMistakes(){
   const dots=s=>[0,1,2].map(i=>`<i class="${i<s?"on":""}"></i>`).join("");
   V.innerHTML=`<h1>Работа над ошибками</h1><p class="sub">Ошибка возвращается через 10 минут, день и три дня. Три верных ответа подряд, и она исправлена.</p>
   <div class="stack">
+    ${(()=>{const n=Object.keys(S.typos||{}).filter(k=>Date.now()-new Date(k+"T12:00:00").getTime()<7*DAY).reduce((a,k)=>a+S.typos[k],0);return n?yasay("happy",`Опечаток за неделю: ${n}. Я их не считаю ошибками — смысл и грамматика были верными. А слова, где опечатка повторилась, тренируем в разделе «Написание слов».`,52):""})()}
     <section class="sheet mstat">
       <div><div class="num">${due.length}</div><div class="small muted">к повтору сейчас</div></div>
       <div><div class="num">${active.length}</div><div class="small muted">в работе</div></div>
@@ -1930,6 +2034,7 @@ function renderReview(){
   let fb="";
   if(r){
     fb=r.ok?`<div class="verdict ok">Верно${r.typo?" <span>(с опечаткой)</span>":""}${m.synthetic?" · следующий повтор через "+r.syn:m.done?" · ошибка исправлена":` · ${m.s} из 3`}</div>`:`<div class="verdict bad">Пока нет. <span>Вернётся через 10 минут</span></div>`;
+    if(r.cres&&r.user&&r.cres.status!=="ok")fb+=issuesHTML(r.cres,!t.why);
     if(!r.ok&&t.diff&&r.user)fb+=`<div class="diff">${wordDiff(r.user,r.best||t.show)}</div>`;
     if(t.input!=="choice"&&m.k!=="word")fb+=`<div><div class="label" style="margin-bottom:4px">Правильно</div><div class="answer"><span style="font-size:18px;font-weight:500">${esc(r.best||t.show)}</span>${sayBtn(r.best||t.show)}</div></div>`;
     if(t.after)fb+=t.after();
@@ -1949,20 +2054,20 @@ function renderReview(){
   if(t.autoSay&&!r&&MS.saidFor!==m.key){MS.saidFor=m.key;speak(t.autoSay)}
 }
 function answerReview(v){
-  const m=MS.cur,t=taskOf(m);let ok=false,typo=false,best=t.show;
+  const m=MS.cur,t=taskOf(m);let ok=false,typo=false,best=t.show,cres=null;
   if(!v)ok=false;
   else if(t.input==="choice")ok=v===t.answers[0];
-  else if(t.input==="inline")ok=t.answers.some(a=>norm(a)===norm(v));
-  else{const c=check(v,t.answers,t.tol);ok=c.status!=="bad";typo=c.status==="typo";best=c.best}
+  else if(t.input==="inline"){cres=check(v,t.answers);ok=cres.status!=="bad";typo=cres.status==="typo"}
+  else{const c=check(v,t.answers,t.tol);cres=c;ok=c.status!=="bad";typo=c.status==="typo";best=c.best}
   if(m.synthetic){const w=wordById(m.ref);S.cards[w.id]=schedule(S.cards[w.id],ok?(typo?1:2):0);mistake("word",w.id,ok,v,{t:"vocab",l:w.lvl||null});
-    MS.done++;if(ok)MS.ok++;bump(ok,w.lvl||null);save();MS.res={ok,typo,user:v,best,syn:fmtIvl(S.cards[w.id])};renderReview();speak(w.en);return}
+    MS.done++;if(ok)MS.ok++;bump(ok,w.lvl||null);save();MS.res={ok,typo,user:v,best,cres,syn:fmtIvl(S.cards[w.id])};renderReview();speak(w.en);return}
   m.prevLast=m.last;
   const before=m.s;
   if(ok){m.s++;if(m.s>=3){m.done=true;m.fixed=Date.now()}else m.due=Date.now()+[1,3][m.s-1]*DAY-3*3600e3}
   else{m.n++;m.s=0;m.last=v;m.lastAt=Date.now();m.due=Date.now()+10*60e3}
   m.upd=Date.now();MS.done++;if(ok)MS.ok++;
   bump(ok,m.l||null);save();
-  MS.res={ok,typo,user:v,best,before};renderReview();
+  MS.res={ok,typo,user:v,best,before,cres};renderReview();
   if(t.say&&m.k==="word")speak(t.say);
 }
 
@@ -2027,6 +2132,7 @@ function renderCard(){
       if(r&&r.status==="ok")body+=`<div class="verdict ok">Верно</div>`;
       else if(r&&r.status==="typo")body+=`<div class="verdict warn">Почти, проверь написание. <span>${r.choice?"Ты выбрал":"Ты написал"}: ${esc(r.user)}</span></div>`;
       else if(r&&r.user)body+=`<div class="verdict bad">Не то. <span>${r.choice?"Ты выбрал":"Ты написал"}: ${esc(r.user)}</span></div>`;
+      if(r&&!r.choice&&r.user&&r.status!=="ok")body+=r.formOnly?`<div class="why">Слово верное, но в другой форме. В карточках пиши начальную форму: «${esc(w.en)}».</div>`:issuesHTML(r,r.status==="typo");
       body+=`<div class="answer"><span class="en">${esc(w.en)}</span>${sayBtn(w.en)}</div>${w.ipa?`<div class="ipa">${esc(w.ipa)}</div>`:""}`;
     }else{
       body+=`<div class="answer"><span class="en">${esc(w.ru)}</span></div>`;
@@ -2050,7 +2156,7 @@ function renderCard(){
   if(dir==="en-ru"&&!CS.revealed&&CS.autoSaid!==w.id){CS.autoSaid=w.id;speak(w.en)}
 }
 function bindDir(){V.querySelectorAll("[data-dir]").forEach(b=>b.onclick=()=>{S.settings.dir=b.dataset.dir;save();if(CS){CS.revealed=false;CS.res=null;CS.hint=0}renderCard()})}
-function doCheck(){const w=CS.cur,u=$("#ans").value.trim();const r=check(u,w.en.split(/\s*[\/;]\s*/));r.user=u;mistake("word",w.id,r.status!=="bad",u,{t:"vocab",l:w.lvl||null});reveal(r)}
+function doCheck(){const w=CS.cur,u=$("#ans").value.trim();const r=check(u,w.en.split(/\s*[\/;]\s*/));r.user=u;if(r.status==="bad"&&r.issues&&r.issues.length===1&&r.issues[0].k==="form"&&!w.en.includes(" ")){r.status="typo";r.formOnly=true}mistake("word",w.id,r.status!=="bad",u,{t:"vocab",l:w.lvl||null});reveal(r)}
 function reveal(r){CS.revealed=true;CS.res=r;renderCard();if(S.settings.dir==="ru-en")speak(CS.cur.en);const g=V.querySelector(".grades .sugg")||V.querySelector("[data-g='2']");if(g)g.focus()}
 function gradeCard(g){
   const w=CS.cur;S.cards[w.id]=schedule(S.cards[w.id],g);
@@ -2102,7 +2208,9 @@ function renderLesson(){
     let fb="";
     if(done){
       const ok=GS.ok;
-      fb=`<div class="verdict ${ok?"ok":"bad"}">${ok?"Верно":"Неверно"}${!ok&&!e.o?` <span>Правильно: <b>${esc(e.a[0])}</b>${GS.ans?` · у тебя: ${esc(GS.ans)}`:""}</span>`:""}</div>
+      const tp=ok&&GS.cres&&GS.cres.status==="typo";
+      fb=`<div class="verdict ${tp?"warn":ok?"ok":"bad"}">${tp?"Верно, но с опечаткой":ok?"Верно":"Неверно"}${(!ok||tp)&&!e.o?` <span>Правильно: <b>${esc(e.a[0])}</b>${GS.ans?` · у тебя: ${esc(GS.ans)}`:""}</span>`:""}</div>
+      ${GS.ans&&GS.cres&&GS.cres.status!=="ok"?issuesHTML(GS.cres,false):""}
       <div class="why">${esc(e.why)}</div>
       <div class="row"><button class="btn primary" id="gnext">${GS.i+1<GS.items.length?"Дальше":"Результат"}</button>${e.type==="audio"?sayBtn(e.say):/[а-яё]/i.test(e.q.replace(/\([^)]*\)/g,""))?"":sayBtn(e.q.replace(/___\s*\([^)]*\)|___/,e.o?(e.a==="—"?"":e.a):e.a[0]).replace(/\([^)]*\)/g,"").replace(/\s+/g," ").trim(),"Озвучить предложение")}</div>`;
     }
@@ -2130,7 +2238,8 @@ function renderLesson(){
 }
 function answerG(v){
   const e=GS.l.ex[GS.items[GS.i]];
-  const ok=e.o?v===e.a:!!v&&e.a.some(a=>norm(a)===norm(v));
+  let cres=null;if(!e.o&&v){cres=check(v,e.a)}
+  const ok=e.o?v===e.a:!!v&&cres&&cres.status!=="bad";GS.cres=cres;
   GS.ans=v;GS.ok=ok;if(ok)GS.right++;else GS.wrong.push(GS.items[GS.i]);
   mistake("grammar",GS.l.id+":"+GS.items[GS.i],ok,v,{t:GS.l.id,l:GS.l.lvl});
   bump(ok,GS.l.lvl);renderLesson();
@@ -2156,8 +2265,9 @@ function renderTr(){
   let fb="";
   if(r){
     const others=vars.filter(v=>v!==r.best).slice(0,3);
-    fb=r.status==="ok"?`<div class="verdict ok">Верно${r.aiOk?" <span>· ИИ засчитал твой вариант</span>":""}</div>`:r.status==="typo"?`<div class="verdict warn">Почти: смысл верный, есть опечатка</div>`:`<div class="verdict bad">Есть ошибки</div>`;
-    if(r.status!=="ok"&&r.user)fb+=`<div><div class="label" style="margin-bottom:4px">Сравнение с ближайшим вариантом</div><div class="diff">${wordDiff(r.user,r.best)}</div><div class="small muted">Жёлтым — чего не хватает, зачёркнуто — лишнее.</div></div>`;
+    fb=r.status==="ok"?`<div class="verdict ok">Верно${r.aiOk?" <span>· ИИ засчитал твой вариант</span>":""}</div>`:r.status==="typo"?`<div class="verdict warn">Верно, только опечатка <span>· засчитано</span></div>`:`<div class="verdict bad">Есть ошибки</div>`;
+    if(r.status!=="ok"&&r.user)fb+=issuesHTML(r,true);
+    if(r.status==="bad"&&r.user)fb+=`<div><div class="label" style="margin-bottom:4px">Сравнение с ближайшим вариантом</div><div class="diff">${wordDiff(r.user,r.best)}</div><div class="small muted">Жёлтым — чего не хватает, зачёркнуто — лишнее.</div></div>`;
     fb+=`<div><div class="label" style="margin-bottom:4px">Правильно</div><div class="answer"><span style="font-size:19px;font-weight:500">${esc(r.best)}</span>${sayBtn(r.best)}</div>${others.length?`<div class="small muted" style="margin-top:6px">Тоже верно:</div><ul class="variants">${others.map(v=>`<li>${esc(v)}</li>`).join("")}</ul>`:""}</div>`;
     if(s.note)fb+=`<div class="note">${esc(s.note)}</div>`;
     if(r.status!=="ok"&&r.user&&canOpenGemini())fb+=`<div class="row">${gemBtn("tr","Спросить в Gemini","")}</div>`;
@@ -2207,7 +2317,7 @@ function renderListen(){
   let fb="";
   if(r){
     fb=(r.status==="ok"?`<div class="verdict ok">Всё точно</div>`:r.status==="typo"?`<div class="verdict warn">Почти, одна-две буквы</div>`:`<div class="verdict bad">Есть расхождения</div>`)+
-    (r.status!=="ok"&&r.user?`<div class="diff">${wordDiff(r.user,w.ex)}</div>`:"")+
+    (r.status!=="ok"&&r.user?issuesHTML(r,true)+(r.status==="bad"?`<div class="diff">${wordDiff(r.user,w.ex)}</div>`:""):"")+
     `<div class="example"><span class="row" style="gap:8px;flex-wrap:nowrap"><span>${markIn(w.ex,w.en,false)}</span>${sayBtn(w.ex)}</span>${w.exru?`<span class="ru">${esc(w.exru)}</span>`:""}</div>
     <div class="small muted">Слово: <b>${esc(w.en)}</b> — ${esc(w.ru)}</div>
     <div class="row"><button class="btn primary" id="lnext">Следующая фраза</button></div>`;
@@ -2976,11 +3086,11 @@ function viewCourse(){
 }
 function clTaskData(e){const d={type:e.type};["q","o","a","say","ru","en","why"].forEach(k=>{if(e[k]!==undefined)d[k]=e[k]});return d}
 function answerCL(v){
-  const e=CL.sc[CL.i],L=CL.L;let ok=false,typo=false,best=null;
+  const e=CL.sc[CL.i],L=CL.L;let ok=false,typo=false,best=null,cres=null;
   if(e.type==="choice"||e.type==="audio")ok=v===e.a;
-  else if(e.type==="fill")ok=!!v&&e.a.some(a=>norm(a)===norm(v));
-  else{const vars=e.en?e.en.flatMap(expand):e.a;if(v){const c=check(v,vars,true);ok=c.status!=="bad";typo=c.status==="typo";best=c.best}else best=vars[0]}
-  CL.res={ok,typo,user:v,best};CL.total++;if(ok)CL.right++;
+  else if(e.type==="fill"){if(v){cres=check(v,e.a);ok=cres.status!=="bad";typo=cres.status==="typo"}}
+  else{const vars=e.en?e.en.flatMap(expand):e.a;if(v){cres=check(v,vars,true);ok=cres.status!=="bad";typo=cres.status==="typo";best=cres.best}else best=vars[0]}
+  CL.res={ok,typo,user:v,best,cres};CL.total++;if(ok)CL.right++;
   if(e.wid)mistake("word",e.wid,ok,v,{t:"vocab",l:L.lvl});
   else mistake("course",L.n+":"+hashStr(JSON.stringify(clTaskData(e))),ok,v,{t:"course",l:L.lvl,data:clTaskData(e)});
   bump(ok,L.lvl);renderCL();
@@ -3038,6 +3148,7 @@ function renderCL(){
     let fb="";
     if(r){
       fb=r.ok?`<div class="verdict ok">Верно${r.typo?" <span>(с опечаткой)</span>":""}</div>`:`<div class="verdict bad">${e.type==="choice"||e.type==="audio"?"Не то":"Правильно так:"} ${e.type==="choice"||e.type==="audio"?"":`<span><b>${esc(r.best||(e.a&&e.a[0])||"")}</b></span>`}</div>`;
+      if(r.cres&&r.user&&r.cres.status!=="ok")fb+=issuesHTML(r.cres,!e.why);
       if(!r.ok&&(e.type==="tiles"||e.type==="type")&&r.user)fb+=`<div class="diff">${wordDiff(r.user,r.best)}</div>`;
       if((e.type==="tiles"||e.type==="type")&&r.best)fb+=`<div class="answer"><span style="font-size:18px;font-weight:500">${esc(r.best)}</span>${sayBtn(r.best)}</div>`;
       if(e.why)fb+=`<div class="why">${esc(e.why)}</div>`;
@@ -3463,7 +3574,7 @@ function mascotize(){
       let p=COMBO_MSG[COMBO]||pick(PRAISE);
       if(nm&&!COMBO_MSG[COMBO]&&Math.random()<.3)p=p.replace(/!$/,", "+nm+"!");
       msg=p+(expl?" "+expl:"");
-    }else if(state==="warn"){mood="happy";msg="Почти! Смысл верный, проверь написание."+(expl?" "+expl:"")}
+    }else if(state==="warn"){mood="happy";msg=expl||"Почти! Смысл верный, проверь написание."}
     else{mood="think";msg=pick(WRONG_OPEN)+" "+(expl||"Запомни правильный вариант и скажи его вслух пару раз. Это задание вернётся к тебе в «Ошибках» — в следующий раз получится.")}
     const el=document.createElement("div");el.className="teach "+state;
     el.innerHTML=yasik(mood,54,{teacher:false,anim:state==="ok"?(COMBO>=3?"party":"jump"):state==="bad"?"tilt":"nod"})+`<div class="ybub">${esc(msg)}</div>`;

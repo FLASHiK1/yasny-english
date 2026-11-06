@@ -39,7 +39,7 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
     override func loadView() {
         let cfg = WKWebViewConfiguration()
         let uc = WKUserContentController()
-        for name in ["tts", "store", "speech", "reminder"] { uc.add(self, name: name) }
+        for name in ["tts", "store", "speech", "reminder", "gemini"] { uc.add(self, name: name) }
 
         // Прогресс дублируется в файл приложения и возвращается в localStorage при запуске.
         var boot = "window.__NATIVE_APP=true;window.__IOS_APP=true;"
@@ -97,6 +97,11 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
             guard let body = message.body as? [String: Any] else { return }
             if (body["cmd"] as? String) == "start" { startListening(lang: body["lang"] as? String ?? "en-US") }
             else { finishAudio() }
+        case "gemini":
+            // Запрос копируется в буфер, открывается Gemini (приложение или сайт) — пользователь вставляет и отправляет
+            guard let text = message.body as? String else { return }
+            UIPasteboard.general.string = text
+            if let url = URL(string: "https://gemini.google.com/app") { UIApplication.shared.open(url) }
         case "reminder":
             guard let body = message.body as? [String: Any] else { return }
             setReminder(on: body["on"] as? Bool ?? false, hour: body["hour"] as? Int ?? 20, minute: body["minute"] as? Int ?? 0)

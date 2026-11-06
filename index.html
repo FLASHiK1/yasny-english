@@ -380,6 +380,9 @@ body.onb main{padding-bottom:40px}
 .choices .btn{min-height:48px}
 .grades .btn{min-height:56px}
 /* ---- v10: правила и знакомство со словом ---- */
+.gembtn{color:var(--accent)}
+.gembtn.primary{color:var(--accent-ink)}
+.gemback summary{font-size:14.5px}
 .deep{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
 .exlist{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px;font-size:15.5px}
 mark.okmark{background:var(--ok-soft);color:var(--ok);font-weight:600;border-radius:4px;padding:0 4px}
@@ -2157,6 +2160,7 @@ function renderTr(){
     if(r.status!=="ok"&&r.user)fb+=`<div><div class="label" style="margin-bottom:4px">Сравнение с ближайшим вариантом</div><div class="diff">${wordDiff(r.user,r.best)}</div><div class="small muted">Жёлтым — чего не хватает, зачёркнуто — лишнее.</div></div>`;
     fb+=`<div><div class="label" style="margin-bottom:4px">Правильно</div><div class="answer"><span style="font-size:19px;font-weight:500">${esc(r.best)}</span>${sayBtn(r.best)}</div>${others.length?`<div class="small muted" style="margin-top:6px">Тоже верно:</div><ul class="variants">${others.map(v=>`<li>${esc(v)}</li>`).join("")}</ul>`:""}</div>`;
     if(s.note)fb+=`<div class="note">${esc(s.note)}</div>`;
+    if(r.status!=="ok"&&r.user&&canOpenGemini())fb+=`<div class="row">${gemBtn("tr","Спросить в Gemini","")}</div>`;
     if(validTopic(s.t))fb+=`<div class="row"><button class="btn ghost small" data-rule-open="${s.t}">Правило: ${esc(topicName(s.t))}</button></div>`;
     if(r.ai)fb+=aiTrBlock(r.ai);
     else if(r.status==="bad"&&r.user&&!AI.off)fb+=`<div class="row"><button class="btn" id="tai" ${TS.aiBusy?"disabled":""}>${TS.aiBusy?"ИИ проверяет…":"Мой вариант тоже верен? Спросить ИИ"}</button></div>${TS.aiErr?`<div class="small bad-t">${esc(TS.aiErr)}</div>`:""}`;
@@ -2377,13 +2381,16 @@ function viewSpeak(){
 /* ---------- AI (Claude через аккаунт зрителя) ---------- */
 const AI={fn:null,off:false,p:null};
 function getAI(){
-  if(!AI.p)AI.p=(window.claude&&window.claude.use?window.claude.use("sample"):Promise.resolve(null))
+  if(!AI.p)AI.p=(window.claude&&window.claude.use?window.claude.use("sample"):Promise.resolve(window.__NATIVE_APP&&gemKey()?makeGemini(gemKey()):null))
     .then(f=>{AI.fn=f;if(!f)AI.off=true;return f}).catch(()=>{AI.off=true;return null});
   return AI.p;
 }
 getAI().then(()=>{if(AI.off&&["practice"].includes((location.hash||"").slice(1)))route()});
 function aiErr(e){
   const c=e&&e.code;
+  if(c==="bad_key")return"Ключ Gemini не подошёл. Проверь его в настройках на вкладке «Слова».";
+  if(c==="gem_limit")return"Дневной лимит бесплатного ключа Gemini закончился (сбросится ночью). Нажми «Спросить в Gemini» — откроется приложение Gemini с готовым запросом.";
+  if(c==="no_model")return"Ключу Gemini недоступны подходящие модели.";
   if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(c)){AI.off=true;return"ИИ недоступен: доступ к Claude для этой страницы не разрешён. Остальные разделы работают как обычно."}
   if(c==="rate_limited")return"Сейчас слишком много запросов или исчерпан лимит Claude. Попробуй чуть позже.";
   if(c==="session_expired")return"Нужно заново войти в claude.ai.";
@@ -2528,8 +2535,8 @@ let PR={mode:"write",ti:0,custom:"",text:"",busy:false,res:null,err:"",ctl:null,
 function aiOffBox(){if(window.__NATIVE_APP)return `<div class="sheet stack"><h2 style="margin:0">ИИ работает в веб-версии</h2><p class="muted" style="margin:0">Проверка письма и разговор идут через Claude и доступны, когда приложение открыто на claude.ai (в браузере или в приложении Claude). Остальные разделы здесь работают полностью и без интернета. Прогресс между версиями можно перенести на вкладке «Слова».</p></div>`;return `<div class="sheet stack"><h2 style="margin:0">ИИ сейчас недоступен</h2><p class="muted" style="margin:0">Проверка письма и разговор работают через Claude, когда приложение открыто на claude.ai под твоим аккаунтом и ты разрешил странице обращаться к Claude. Запросы расходуют лимиты твоей подписки, как обычные сообщения в чате.</p></div>`}
 function viewPractice(){
   const seg=`<div class="seg" role="group" aria-label="Режим" style="margin-bottom:16px">${[["write","Письмо"],["chat","Разговор"]].map(([k,t])=>`<button data-pm="${k}" aria-pressed="${PR.mode===k}">${t}</button>`).join("")}</div>`;
-  const head=`<h1>Письмо и разговор</h1><p class="sub">Практика с ИИ-преподавателем под уровень ${T()}. Найденные ошибки попадают в «Ошибки».</p>${seg}`;
-  if(AI.off){V.innerHTML=head+aiOffBox();bindPm();return}
+  const head=`<h1>Письмо и разговор</h1><p class="sub">Практика с ИИ-преподавателем под уровень ${T()}. Найденные ошибки попадают в «Ошибки».</p>${AI.off&&canOpenGemini()?`<div class="rulehint new" style="margin-bottom:14px">${yasik("think",40,{teacher:false,anim:"idle"})}<span>Сейчас проверка идёт через приложение Gemini. Подключи бесплатный ключ на вкладке «Слова» — и разбор будет появляться прямо здесь.</span><a class="btn small" href="#words">Подключить</a></div>`:""}${seg}`;
+  if(AI.off&&!canOpenGemini()){V.innerHTML=head+aiOffBox();bindPm();return}
   if(PR.mode==="write")renderWrite(head);else renderChat(head);
   bindPm();
 }
@@ -2553,8 +2560,9 @@ function renderWrite(head){
     <div class="choices col">${tasks.map((t,i)=>`<button class="btn ${PR.ti===i?"sel":""}" data-ti="${i}">${esc(t)}</button>`).join("")}<button class="btn ${PR.ti===-1?"sel":""}" data-ti="-1">Своя тема</button></div>
     ${PR.ti===-1?`<input type="text" id="wcustom" placeholder="О чём хочешь написать?" value="${esc(PR.custom)}">`:""}
     <textarea id="wtext" placeholder="Пиши по-английски. Ошибки — это нормально, для этого и разбор." style="min-height:150px" ${PR.busy?"disabled":""}>${esc(PR.text)}</textarea>
-    <div class="row"><button class="btn primary" id="wgo" ${PR.busy?"disabled":""}>Проверить текст</button>${PR.busy?`<button class="btn ghost" id="wstop">Остановить</button><span class="small muted">Проверяю… обычно 10–40 секунд</span>`:`<span class="small muted" id="wcount"></span>`}</div>
+    <div class="row">${AI.off?"":`<button class="btn primary" id="wgo" ${PR.busy?"disabled":""}>Проверить текст</button>`}${gemBtn("write","Проверить в Gemini",AI.off?"primary":"ghost small")}${PR.busy?`<button class="btn ghost" id="wstop">Остановить</button><span class="small muted">Проверяю… обычно 10–40 секунд</span>`:`<span class="small muted" id="wcount"></span>`}</div>
     ${PR.err?`<div class="verdict bad"><span>${esc(PR.err)}</span></div>`:""}
+    ${canOpenGemini()?`<details class="gemback"><summary>Проверил(а) в Gemini? Вставь ответ — перенесу ошибки</summary><textarea id="gmback" placeholder="Скопируй ответ Gemini целиком и вставь сюда" style="margin-top:8px"></textarea><div class="row" style="margin-top:8px"><button class="btn" id="gmimp">Перенести ошибки в «Ошибки»</button></div></details>`:""}
   </section>
   ${res}
   ${hist.length?`<details><summary>Прошлые тексты (${hist.length})</summary><div class="stack" style="margin-top:10px">${hist.map(h=>`<div class="sheet"><div class="small muted">${new Date(h.date).toLocaleDateString("ru-RU")} · ${esc(h.task)} · ошибок: ${(h.res.errors||[]).length}</div><p style="margin:6px 0 0">${esc(h.text)}</p></div>`).join("")}</div></details>`:""}
@@ -2566,7 +2574,8 @@ function renderWrite(head){
   V.querySelectorAll("[data-ti]").forEach(b=>b.onclick=()=>{PR.ti=+b.dataset.ti;viewPractice()});
   V.querySelectorAll("[data-rule]").forEach(a=>a.onclick=e=>{e.preventDefault();location.hash="#grammar";setTimeout(()=>openLesson(a.dataset.rule),0)});
   const st=$("#wstop");if(st)st.onclick=()=>PR.ctl&&PR.ctl.abort();
-  $("#wgo").onclick=checkWriting;
+  const wg=$("#wgo");if(wg)wg.onclick=checkWriting;
+  const gi=$("#gmimp");if(gi)gi.onclick=()=>{if(importGeminiWriting($("#gmback").value))viewPractice()};
 }
 async function checkWriting(){
   const text=PR.text.trim();if(text.split(/\s+/).length<3){PR.err="Напиши хотя бы одно-два предложения.";viewPractice();return}
@@ -2627,7 +2636,7 @@ function renderChat(head){
   const C=PR.chat;
   if(!C){
     V.innerHTML=head+`<section class="sheet stack"><h2 style="margin:0">Выбери ситуацию</h2><p class="small muted" style="margin:0">ИИ сыграет роль и будет говорить на уровне ${T()}. Если ошибёшься, под твоей репликой появится исправление с объяснением.</p>
-    <div class="scenes">${SCENES.map(s=>`<button class="btn" data-sc="${s.id}">${esc(s.name)}</button>`).join("")}</div></section>`;
+    <div class="scenes">${SCENES.map(s=>AI.off?`<button class="btn" data-gem="chat:${s.id}">${esc(s.name)}</button>`:`<button class="btn" data-sc="${s.id}">${esc(s.name)}</button>`).join("")}</div>${AI.off?`<p class="small muted" style="margin:0">Разговор откроется в приложении Gemini: ИИ сыграет роль, будет говорить на твоём уровне и исправлять ошибки.</p>`:""}</section>`;
     V.querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{PR.chat={sc:b.dataset.sc,L:T(),turns:[],msgs:[],busy:false,err:""};viewPractice();chatCall()});
     return;
   }
@@ -3251,13 +3260,14 @@ function exampleHTML(e){
 }
 function md2html(t){return esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^#+\s*(.+)$/gm,"<b>$1</b>")}
 function ruleSheet(meta){
+  RULE_CTX={title:meta.title,theory:meta.theory};
   const ex=(meta.ex||[]).map(exampleHTML).filter(Boolean);
   showSheet(`${yasay("think",meta.say,56)}
   <div class="label" style="margin-top:12px">${esc(meta.label)}</div><h2 id="rstitle" style="margin:4px 0 10px">${esc(meta.title)}</h2><div class="theory">${meta.theory}</div>
   ${meta.extra||""}
   <div class="deep">
     <div class="label">Не до конца понятно?</div>
-    <div class="row">${ex.length?`<button class="btn" id="rsex">Разобрать на примерах</button>`:""}${AI.off?"":`<button class="btn" id="rsai">Не понял — объясни проще</button>`}</div>
+    <div class="row">${ex.length?`<button class="btn" id="rsex">Разобрать на примерах</button>`:""}${AI.off?"":`<button class="btn" id="rsai">Не понял — объясни проще</button>`}${gemBtn("rule","Объяснить в Gemini","")}</div>
     <div id="rsexout" hidden><ol class="exlist">${ex.join("")}</ol></div>
     <div id="rsaiout" class="aiexp" hidden></div>
     ${AI.off?"":`<div id="rsask" class="row" hidden><input type="text" id="rsq" placeholder="Спроси Ясика про это правило" style="flex:1;min-width:180px" autocomplete="off"><button class="btn" id="rsqgo">Спросить</button></div>`}
@@ -3640,7 +3650,7 @@ function viewToday(){
   if(na.k!=="quick"&&na.k!=="mist"&&md)more.push(["#mistakes","Ошибки",`${md} к повтору`]);
   if(na.k!=="cards"&&dw)more.push(["#cards","Карточки",`${dw} к повторению`]);
   const ur=LESSONS.find(l=>li(l.lvl)<=li(L)&&!ruleKnown(l.id));if(ur)more.unshift(["#rules","Правило дня",ur.title,ur.id]);
-  if(!AI.off)more.push(["#practice","Разговор с ИИ","Кафе, отель, собеседование"]);
+  if(!AI.off||canOpenGemini())more.push(["#practice","Разговор с ИИ","Кафе, отель, собеседование"]);
   more.push(["#read","Чтение","Текст на твоём уровне"]);
   more.push(["#speak","Произношение",micAvail()?"Скажи вслух — я послушаю":"Различай звуки на слух"]);
   V.innerHTML=`<div class="stack">
@@ -3682,7 +3692,7 @@ function viewLearn(){
 function viewTrain(){
   V.innerHTML=`<h1>Практика</h1><p class="sub">Применяй то, что выучил: переводи, пиши, слушай и говори.</p><div class="tiles">
   ${tile("#translate","Перевод фраз","10 фраз с русского на английский")}
-  ${tile("#practice","Письмо и разговор",AI.off?"Работает в веб-версии на claude.ai":"ИИ-учитель разберёт текст или поговорит с тобой")}
+  ${tile("#practice","Письмо и разговор",AI.off?(canOpenGemini()?"Через Gemini: бесплатный ключ или приложение Gemini":"Работает в веб-версии на claude.ai"):"ИИ-учитель разберёт текст или поговорит с тобой")}
   ${tile("#read","Чтение",`${allTexts().length} текстов, перевод слов по нажатию`)}
   ${tile("#listen","На слух","Диктант: послушай и напиши")}
   ${tile("#speak","Произношение",micAvail()?"Скажи вслух — приложение послушает":"Различай звуки и повторяй за диктором")}
@@ -3741,6 +3751,152 @@ function viewStats(){
   wrap.addEventListener("pointerleave",()=>{tip.hidden=true;wrap.querySelectorAll(".hov").forEach(z=>z.classList.remove("hov"))});
 }
 
+/* ---------- GEMINI: свой ключ в приложении + «Открыть в Gemini» через подписку ---------- */
+const GKEY="yasny-gemini-key";
+function gemKey(){try{return localStorage.getItem(GKEY)||""}catch(e){return""}}
+function gemSetKey(k){try{if(k)localStorage.setItem(GKEY,k);else localStorage.removeItem(GKEY)}catch(e){}}
+const GEM_BASE="https://generativelanguage.googleapis.com/v1beta/";
+function gemCount(){const d=dkey();S.aiCount=S.aiCount||{};return S.aiCount[d]||0}
+function gemBump(){const d=dkey();S.aiCount=S.aiCount||{};S.aiCount[d]=(S.aiCount[d]||0)+1;const ks=Object.keys(S.aiCount).sort();while(ks.length>14)delete S.aiCount[ks.shift()]}
+// Выбираем модели по тому, что реально доступно ключу
+async function gemModels(key,force){
+  if(!force&&S.settings.gmModels&&S.settings.gmModels.def)return S.settings.gmModels;
+  const r=await fetch(GEM_BASE+"models?pageSize=200",{headers:{"x-goog-api-key":key}});
+  if(r.status===400||r.status===401||r.status===403)throw{code:"bad_key"};
+  if(!r.ok)throw{code:"upstream_error"};
+  const j=await r.json();
+  const names=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent")).map(m=>String(m.name).replace(/^models\//,""));
+  const ver=n=>{const m=n.match(/gemini-(\d+(?:\.\d+)?)/);return m?parseFloat(m[1]):0};
+  const clean=n=>!/(image|tts|audio|live|embedding|vision|thinking|exp|preview|native)/.test(n);
+  const pickBest=re=>names.filter(n=>re.test(n)&&clean(n)).sort((a,b)=>ver(b)-ver(a)||a.length-b.length)[0]||names.filter(n=>re.test(n)).sort((a,b)=>ver(b)-ver(a))[0];
+  const lite=pickBest(/^gemini-[\d.]+-flash-lite/),flash=pickBest(/^gemini-[\d.]+-flash(?!-lite)/);
+  const res={quick:lite||flash,def:flash||lite};
+  if(!res.def)throw{code:"no_model"};
+  S.settings.gmModels=res;save();return res;
+}
+function gemParseJSON(t){
+  const s=String(t).trim();try{return JSON.parse(s)}catch(e){}
+  const f=s.match(/```(?:json)?\s*([\s\S]*?)```/);if(f){try{return JSON.parse(f[1])}catch(e){}}
+  const a=s.search(/[\[{]/),b=Math.max(s.lastIndexOf("}"),s.lastIndexOf("]"));
+  if(a>=0&&b>a){try{return JSON.parse(s.slice(a,b+1))}catch(e){}}
+  throw{code:"invalid_json",text:s};
+}
+function makeGemini(key){
+  async function call(input,opts,asJSON){
+    opts=opts||{};const ms=await gemModels(key);
+    const order=opts.modelTier==="quick"?[ms.quick,ms.def]:[ms.def,ms.quick];
+    const turns=typeof input==="string"?[{role:"user",content:input}]:input;
+    const contents=[];for(const t of turns){const role=t.role==="assistant"?"model":"user";const last=contents[contents.length-1];if(last&&last.role===role)last.parts[0].text+="\n\n"+t.content;else contents.push({role,parts:[{text:t.content}]})}
+    let lastErr={code:"upstream_error"};
+    for(const model of [...new Set(order.filter(Boolean))]){
+      let r;
+      try{r=await fetch(GEM_BASE+"models/"+encodeURIComponent(model)+":generateContent",{method:"POST",signal:opts.signal,headers:{"Content-Type":"application/json","x-goog-api-key":key},
+        body:JSON.stringify({contents,generationConfig:Object.assign({temperature:0.6,maxOutputTokens:4096},asJSON?{responseMimeType:"application/json"}:{})})})}
+      catch(e){if(e&&e.name==="AbortError")throw{code:"cancelled"};lastErr={code:"upstream_error"};continue}
+      if(r.status===429){lastErr={code:"gem_limit"};continue}
+      if(r.status===400||r.status===401||r.status===403){let j={};try{j=await r.json()}catch(e){}const msg=JSON.stringify(j);if(/API_KEY|PERMISSION|key/i.test(msg))throw{code:"bad_key"};lastErr={code:"upstream_error"};continue}
+      if(r.status===404){S.settings.gmModels=null;lastErr={code:"upstream_error"};continue}
+      if(!r.ok){lastErr={code:"upstream_error"};continue}
+      const j=await r.json();gemBump();save();
+      const cand=(j.candidates||[])[0];
+      if(!cand||!cand.content){throw{code:(j.promptFeedback&&j.promptFeedback.blockReason)?"refused":"empty_completion"}}
+      const text=(cand.content.parts||[]).map(p=>p.text||"").join("");
+      if(!text.trim())throw{code:"empty_completion"};
+      if(opts.onText)try{opts.onText({text,delta:text})}catch(e){}
+      return asJSON?gemParseJSON(text):{text,truncated:cand.finishReason==="MAX_TOKENS"};
+    }
+    throw lastErr;
+  }
+  const f=(input,opts)=>call(input,opts,false);
+  f.json=(input,opts)=>call(input,opts,true);
+  f.gemini=true;
+  return f;
+}
+function aiReset(){AI.p=null;AI.fn=null;AI.off=false;return getAI()}
+
+// «Открыть в Gemini»: готовый запрос уходит в приложение Gemini (через подписку, без лимитов ключа)
+function canOpenGemini(){return !!window.__NATIVE_APP}
+function openInGemini(prompt){
+  if(window.AndroidTTS&&AndroidTTS.shareToGemini){try{AndroidTTS.shareToGemini(prompt);toast("Открываю Gemini… Запрос уже вставлен, нажми «Отправить»");return}catch(e){}}
+  const h=window.webkit&&window.webkit.messageHandlers;
+  if(h&&h.gemini){h.gemini.postMessage(prompt);toast("Запрос скопирован. Открываю Gemini — вставь его и отправь");return}
+  try{navigator.clipboard.writeText(prompt)}catch(e){}
+  const a=document.createElement("a");a.href="https://gemini.google.com/app";a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove();
+  toast("Запрос скопирован. Вставь его в Gemini");
+}
+function gemBtn(kind,label,cls){return canOpenGemini()?`<button class="btn ${cls||"ghost small"} gembtn" data-gem="${kind}">${esc(label||"Спросить в Gemini")}</button>`:""}
+// Запросы для приложения Gemini — по-человечески, ответ читается прямо там
+const GEMP={
+  rule:(title,theory)=>`Я учу английский, мой уровень ${T()} (${LVLNAME[T()]}). Я не до конца понял(а) правило «${title}». Вот как оно описано в моём учебнике: ${stripTags(theory).replace(/\s+/g," ").slice(0,2500)}
+
+Объясни, пожалуйста, ещё раз по-русски, проще и подробнее:
+1) суть простыми словами, лучше с бытовым сравнением;
+2) как понять, что нужно именно это правило — признаки-подсказки;
+3) 5 примеров: фраза на английском — перевод — почему так;
+4) типичная ошибка русскоговорящих;
+5) мини-проверка из 3 вопросов, ответы в самом конце.`,
+  tr:(ru,user,ref)=>`Я учу английский (уровень ${T()}). Перевела фразу «${ru}» на английский так: «${user}». В учебнике ответ: «${ref}». Мой вариант правильный? Если нет — объясни ошибки по-русски, простыми словами, и подскажи, как сказать естественно.`,
+  write:(task,text)=>`Ты — внимательный преподаватель английского. Мой уровень ${T()} (${LVLNAME[T()]}). Задание: «${task}». Вот мой текст:
+
+${text}
+
+Проверь его: найди реальные ошибки (грамматика, слова, порядок слов, артикли, предлоги, времена), объясни каждую по-русски коротко и понятно, покажи исправленный текст целиком и дай 1–2 совета, как звучать естественнее.
+В самом конце обязательно добавь блок для моего приложения, строго в таком виде:
+\`\`\`json
+{"errors":[{"wrong":"фрагмент из моего текста","right":"исправление","explanation":"почему"}]}
+\`\`\``,
+  chat:(sc)=>`Давай потренируем разговорный английский. Ты играешь роль: ${sc.role}. Я — ученик уровня ${T()} (${LVLNAME[T()]}), мой родной язык — русский.
+Правила: отвечай только по-английски, 1–3 коротких предложения на моём уровне, задавай вопрос, чтобы разговор продолжался. После каждой моей реплики, если в ней есть ошибка, в начале ответа коротко исправь её по-русски (одна строка, начинается с «✏️»). Начни разговор первым.`
+};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-gem]");if(!b)return;e.preventDefault();const k=b.dataset.gem;
+  if(k==="rule"&&RULE_CTX)openInGemini(GEMP.rule(RULE_CTX.title,RULE_CTX.theory));
+  else if(k==="tr"&&TS&&TS.res){const s=SENTENCES[TS.items[TS.i]];openInGemini(GEMP.tr(s.ru,TS.res.user,expand(s.en[0])[0]))}
+  else if(k==="write"){const t=(PR.text||"").trim();if(t.split(/\s+/).length<3){toast("Сначала напиши хотя бы пару предложений");return}openInGemini(GEMP.write(curTask(),t));const d=document.querySelector(".gemback");if(d)d.open=true}
+  else if(k.startsWith("chat:")){const sc=SCENES.find(s=>s.id===k.slice(5));if(sc)openInGemini(GEMP.chat(sc))}
+});
+let RULE_CTX=null;
+// Ответ Gemini вставлен обратно: забираем ошибки в «Ошибки»
+function importGeminiWriting(raw){
+  let data=null;try{data=gemParseJSON((String(raw).match(/```json\s*([\s\S]*?)```/)||[])[1]||raw)}catch(e){}
+  const errs=data&&Array.isArray(data.errors)?data.errors.filter(e=>e&&e.wrong&&e.right).slice(0,10):null;
+  if(!errs){toast("Не нашёл в ответе блок с ошибками. Скопируй ответ Gemini целиком");return false}
+  const text=(PR.text||"").trim();
+  errs.forEach(e=>aiMistake(String(e.wrong),String(e.right),String(e.explanation||""),null,sentenceWith(text,String(e.wrong)),"write"));
+  S.writings=(S.writings||[]).concat({date:Date.now(),task:curTask(),text,res:{errors:errs,level:""}}).slice(-10);
+  bump(errs.length===0,T());save();
+  PR.res={errors:errs.map(e=>({wrong:e.wrong,right:e.right,explanation:e.explanation||""})),good:"",tips:[],corrected:"",level:""};PR.lastText=text;
+  toast(errs.length?`Ошибок перенесено в «Ошибки»: ${errs.length}`:"Gemini не нашёл ошибок — отлично!");return true;
+}
+
+// Настройки ИИ в приложении для телефона
+let GS2={busy:false,msg:""};
+function gemSettingsHTML(){
+  if(!window.__NATIVE_APP)return"";
+  const k=gemKey(),m=S.settings.gmModels;
+  return `<section class="sheet stack"><h2 style="margin:0">ИИ в приложении: Gemini</h2>
+  <p class="small muted" style="margin:0">Проверка письма, разговор, объяснение правил и проверка перевода работают через бесплатный ключ Gemini API — ответы приходят прямо сюда. Когда дневной лимит ключа закончится, используй кнопки «Спросить в Gemini»: они открывают приложение Gemini с готовым запросом (через подписку).</p>
+  ${k?`<div class="verdict ok"><span>Ключ подключён${m&&m.def?` · модели: ${esc(m.quick)}${m.quick!==m.def?", "+esc(m.def):""}`:""} · запросов сегодня: ${gemCount()}</span></div>
+     <div class="row"><button class="btn" id="gmtest" ${GS2.busy?"disabled":""}>${GS2.busy?"Проверяю…":"Проверить ключ"}</button><button class="btn ghost" id="gmdel">Отключить ключ</button></div>`
+  :`<details><summary>Как получить бесплатный ключ (2 минуты)</summary><ol class="small" style="margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:4px">
+     <li>Открой <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> и войди Google-аккаунтом.</li>
+     <li>Нажми «Create API key» (Создать ключ).</li><li>Скопируй ключ — длинная строка, начинается с «AIza».</li><li>Вставь его ниже и нажми «Подключить».</li></ol>
+     <p class="small muted" style="margin:8px 0 0">Ключ бесплатный и хранится только на этом телефоне. Не показывай его другим.</p></details>
+     <div class="row"><input type="password" id="gmkey" placeholder="Вставь ключ Gemini API" autocomplete="off" style="flex:1;min-width:200px"><button class="btn primary" id="gmsave" ${GS2.busy?"disabled":""}>${GS2.busy?"Проверяю…":"Подключить"}</button></div>`}
+  ${GS2.msg?`<div class="small">${esc(GS2.msg)}</div>`:""}
+  </section>`;
+}
+function bindGemSettings(){
+  const sv=$("#gmsave");if(sv)sv.onclick=async()=>{const k=($("#gmkey").value||"").trim();if(!k){toast("Вставь ключ");return}
+    GS2.busy=true;GS2.msg="";viewWords();
+    try{S.settings.gmModels=null;const m=await gemModels(k,true);gemSetKey(k);await aiReset();GS2.msg="Готово! ИИ работает в приложении. Модели: "+m.quick+(m.quick!==m.def?", "+m.def:"")}
+    catch(e){GS2.msg=e&&e.code==="bad_key"?"Ключ не подошёл. Проверь, что скопирован целиком.":e&&e.code==="no_model"?"Ключу недоступны подходящие модели Gemini.":"Не удалось проверить ключ. Нужен интернет."}
+    GS2.busy=false;viewWords()};
+  const ts=$("#gmtest");if(ts)ts.onclick=async()=>{GS2.busy=true;GS2.msg="";viewWords();
+    try{const m=await gemModels(gemKey(),true);GS2.msg="Ключ работает. Модели: "+m.quick+(m.quick!==m.def?", "+m.def:"")}catch(e){GS2.msg=e&&e.code==="bad_key"?"Ключ больше не работает. Подключи новый.":"Не удалось проверить: нужен интернет."}
+    GS2.busy=false;viewWords()};
+  const dl=$("#gmdel");if(dl)dl.onclick=async()=>{gemSetKey("");S.settings.gmModels=null;save();await aiReset();GS2.msg="Ключ отключён.";viewWords()};
+}
+
 /* ---------- WORDS ---------- */
 let WF={q:"",f:"all",confirm:false};
 function viewWords(){
@@ -3761,6 +3917,7 @@ function viewWords(){
     <div class="wl" id="wl"></div>
   </section>
   ${setsHTML()}
+  ${gemSettingsHTML()}
   ${transferHTML()}
   <section class="sheet"><h2>Настройки</h2>
     <div class="settings">
@@ -3777,7 +3934,7 @@ function viewWords(){
     <p class="small muted" style="margin:14px 0 10px" data-sync></p>
     <div class="row">${WF.confirm?`<span>Удалить весь прогресс и свои слова?</span><button class="btn" id="rsyes" style="color:var(--bad);border-color:var(--bad)">Да, удалить</button><button class="btn ghost" id="rsno">Отмена</button>`:`<button class="btn ghost" id="rs">Сбросить прогресс</button>`}</div>
   </section></div>`;
-  renderWL();bindSets();bindTransfer();syncUI();
+  renderWL();bindSets();bindTransfer();bindGemSettings();syncUI();
   $("#wq").oninput=e=>{WF.q=e.target.value;renderWL()};
   V.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{WF.f=b.dataset.f;V.querySelectorAll("[data-f]").forEach(x=>x.setAttribute("aria-pressed",x===b));renderWL()});
   $("#addf").onsubmit=e=>{e.preventDefault();const en=$("#aen").value.trim(),ru=$("#aru").value.trim(),ex=$("#aex").value.trim();

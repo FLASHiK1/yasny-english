@@ -49,6 +49,9 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void stopListening() {
             runOnUiThread(new Runnable() { public void run() { if (recognizer != null) recognizer.stopListening(); } });
         }
+        @JavascriptInterface public void shareToGemini(final String text) {
+            runOnUiThread(new Runnable() { public void run() { openGemini(text); } });
+        }
         @JavascriptInterface public void setReminder(final int h, final int m, final boolean on) {
             runOnUiThread(new Runnable() { public void run() { applyReminder(h, m, on); } });
         }
@@ -110,6 +113,23 @@ public class MainActivity extends Activity {
         i.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
         i.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
         recognizer.startListening(i);
+    }
+
+    /** Отправляет готовый запрос в приложение Gemini (через подписку пользователя). */
+    private void openGemini(String text) {
+        try {
+            android.content.ClipboardManager cm = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            if (cm != null) cm.setPrimaryClip(android.content.ClipData.newPlainText("Запрос для Gemini", text));
+        } catch (Exception ignored) {}
+        Intent send = new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text);
+        try {
+            startActivity(new Intent(send).setPackage("com.google.android.apps.bard"));
+        } catch (Exception e) {
+            try { startActivity(Intent.createChooser(send, "Отправить запрос в…")); }
+            catch (Exception e2) {
+                try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://gemini.google.com/app"))); } catch (Exception ignored) {}
+            }
+        }
     }
 
     private void applyReminder(int h, int m, boolean on) {

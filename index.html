@@ -379,6 +379,77 @@ body.onb main{padding-bottom:40px}
 .obplan span{color:var(--muted);font-size:14.5px}
 .choices .btn{min-height:48px}
 .grades .btn{min-height:56px}
+/* ---- v11: иконки, карта курса, праздники ---- */
+:root{--cb:#2B52DC;--cbs:#E7ECFB;--co:#D96B00;--cos:#FFF0DE;--cv:#7C3AED;--cvs:#F1E9FF;--ct:#0E8C86;--cts:#DDF5F2;--cp:#D6336C;--cps:#FDE7EF;--cg:#167A4B;--cgs:#E0F2E8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--cb:#86A2FF;--cbs:#1B2641;--co:#FFB25C;--cos:#33240F;--cv:#B794FF;--cvs:#2A1F45;--ct:#4FD1C5;--cts:#0F2E2C;--cp:#FF7FAA;--cps:#3A1726;--cg:#52C78F;--cgs:#12301F}}
+:root[data-theme="dark"]{--cb:#86A2FF;--cbs:#1B2641;--co:#FFB25C;--cos:#33240F;--cv:#B794FF;--cvs:#2A1F45;--ct:#4FD1C5;--cts:#0F2E2C;--cp:#FF7FAA;--cps:#3A1726;--cg:#52C78F;--cgs:#12301F}
+.c-blue{--c:var(--cb);--cs:var(--cbs)}.c-orange{--c:var(--co);--cs:var(--cos)}.c-violet{--c:var(--cv);--cs:var(--cvs)}.c-teal{--c:var(--ct);--cs:var(--cts)}.c-pink{--c:var(--cp);--cs:var(--cps)}.c-green{--c:var(--cg);--cs:var(--cgs)}
+.ico{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.tiles2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.tiles2{grid-template-columns:1fr}}
+.tile2{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;text-decoration:none;color:var(--ink);min-height:76px;transition:transform .15s,border-color .15s}
+.tile2:hover{border-color:var(--c);transform:translateY(-1px)}
+.tico{width:46px;height:46px;border-radius:14px;background:var(--cs);color:var(--c);display:grid;place-items:center;flex:none}
+.tbody{min-width:0;display:flex;flex-direction:column;gap:2px}.tbody b{font-size:16.5px}.tbody>span{font-size:13.5px;color:var(--muted)}
+.tbar{display:block;height:5px;background:var(--soft);border-radius:4px;overflow:hidden;margin-top:6px;max-width:220px}.tbar i{display:block;height:100%;background:var(--c,var(--accent));border-radius:4px}
+.tile2 em{font-style:normal;background:var(--cs);color:var(--c);font-weight:700;font-size:13px;border-radius:99px;padding:3px 10px;white-space:nowrap}
+.tchev{font-style:normal;color:var(--muted);font-size:22px}
+.morestrip{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.morestrip::-webkit-scrollbar{display:none}
+.mcard{flex:0 0 148px;scroll-snap-align:start;display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;text-decoration:none;color:var(--ink);min-height:132px}
+.mcard:hover{border-color:var(--c)}
+.mcard .tico{width:40px;height:40px;border-radius:12px}.mcard b{font-size:15px;line-height:1.25}.mcard span:last-child{font-size:12.5px;color:var(--muted);line-height:1.35}
+.lvlmini{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px}
+.lvlmini .lvlbig{font-size:26px}
+.cmhead{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.cunit{margin-bottom:22px}
+.cuhead{display:flex;justify-content:space-between;align-items:center;gap:12px;border-radius:16px;padding:14px 18px;color:#fff}
+.cuhead .label{color:rgba(255,255,255,.8)}.cuhead b{display:block;font-family:var(--f-display);font-size:19px}.cuhead span{font-size:13.5px;opacity:.9}
+.cucount{font-family:var(--f-display);font-weight:700;font-size:18px;background:rgba(255,255,255,.2);border-radius:99px;padding:4px 12px;opacity:1!important}
+.u0 .cuhead{background:#2B52DC}.u1 .cuhead{background:#0E8C86}.u2 .cuhead{background:#7C3AED}.u3 .cuhead{background:#D96B00}.u4 .cuhead{background:#D6336C}.u5 .cuhead{background:#167A4B}
+.cmap{position:relative;margin:0 auto;max-width:440px}
+.cpath{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.cpath path{fill:none;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.cpath .pfut{stroke:var(--line);stroke-width:6;stroke-dasharray:2 12}
+.cpath .pdone{stroke:var(--accent);stroke-width:6;opacity:.45}
+.cnode-wrap{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center}
+.cnode{appearance:none;width:62px;height:62px;border-radius:50%;border:0;cursor:pointer;font-family:var(--f-display);font-weight:700;font-size:20px;display:grid;place-items:center;position:relative;z-index:1;box-shadow:0 5px 0 rgba(20,30,51,.18)}
+.cnode .ico{width:26px;height:26px;stroke-width:2.6}
+.cnode.done{background:var(--accent);color:var(--accent-ink)}
+.cnode.cur{background:#FFD43B;color:#2A2238;width:74px;height:74px;font-size:24px;box-shadow:0 5px 0 #E0A800,0 0 0 8px rgba(255,212,59,.35);animation:cpulse 2s ease-in-out infinite}
+@keyframes cpulse{0%,100%{box-shadow:0 5px 0 #E0A800,0 0 0 6px rgba(255,212,59,.35)}50%{box-shadow:0 5px 0 #E0A800,0 0 0 14px rgba(255,212,59,.15)}}
+.cnode.open{background:var(--surface);color:var(--ink);border:3px solid var(--accent)}
+.cnode.locked{background:var(--soft);color:var(--muted);box-shadow:0 5px 0 var(--line);cursor:default}
+.clabel{position:absolute;top:50%;transform:translateY(-50%);width:max-content;max-width:min(150px,34vw);display:flex;flex-direction:column;font-size:13px;line-height:1.3}
+.clabel b{font-weight:600}.clabel span{color:var(--muted);font-size:12px}
+.clabel.l{right:calc(100% + 10px);text-align:right}.clabel.r{left:calc(100% + 10px)}
+.cyas{position:absolute;top:-18px}.cyas.l{right:calc(100% + 150px)}.cyas.r{left:calc(100% + 150px)}
+@media (max-width:420px){.cyas{display:none}}
+.crest{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px auto 0;padding:10px 16px;border:2px dashed var(--line);border-radius:14px;max-width:340px;color:var(--muted);font-size:14px}
+.crest.got{border:2px solid #F5B400;background:var(--warn-soft);color:var(--warn);font-weight:600}
+.crest .ico{color:#F5B400}
+.glvl{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.glvl summary{list-style:none;display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer}
+.glvl summary::-webkit-details-marker{display:none}
+.glv{font-family:var(--f-display);font-weight:700;font-size:20px;width:46px;height:46px;border-radius:14px;background:var(--soft);display:grid;place-items:center;flex:none}
+.gmeta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.glvl[open] summary{border-bottom:1px solid var(--line)}
+.glvl .lessons{border:0;border-radius:0}
+.lesson .lstate{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line);flex:none}
+.lesson .lstate.ok{background:var(--ok);border-color:var(--ok);color:#fff}.lesson .lstate.mid{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.lesson .lstate .ico{width:16px;height:16px;stroke-width:3}
+.celeb{position:fixed;inset:0;z-index:40;background:rgba(12,18,32,.55);display:grid;place-items:center;padding:20px max(16px,env(safe-area-inset-left,0px));overflow:hidden}
+.celbox{position:relative;z-index:1;background:var(--bg);border-radius:24px;padding:24px 22px;max-width:420px;width:100%;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;text-align:center;animation:celin .5s cubic-bezier(.3,1.5,.5,1)}
+@keyframes celin{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
+.celyas{display:flex;justify-content:center;margin-top:-6px}
+.celbadge{align-self:center;background:#FFD43B;color:#2A2238;font-family:var(--f-display);font-weight:700;border-radius:99px;padding:4px 14px;font-size:14px}
+.celbox h1{margin:0;font-size:28px}.celbox p{margin:0;color:var(--muted)}
+.celcan{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.celcan ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.celcan li{display:flex;gap:8px;align-items:flex-start}.celcan .ico{color:var(--ok);width:20px;height:20px;stroke-width:2.6}
+.conf{position:absolute;inset:0;pointer-events:none}
+.conf i{position:absolute;top:-20px;width:8px;height:14px;border-radius:2px;animation:cfall linear forwards}
+@keyframes cfall{to{transform:translateY(110vh) rotate(540deg)}}
 /* ---- v10: правила и знакомство со словом ---- */
 .issues{display:flex;flex-wrap:wrap;gap:6px}
 .iss{font-size:13.5px;border-radius:8px;padding:4px 9px;line-height:1.35}
@@ -1869,7 +1940,7 @@ function bump(ok,l){const d=dkey();S.days[d]=S.days[d]||{n:0,ok:0};S.days[d].n++
   if(l&&LEVELS.includes(l)){S.lvlLog.push({l,ok:ok?1:0});if(S.lvlLog.length>400)S.lvlLog.splice(0,S.lvlLog.length-400)}maybeAwardFreeze();checkAch();save();chips()}
 const li=l=>Math.max(0,LEVELS.indexOf(l));
 function T(){return S.level||"A2"}
-function setLevel(l,src){S.level=l;S.levelSrc=src;S.lvlDismiss=S.totalAns;CS=null;TS=null;LS=null;save()}
+function setLevel(l,src){const prevL=S.level;S.level=l;S.levelSrc=src;S.lvlDismiss=S.totalAns;CS=null;TS=null;LS=null;save();if(prevL&&li(l)>li(prevL)&&src!=="manual")setTimeout(()=>celebrateLevel(prevL,l),450)}
 function levelAcc(L){const a=S.lvlLog.filter(x=>x.l===L).slice(-40);return{n:a.length,acc:a.length?a.reduce((s,x)=>s+x.ok,0)/a.length:0}}
 function levelAdvice(){
   if(!S.level||S.totalAns-S.lvlDismiss<30)return null;
@@ -2084,6 +2155,7 @@ function route(){
 window.addEventListener("hashchange",route);
 
 /* ---------- TODAY ---------- */
+function levelMini(){const L=T();return `<section class="lvlmini"><span class="lvlbig">${L}</span><div style="min-width:0;flex:1"><b>${LVLNAME[L][0].toUpperCase()+LVLNAME[L].slice(1)}</b><div class="lpath" style="margin-top:6px">${LEVELS.map(x=>`<span class="lp ${li(x)<li(L)?"done":x===L?"cur":""}">${x}</span>`).join("<i></i>")}</div></div><a class="btn ghost small" href="#test">Тест</a></section>`}
 function levelPanel(){
   if(!S.level){
     return `<section class="sheet anim levelcta">
@@ -2386,16 +2458,6 @@ document.addEventListener("keydown",e=>{
 
 /* ---------- GRAMMAR ---------- */
 let GS=null;
-function viewGrammar(){
-  if(GS&&GS.active){renderLesson();return}
-  const L=T(),order=[L].concat(LEVELS.filter(x=>x!==L));
-  const row=l=>{const r=S.lessons[l.id];const cls=!r?"none":r.best/r.total>=.85?"good":"mid";const me=Object.values(S.mist).filter(m=>m.t===l.id&&!m.done).length;
-    return `<button class="lesson" data-id="${l.id}"><span class="lvl">${l.lvl}</span><span><span class="t">${esc(l.title)}</span><br><span class="d">${esc(l.desc)}${me?` · <span class="bad-t">ошибок в работе: ${me}</span>`:""}${(S.rrev||{})[l.id]&&S.rrev[l.id].due<=Date.now()?` · <span style="color:var(--accent)">пора повторить</span>`:""}</span></span><span class="score ${cls}">${r?r.best+" / "+r.total:"не пройден"}</span></button>`};
-  V.innerHTML=`<h1>Грамматика</h1><p class="sub">Короткое правило, потом упражнения. После каждого ответа видно объяснение, а ошибки уходят в «Ошибки».</p>
-  <div class="stack"><section class="sheet verbcard"><div style="min-width:0"><b>Неправильные глаголы</b><p class="small muted" style="margin:2px 0 0">go — went — gone. ${verbPool().length} глаголов для уровня ${L}; чаще попадаются те, где ошибаешься</p></div><a class="btn primary" href="#verbs">Тренировать</a></section>${order.map(x=>{const ls=LESSONS.filter(l=>l.lvl===x);if(!ls.length)return"";const tag=x===L?["now","твой уровень"]:li(x)<li(L)?["low","повторение"]:["high","следующий шаг"];
-    return `<section><div class="lvlhead"><h2 style="margin:0">${x} · ${LVLNAME[x]}</h2><span class="pill lv-${tag[0]}">${tag[1]}</span></div><div class="lessons">${ls.map(row).join("")}</div></section>`}).join("")}</div>`;
-  V.querySelectorAll(".lesson").forEach(b=>b.onclick=()=>openLesson(b.dataset.id));
-}
 function openLesson(id,only,opts){
   const l=LESSONS.find(x=>x.id===id);
   GS={active:true,l,stage:only?"ex":"theory",items:only||shuffle(l.ex.map((_,i)=>i)),i:0,right:0,wrong:[],ans:null,retry:!!only,review:!!(opts&&opts.review)};
@@ -3305,17 +3367,6 @@ function courseScreens(L){
   return sc;
 }
 function openCourseLesson(n){const L=COURSE[n-1];CL={active:true,L,sc:courseScreens(L),i:0,res:null,right:0,total:0,tiles:null};renderCL()}
-function viewCourse(){
-  if(CL&&CL.active){renderCL();return}
-  const doneN=Object.keys(S.course||{}).length,nx=courseNext();
-  V.innerHTML=`<h1>Курс с нуля</h1><p class="sub">30 уроков от первого «Hello» до рассказа о себе — это уровень A1. Один урок занимает 15–20 минут. Лучше всего проходить по уроку в день: новые слова сами попадут в карточки и будут повторяться.</p>
-  <div class="stack">
-  <section class="sheet"><div class="row" style="justify-content:space-between;margin-bottom:8px"><b>Пройдено ${doneN} из ${COURSE.length}</b>${nx?`<button class="btn primary" data-cn="${nx.n}">Урок ${nx.n}</button>`:`<span class="pill known">Курс пройден</span>`}</div><div class="meter"><i style="width:${doneN/COURSE.length*100}%"></i></div>
-  ${li(T())>=2?`<p class="small muted" style="margin:10px 0 0">Твой уровень ${T()} выше курса, поэтому все уроки открыты — можно пройти любые для повторения.</p>`:""}</section>
-  <div class="lessons">${COURSE.map(L=>{const d=(S.course||{})[L.n],un=courseUnlocked(L.n);
-    return `<button class="lesson" data-cn="${L.n}" ${un?"":"disabled"}><span class="lvl">${L.n}</span><span><span class="t">${esc(L.t)}</span><br><span class="d">${esc(L.g)}</span></span><span class="score ${d?(d.right/d.total>=.85?"good":"mid"):"none"}">${d?d.right+" / "+d.total:un?(nx&&nx.n===L.n?"следующий":"открыт"):"закрыт"}</span></button>`}).join("")}</div></div>`;
-  V.querySelectorAll("[data-cn]").forEach(b=>b.onclick=()=>{openCourseLesson(+b.dataset.cn);window.scrollTo(0,0)});
-}
 function clTaskData(e){const d={type:e.type};["q","o","a","say","ru","en","why"].forEach(k=>{if(e[k]!==undefined)d[k]=e[k]});return d}
 function answerCL(v){
   const e=CL.sc[CL.i],L=CL.L;let ok=false,typo=false,best=null,cres=null;
@@ -3332,7 +3383,10 @@ function finishCL(){
   const L=CL.L;S.course=S.course||{};const prev=S.course[L.n];
   S.course[L.n]={right:Math.max(CL.right,prev?prev.right:0),total:CL.total,date:prev?prev.date:dkey()};
   L.ids.forEach(id=>{if(!S.cards[id]&&wordById(id))S.cards[id]=schedule(null,1)});
-  if(S.level==="A0"&&L.n===15){S.level="A1";S.levelSrc="auto";toast("Половина курса пройдена — твой уровень теперь A1")}
+  let celeb=false;
+  if(S.level==="A0"&&L.n===15){S.level="A1";S.levelSrc="auto";celeb=true;setTimeout(()=>celebrateLevel("A0","A1"),600)}
+  if(!prev&&L.n===COURSE.length){celeb=true;setTimeout(()=>celebrate({badge:"30 / 30",title:"Курс пройден!",text:`${uname()?uname()+", ты":"Ты"} прошёл(ла) весь курс с нуля — от первого «Hello» до рассказа о себе. Это уровень A1!`,list:LEVEL_CAN.A1,listTitle:"Теперь ты умеешь",stats:celebStats(),btn:"Ура!"}),600)}
+  if(!prev&&!celeb&&L.n%5===0){const u=COURSE_UNITS[L.n/5-1];setTimeout(()=>celebrate({badge:"Раздел "+(L.n/5),title:"Привал!",text:`Раздел «${u[0]}» пройден: ${u[1].toLowerCase()}. Отдохни — или сразу дальше!`,stats:celebStats(),btn:"Дальше"}),600)}
   save();
 }
 function renderCL(){
@@ -3856,7 +3910,7 @@ let ACH_LOCK=false;
 function checkAch(){
   if(ACH_LOCK)return;S.ach=S.ach||{};
   const fresh=ACH.filter(a=>!S.ach[a.id]&&(()=>{try{return a.c()}catch(e){return false}})());
-  if(!fresh.length)return;fresh.forEach(a=>S.ach[a.id]=dkey());
+  if(!fresh.length)return;fresh.forEach(a=>S.ach[a.id]=dkey());save();
   const a=fresh[0],t=$("#toast");t.classList.add("ach");t.innerHTML=medal(true,34)+`<div><b>Новое достижение: ${esc(a.t)}</b><div class="small">${esc(a.d)}</div></div>`;
   t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{t.hidden=true;t.classList.remove("ach")},3200);try{budReact("party")}catch(e){}
 }
@@ -4013,8 +4067,8 @@ function viewToday(){
       <div class="week dweek">${wk.dots}</div>
     </section>
     ${S.freezeNote===dkey(Date.now()-DAY)?yasay("happy","Вчера ты пропустил день, но я сохранил твою серию заморозкой. Их дают за каждые 7 дней подряд.",56):""}
-    ${S.level?levelPanel():""}
-    <section><div class="label" style="margin:4px 0 8px">Ещё на сегодня</div><div class="morelist">${more.slice(0,5).map(([h,t,d,rid,rev])=>`<a class="morei" href="${h}"${rid?` data-rule-open="${rid}"`:""}${rev?` data-rrev="${rev}"`:""}><b>${esc(t)}</b><span>${esc(d)}</span><i>›</i></a>`).join("")}</div></section>
+    ${S.level?(levelAdvice()?levelPanel():levelMini()):""}
+    <section><div class="label" style="margin:4px 0 8px">Ещё на сегодня</div><div class="morestrip">${more.slice(0,6).map(([h,t,d,rid,rev])=>{const hb=HUB[rev?"#rrev":h]||["words","c-blue"];return `<a class="mcard ${hb[1]}" href="${h}"${rid?` data-rule-open="${rid}"`:""}${rev?` data-rrev="${rev}"`:""}><span class="tico">${ico(hb[0])}</span><b>${esc(t)}</b><span>${esc(d)}</span></a>`}).join("")}</div></section>
     <div class="small muted" data-sync></div>
   </div>`;
   $("#go").onclick=na.go;
@@ -4022,29 +4076,6 @@ function viewToday(){
 }
 
 /* ===================== РАЗДЕЛЫ-ХАБЫ ===================== */
-function tile(h,t,d,badge){return `<a class="tile" href="${h}"><div style="min-width:0"><b>${esc(t)}</b><span>${esc(d)}</span></div>${badge?`<em>${esc(String(badge))}</em>`:"<i>›</i>"}</a>`}
-function viewLearn(){
-  const cn=courseNext(),cd=Object.keys(S.course||{}).length,dw=dueWords().length,nl=Math.min(newLeft(),newWords().length);
-  const ld=LESSONS.filter(l=>S.lessons[l.id]).length;
-  V.innerHTML=`<h1>Учить</h1><p class="sub">Новое: слова, правила, курс. Уровень ${T()}.</p><div class="tiles">
-  ${tile("#course","Курс с нуля",cn?`Урок ${cn.n} из ${COURSE.length}: ${cn.t}`:"Курс пройден",cd?cd+"/"+COURSE.length:"")}
-  ${tile("#cards","Карточки",dw||nl?`${dw} к повторению · ${nl} новых`:"На сегодня всё повторено",dw||"")}
-  ${dueRules().length?`<a class="tile" href="#grammar" data-rrev="${dueRules()[0].id}"><div style="min-width:0"><b>Повтор правил</b><span>${dueRules().length} к повторению · 4 задания на правило</span></div><em>${dueRules().length}</em></a>`:""}
-  ${tile("#rules","Справочник правил",`${LESSONS.length+COURSE.length} правил · прочитано ${Object.keys(S.readRules||{}).length}`)}
-  ${tile("#grammar","Грамматика",`${LESSONS.length} уроков · пройдено ${ld}`)}
-  ${tile("#verbs","Неправильные глаголы",`${verbPool().length} глаголов для уровня ${T()}`)}
-  ${tile("#test","Тест уровня",S.test?"Пройден — можно пройти заново":"5 минут, подстроит всё под тебя")}
-  </div>`;
-}
-function viewTrain(){
-  V.innerHTML=`<h1>Практика</h1><p class="sub">Применяй то, что выучил: переводи, пиши, слушай и говори.</p><div class="tiles">
-  ${tile("#translate","Перевод фраз","10 фраз с русского на английский")}
-  ${tile("#practice","Письмо и разговор",AI.off?(canOpenGemini()?"Через Gemini: бесплатный ключ или приложение Gemini":"Работает в веб-версии на claude.ai"):"ИИ-учитель разберёт текст или поговорит с тобой")}
-  ${tile("#read","Чтение",`${allTexts().length} текстов, перевод слов по нажатию`)}
-  ${tile("#listen","На слух","Диктант: послушай и напиши")}
-  ${tile("#speak","Произношение",micAvail()?"Скажи вслух — приложение послушает":"Различай звуки и повторяй за диктором")}
-  </div>`;
-}
 function viewProfile(){
   const nm=uname(),st=streak(),k=knownCount(),got=ACH.filter(a=>(S.ach||{})[a.id]).length;
   V.innerHTML=`<div class="stack">
@@ -4243,6 +4274,144 @@ function bindGemSettings(){
     GS2.busy=false;viewWords()};
   const dl=$("#gmdel");if(dl)dl.onclick=async()=>{gemSetKey("");S.settings.gmModels=null;save();await aiReset();GS2.msg="Ключ отключён.";viewWords()};
 }
+
+/* ===================== ДИЗАЙН v2: иконки, карта курса, праздники ===================== */
+const IC={
+course:'<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
+cards:'<rect x="3" y="7" width="13" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-3"/>',
+rrev:'<path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/>',
+rules:'<path d="M12 7v13"/><path d="M3 5.5A1.5 1.5 0 0 1 4.5 4H9a3 3 0 0 1 3 3 3 3 0 0 1 3-3h4.5A1.5 1.5 0 0 1 21 5.5V18H15a3 3 0 0 0-3 2 3 3 0 0 0-3-2H3z"/>',
+grammar:'<path d="M4 7V5h16v2"/><path d="M9 19h6"/><path d="M12 5v14"/>',
+verbs:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+test:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
+translate:'<path d="M4 5h8M8 3v2M6 5c0 4 3 7 6 8M10 5c0 4-3 7-6 8"/><path d="M13 21l4-9 4 9M14.5 18h5"/>',
+practice:'<path d="M4 5h16v11H10l-4 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/>',
+read:'<path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/>',
+listen:'<path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2" y="14" width="5" height="7" rx="2"/><rect x="17" y="14" width="5" height="7" rx="2"/>',
+speak:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+stats:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+words:'<path d="M4 6h16M4 12h16M4 18h10"/>',
+library:'<path d="M4 4h4v16H4zM10 4h4v16h-4z"/><path d="m16 5 3.8-1 3 15.5-3.8 1z"/>',
+mistakes:'<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/><path d="M12 8v5M12 16v.5"/>',
+lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+check:'<path d="M5 12.5 10 17 19 7"/>',
+star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>'
+};
+function ico(name,cls){return `<svg class="ico ${cls||""}" viewBox="0 0 24 24" aria-hidden="true">${IC[name]||""}</svg>`}
+const HUB={"#course":["course","c-blue"],"#cards":["cards","c-orange"],"#rrev":["rrev","c-violet"],"#rules":["rules","c-teal"],"#grammar":["grammar","c-violet"],"#verbs":["verbs","c-pink"],"#test":["test","c-green"],
+  "#translate":["translate","c-blue"],"#practice":["practice","c-pink"],"#read":["read","c-teal"],"#listen":["listen","c-orange"],"#speak":["speak","c-green"],"#stats":["stats","c-blue"],"#words":["words","c-orange"],"#library":["library","c-teal"],"#mistakes":["mistakes","c-pink"]};
+function tile(h,t,d,badge,prog,key){
+  const [ic,col]=HUB[key||h]||["words","c-blue"];
+  return `<a class="tile2 ${col}" href="${h}"${key==="#rrev"&&badge?` data-rrev="${esc(String(prog&&prog.id||""))}"`:""}>
+    <span class="tico">${ico(ic)}</span>
+    <span class="tbody"><b>${esc(t)}</b><span>${esc(d)}</span>${prog&&typeof prog.v==="number"?`<span class="tbar"><i style="width:${Math.round(Math.min(1,prog.v)*100)}%"></i></span>`:""}</span>
+    ${badge!==undefined&&badge!==""&&badge!==null?`<em>${esc(String(badge))}</em>`:`<i class="tchev">›</i>`}</a>`;
+}
+function viewLearn(){
+  const cd=Object.keys(S.course||{}).length,cn=courseNext(),dw=dueWords().length,nl=Math.min(newLeft(),newWords().length);
+  const ld=LESSONS.filter(l=>S.lessons[l.id]).length,dr=dueRules(),rr=Object.keys(S.readRules||{}).length,pool=verbPool();
+  const vk=pool.filter(x=>{const s=(S.verbs||{})[x[0]];return s&&s.n>=2&&s.ok/s.n>=.8}).length;
+  const started=allWords().filter(w=>S.cards[w.id]).length,known=knownCount();
+  V.innerHTML=`<h1>Учить</h1><p class="sub">Новое: слова, правила, курс. Уровень ${T()}.</p><div class="tiles2">
+  ${tile("#course","Курс с нуля",cn?`Урок ${cn.n}: ${cn.t}`:"Курс пройден!",cd?cd+"/"+COURSE.length:"",{v:cd/COURSE.length})}
+  ${tile("#cards","Карточки",dw||nl?`${dw} к повторению · ${nl} новых`:"На сегодня всё повторено",dw||"",{v:started?known/started:0})}
+  ${dr.length?tile("#grammar","Повтор правил",`${dr.length} ${plural(dr.length,["правило ждёт","правила ждут","правил ждут"])} · 4 задания`,dr.length,{id:dr[0].id},"#rrev"):""}
+  ${tile("#grammar","Грамматика",`${LESSONS.length} уроков · пройдено ${ld}`,"",{v:ld/LESSONS.length})}
+  ${tile("#rules","Справочник правил",`${LESSONS.length+COURSE.length} правил · прочитано ${rr}`,"",{v:rr/(LESSONS.length+COURSE.length)})}
+  ${tile("#verbs","Неправильные глаголы",`Уверенно ${vk} из ${pool.length}`,"",{v:vk/pool.length})}
+  ${tile("#test","Тест уровня",S.test?"Пройден — можно пройти заново":"5 минут, подстроит всё под тебя")}
+  </div>`;
+}
+function viewTrain(){
+  const rd=Object.keys(S.read||{}).length,tx=allTexts().length,tr=Object.keys(S.tr||{}).length;
+  V.innerHTML=`<h1>Практика</h1><p class="sub">Применяй то, что выучил: переводи, пиши, слушай и говори.</p><div class="tiles2">
+  ${tile("#translate","Перевод фраз",`10 фраз с русского · освоено ${tr} из ${SENTENCES.length}`,"",{v:tr/SENTENCES.length})}
+  ${tile("#practice","Письмо и разговор",AI.off?(canOpenGemini()?"Через Gemini: ключ или приложение":"Работает в веб-версии на claude.ai"):"ИИ-учитель разберёт текст или поговорит с тобой")}
+  ${tile("#read","Чтение",`Прочитано ${rd} из ${tx} текстов`,"",{v:rd/Math.max(1,tx)})}
+  ${tile("#listen","На слух","Диктант: послушай и напиши")}
+  ${tile("#speak","Произношение",micAvail()?"Скажи вслух — я послушаю":"Различай звуки и повторяй за диктором")}
+  </div>`;
+}
+
+/* ---- Карта курса ---- */
+const COURSE_UNITS=[["Знакомство","Привет, ты и я, откуда ты"],["Мой мир","Семья, вещи, у меня есть"],["Каждый день","Мой день, вопросы, время"],["В городе","Кафе, где что, дорога"],["Умения и погода","Одежда, могу, сейчас"],["Прошлое и планы","Вчера, выходные, планы"]];
+const MAPX=[50,76,62,30,40];
+function viewCourse(){
+  if(CL&&CL.active){renderCL();return}
+  const doneN=Object.keys(S.course||{}).length,nx=courseNext();
+  let html=`<div class="cmhead sheet"><div style="min-width:0;flex:1"><h1 style="margin:0">Курс с нуля</h1><p class="small muted" style="margin:4px 0 8px">30 уроков от первого «Hello» до рассказа о себе. По уроку в день — и через месяц уровень A1.</p>
+    <div class="meter"><i style="width:${doneN/COURSE.length*100}%"></i></div><div class="small muted" style="margin-top:4px">Пройдено ${doneN} из ${COURSE.length}</div></div>
+    ${nx?`<button class="btn primary" data-cn="${nx.n}">Урок ${nx.n}</button>`:`<span class="pill known">Курс пройден</span>`}</div>`;
+  if(li(T())>=2)html+=`<p class="small muted">Твой уровень ${T()} выше курса, поэтому все уроки открыты — можно пройти любые для повторения.</p>`;
+  COURSE_UNITS.forEach((u,ui)=>{
+    const ls=COURSE.slice(ui*5,ui*5+5),ud=ls.filter(L=>courseDone(L.n)).length,H=ls.length*96+24;
+    const pts=ls.map((L,k)=>({x:MAPX[k],y:48+k*96}));
+    const d=pts.map((p,k)=>k?`C ${pts[k-1].x} ${pts[k-1].y+48}, ${p.x} ${p.y-48}, ${p.x} ${p.y}`:`M ${p.x} ${p.y}`).join(" ");
+    const lastDone=ls.reduce((a,L,k)=>courseDone(L.n)?k:a,-1);
+    const dDone=lastDone>0?pts.slice(0,Math.min(lastDone+2,pts.length)).map((p,k,arr)=>k?`C ${arr[k-1].x} ${arr[k-1].y+48}, ${p.x} ${p.y-48}, ${p.x} ${p.y}`:`M ${p.x} ${p.y}`).join(" "):"";
+    html+=`<section class="cunit u${ui%6}"><div class="cuhead"><div><div class="label">Раздел ${ui+1}</div><b>${esc(u[0])}</b><span>${esc(u[1])}</span></div><span class="cucount">${ud}/${ls.length}</span></div>
+    <div class="cmap" style="height:${H}px"><svg class="cpath" viewBox="0 0 100 ${H}" preserveAspectRatio="none" aria-hidden="true"><path d="${d}" class="pfut"/>${dDone?`<path d="${dDone}" class="pdone"/>`:""}</svg>
+    ${ls.map((L,k)=>{const p=pts[k],done=courseDone(L.n),un=courseUnlocked(L.n),cur=nx&&nx.n===L.n;
+      const side=p.x>=50?"l":"r";
+      return `<div class="cnode-wrap" style="left:${p.x}%;top:${p.y}px">
+        <button class="cnode ${done?"done":cur?"cur":un?"open":"locked"}" data-cn="${L.n}" aria-label="Урок ${L.n}: ${esc(L.t)}${done?", пройден":un?"":", закрыт"}">${done?ico("check"):!un?ico("lock"):L.n}</button>
+        <div class="clabel ${side}"><b>${L.n}. ${esc(L.t)}</b>${done?`<span>${S.course[L.n].right}/${S.course[L.n].total} верно</span>`:cur?`<span>следующий урок</span>`:""}</div>
+        ${cur?`<div class="cyas ${side==="l"?"r":"l"}">${yasik("happy",58,{anim:"idle"})}</div>`:""}
+      </div>`}).join("")}
+    </div>
+    <div class="crest ${ud===ls.length?"got":""}">${ico("star")}<span>${ud===ls.length?`Привал: раздел «${esc(u[0])}» пройден!`:`Привал после урока ${ls[ls.length-1].n}`}</span></div>
+    </section>`;
+  });
+  V.innerHTML=html;
+  V.querySelectorAll("[data-cn]").forEach(b=>b.onclick=()=>{const n=+b.dataset.cn;if(!courseUnlocked(n)){toast(`Сначала пройди урок ${n-1}`);return}openCourseLesson(n);window.scrollTo(0,0)});
+  const cur=V.querySelector(".cnode.cur");if(cur&&doneN>2)setTimeout(()=>{try{cur.scrollIntoView({block:"center",behavior:"smooth"})}catch(e){}},120);
+}
+
+/* ---- Грамматика: уровни сворачиваются, у каждого прогресс ---- */
+let GOPEN=null;
+function viewGrammar(){
+  if(GS&&GS.active){renderLesson();return}
+  const L=T(),order=[L].concat(LEVELS.filter(x=>x!==L)),dr=dueRules();
+  if(!GOPEN){GOPEN={};GOPEN[L]=true;dr.forEach(x=>GOPEN[x.l.lvl]=true)}
+  const row=l=>{const r=S.lessons[l.id];const cls=!r?"none":r.best/r.total>=.85?"good":"mid";const me=Object.values(S.mist).filter(m=>m.t===l.id&&!m.done).length;
+    const due=(S.rrev||{})[l.id]&&S.rrev[l.id].due<=Date.now();
+    return `<button class="lesson" data-id="${l.id}"><span class="lstate ${r?(r.best/r.total>=.85?"ok":"mid"):"new"}">${r?ico("check"):""}</span><span><span class="t">${esc(l.title)}</span><br><span class="d">${esc(l.desc)}${me?` · <span class="bad-t">ошибок: ${me}</span>`:""}${due?` · <span style="color:var(--accent)">пора повторить</span>`:""}</span></span><span class="score ${cls}">${r?r.best+" / "+r.total:"новый"}</span></button>`};
+  V.innerHTML=`<h1>Грамматика</h1><p class="sub">Короткое правило, потом упражнения. После каждого ответа — объяснение, ошибки уходят в «Ошибки».</p>
+  <div class="stack">
+  <div class="tiles2">${tile("#verbs","Неправильные глаголы",`go — went — gone · ${verbPool().length} глаголов`)}${tile("#rules","Справочник правил","Все правила и поиск")}</div>
+  ${dr.length?`<div class="rulehint new">${yasik("think",40,{teacher:false,anim:"idle"})}<span>Пора повторить: <b>${esc(dr[0].l.title)}</b>${dr.length>1?` и ещё ${dr.length-1}`:""}. 4 задания, пара минут.</span><button class="btn small primary" data-rrev="${dr[0].id}">Повторить</button></div>`:""}
+  ${order.map(x=>{const ls=LESSONS.filter(l=>l.lvl===x);if(!ls.length)return"";const dn=ls.filter(l=>S.lessons[l.id]).length;
+    const tag=x===L?["now","твой уровень"]:li(x)<li(L)?["low","повторение"]:["high","следующий шаг"];
+    return `<details class="glvl" data-lv="${x}" ${GOPEN[x]?"open":""}><summary><span class="glv">${x}</span><span class="gmeta"><b>${LVLNAME[x][0].toUpperCase()+LVLNAME[x].slice(1)}</b><span class="tbar"><i style="width:${dn/ls.length*100}%"></i></span><span class="small muted">пройдено ${dn} из ${ls.length}</span></span><span class="pill lv-${tag[0]}">${tag[1]}</span></summary><div class="lessons">${ls.map(row).join("")}</div></details>`}).join("")}
+  </div>`;
+  V.querySelectorAll(".lesson[data-id]").forEach(b=>b.onclick=()=>openLesson(b.dataset.id));
+  V.querySelectorAll("details.glvl").forEach(d=>d.addEventListener("toggle",()=>{GOPEN[d.dataset.lv]=d.open}));
+}
+
+/* ---- Праздничный экран ---- */
+const LEVEL_CAN={
+A0:["Здороваться и представляться","Читать простые слова","Понимать самые частые фразы"],
+A1:["Рассказать о себе, семье и своём дне","Спросить дорогу и заказать в кафе","Понимать простые вопросы и отвечать на них"],
+A2:["Рассказать о прошлых выходных и планах","Объясниться в магазине, отеле, у врача","Читать короткие тексты на бытовые темы"],
+B1:["Поддержать разговор на знакомые темы","Объяснить своё мнение и причины","Писать письма и сообщения коллегам"],
+B2:["Свободно обсуждать сложные темы","Понимать статьи и фильмы без перевода","Говорить почти без пауз и подбора слов"]};
+function celebrate(o){
+  const conf=Array.from({length:36},(_,i)=>`<i style="left:${Math.round(Math.random()*100)}%;background:${["#2B52DC","#FF7A6B","#16A34A","#FF9F1C","#B04BD8","#FFD43B"][i%6]};animation-delay:${(Math.random()*0.8).toFixed(2)}s;animation-duration:${(1.8+Math.random()*1.4).toFixed(2)}s"></i>`).join("");
+  const el=document.createElement("div");el.className="celeb";el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");
+  el.innerHTML=`<div class="conf">${conf}</div><div class="celbox">
+    <div class="celyas">${yasik("proud",130,{anim:"party"})}</div>
+    ${o.badge?`<div class="celbadge">${esc(o.badge)}</div>`:""}
+    <h1>${esc(o.title)}</h1><p>${esc(o.text||"")}</p>
+    ${o.list&&o.list.length?`<div class="celcan"><div class="label">${esc(o.listTitle||"Теперь ты умеешь")}</div><ul>${o.list.map(x=>`<li>${ico("check")}<span>${esc(x)}</span></li>`).join("")}</ul></div>`:""}
+    ${o.stats?`<div class="rstats">${o.stats.map(s=>`<div><b>${esc(String(s[0]))}</b><span>${esc(s[1])}</span></div>`).join("")}</div>`:""}
+    <button class="btn primary big" id="celok">${esc(o.btn||"Продолжить")}</button></div>`;
+  document.body.appendChild(el);document.body.classList.add("noscroll");
+  try{feedback(true);setTimeout(()=>feedback(true),180)}catch(e){}
+  const close=()=>{el.remove();document.body.classList.remove("noscroll");if(o.then)o.then()};
+  el.querySelector("#celok").onclick=close;el.querySelector("#celok").focus();
+}
+function celebStats(){return[[allWords().filter(w=>S.cards[w.id]).length,"слов в работе"],[Object.keys(S.lessons).length+Object.keys(S.course||{}).length,"уроков"],[Object.values(S.days).filter(d=>d.n>0).length,"дней занятий"]]}
+function celebrateLevel(from,to){celebrate({badge:`${from} → ${to}`,title:`Новый уровень: ${to}!`,text:`${uname()?uname()+", ты":"Ты"} перешёл(шла) на уровень «${LVLNAME[to]}». Это большой шаг — я горжусь тобой!`,list:LEVEL_CAN[from]||[],listTitle:`Что ты уже умеешь (${from})`,stats:celebStats(),btn:"Вперёд, к "+to}) }
 
 /* ---------- WORDS ---------- */
 let WF={q:"",f:"all",confirm:false};

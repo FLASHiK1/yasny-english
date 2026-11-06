@@ -4084,9 +4084,9 @@ function mascotize(){
       mood=COMBO>=3?"proud":"happy";
       let p=COMBO_MSG[COMBO]||pick(PRAISE);
       if(nm&&!COMBO_MSG[COMBO]&&Math.random()<.3)p=p.replace(/!$/,", "+nm+"!");
-      msg=p+(expl?" "+expl:"");
-    }else if(state==="warn"){mood="happy";msg=expl||"Почти! Смысл верный, проверь написание."}
-    else{mood="happy";msg=pick(WRONG_OPEN)+" "+(expl||"Скажи правильный вариант вслух пару раз — и он запомнится. Я ещё верну это задание в «Повторе», в следующий раз будет легко.")}
+      msg=yasRight(p)+(expl?" "+expl:"");
+    }else if(state==="warn"){mood="happy";msg=yasTypo(expl)}
+    else{mood="happy";msg=yasWrong(expl)}
     const el=document.createElement("div");el.className="teach "+state;
     el.innerHTML=yasik(mood,54,{teacher:false,anim:state==="ok"?(COMBO>=3?"party":"jump"):"nod"})+`<div class="ybub">${esc(msg)}</div>`;
     v.after(el);
@@ -4144,7 +4144,7 @@ function checkAch(){if(document.body.classList.contains("focus"))return;
 function resultHTML(o){
   const pct=o.total?Math.round(o.right/o.total*100):100,n=todayN(),goal=S.settings.goal,st=streak(),nm=uname();
   const mood=pct>=85?"proud":pct>=60?"happy":"think";
-  const say=pct>=90?`${nm?nm+", это":"Это"} блестяще! ${o.note||""}`:pct>=70?`Хорошая работа${nm?", "+nm:""}! ${o.note||""}`:pct>=50?`Неплохо! Пару пустяков я отложил в «Повтор» — разберёмся с ними, и всё уложится. ${o.note||""}`:`Сегодня было непросто — и это нормально. Это не ошибки, а пустяки, с которыми мы справимся: я отложил их в «Повтор», завтра будет легче. ${o.note||""}`;
+  const say=pct>=90?`${nm?nm+", это":"Это"} блестяще! ${o.note||""}`:pct>=70?`Хорошая работа${nm?", "+nm:""}! ${o.note||""}`:pct>=50?`${pick(Y_RES.mid)} ${o.note||""}`:`${pick(Y_RES.low)} ${o.note||""}`;
   return `<div class="result anim">
     ${yasay(mood,esc(say.trim()),88,pct>=85?"party":pct>=60?"jump":"idle")}
     <h1 style="text-align:center;margin:4px 0 0">${esc(o.title)}</h1>
@@ -5739,6 +5739,38 @@ taskOf=function(m){
 };
 const _promptTextP=promptText;
 promptText=function(m){if(m.k==="sit"){const [id,ix]=m.ref.split(":");const s=SITS.find(x=>x.id===id);return s?s.turns[+ix].n:""}if(m.k==="fix"){const f=FIXES[+m.ref];return f?f[0]:""}return _promptTextP(m)};
+
+/* ===================== ЯСИК: промахи — это пустяки ===================== */
+// Разные слова на каждый случай, без повторов подряд. Учитывает серию промахов и «камбэк» после промаха.
+const YW={
+  wrong:["Это не ошибка, а черновик. Сейчас перепишем начисто.","Даже у солнышка бывают облачка — сейчас развеем.","Пустяк! Мозг как раз прокладывает новую тропинку.","Хорошая новость: то, что разобрали после промаха, запоминается крепче. Учёные проверяли!","Английский иногда хитрит. Но мы хитрее.","Записываю в книгу «Пустяков, которые мы победим». Она очень тонкая!","Ой, английский подставил подножку. Отряхнулись — идём дальше.","Носители языка тоже на этом спотыкаются, честно-честно.","Это слово просто хотело познакомиться с тобой поближе.","Маленькая кочка на дороге. Объезжаем вот так.","Ух, коварное место! Сюда попадаются почти все.","Не беда! Зато теперь ты знаешь, где тут подвох.","Это не провал, а разведка: мы нашли место, которое стоит подтянуть.","Мелочь! Через пару повторов будешь отвечать не задумываясь.","Лучше споткнуться здесь, чем в разговоре с англичанином. Здесь — можно!","Каждая такая заминка — плюс один к опыту. Копим!","Секрет: ошибаются все, а запоминают те, кто разбирает. Разбираем!","Тут даже я бы задумался. А я солнце — у меня много времени подумать.","Это не минус, а заметка на полях.","Хоп — и ловушка найдена. Больше не попадёмся.","Пустяки! С этим справляются все — и ты справишься.","Не ошибка, а подсказка: вот что стоит повторить."],
+  run2:["Две заминки подряд? Значит, тема новая, и мозг её распаковывает. Это нормально.","Новое всегда сначала скрипит, как новые ботинки. Разносим!","Ничего, тема просто ещё не подружилась с тобой. Подружим."],
+  run3:["Давай чуть сбавим темп. Не знаешь — смело жми «Не знаю»: я покажу и объясню, это тоже учёба.","Если трудно — значит, ты учишь новое, а не повторяешь старое. Я рядом.","Сделай вдох. Этот вопрос я ещё верну, когда он станет понятнее, а следующий может быть полегче.","Трудные места — самые ценные. После «Повтора» эта тема станет твоей."],
+  back:["Вот! Пустяк остался позади.","Камбэк! Я знал, что справишься.","Видишь? Одна заминка — и уже верно.","Отряхнулись и пошли — вот так это и работает!","Красиво вернулся(лась)!","Тропинка проложена!"],
+  typo:["Одна буковка сбежала — засчитываю! Но поймаем её.","Почти идеально! Смысл верный, буквы чуть разбежались.","Засчитано! Только одна буква решила прогуляться."],
+  tail:["Скажи правильный вариант вслух пару раз — и он запомнится.","Посмотри на правильный ответ ещё секундочку. Я напомню о нём через 10 минут — проверим, как запомнилось.","Я отложил это в «Повтор» — вернёмся, когда будет легко."],
+  run:0,back_:false,last:{}
+};
+function yPick(kind){const a=YW[kind];let x;do{x=a[Math.floor(Math.random()*a.length)]}while(a.length>1&&x===YW.last[kind]);YW.last[kind]=x;return x}
+function yName(s){const nm=uname();return nm&&Math.random()<.25?nm+", "+s.charAt(0).toLowerCase()+s.slice(1):s}
+function yasWrong(expl){const k=YW.run>=3?"run3":YW.run===2?"run2":"wrong";return yName(yPick(k))+" "+(expl||yPick("tail"))}
+function yasTypo(expl){return yPick("typo")+(expl?" "+expl:"")}
+function yasRight(p){return YW.back_?yPick("back"):p}
+const _bumpY=bump;
+bump=function(ok){if(ok){YW.back_=YW.run>0;YW.run=0}else{YW.run++;YW.back_=false}return _bumpY.apply(this,arguments)};
+const Y_RES={mid:["Неплохо! Пару пустяков я отложил в «Повтор» — разберёмся с ними, и всё уложится.","Хорошая разминка! Пара кочек на дороге — мы их отметили, в следующий раз проедем гладко.","Больше половины — уже твоё. Остальное — пустяки, они ждут в «Повторе»."],
+  low:["Сегодня было непросто — и это нормально. Это не ошибки, а пустяки, с которыми мы справимся: я отложил их в «Повтор», завтра будет легче.","Трудный урок — самый полезный: мозг сейчас перестраивается. Отдохни, а пустяки я сохранил — завтра разберём их вместе.","Знаешь, что общего у тебя и у спортсменов? Тяжёлая тренировка сегодня — лёгкая победа завтра. Всё, что не получилось, ждёт в «Повторе»."]};
+(function(){const css=document.createElement("style");css.textContent=`
+  :root{--oops:#B4531F;--oops-soft:#FFEDE1;--oops-line:#F3B48A}
+  @media (prefers-color-scheme:dark){:root:not([data-theme=light]){--oops:#FFB27A;--oops-soft:#3A2416;--oops-line:#8A4F2A}}
+  [data-theme=dark]{--oops:#FFB27A;--oops-soft:#3A2416;--oops-line:#8A4F2A}
+  html body .verdict.bad{background:var(--oops-soft);color:var(--oops)}
+  html body .btn.wrong,html body .choices .btn.wrong,html body .pairopts .btn.wrong{background:var(--oops-soft);color:var(--oops);border-color:var(--oops-line);box-shadow:0 3px 0 var(--oops-line),0 0 0 1px var(--oops-line) inset}
+  html body .choices .btn.wrong::before{background:var(--oops);color:#fff}
+  html body .fixw.bad{background:var(--oops-soft);color:var(--oops)}
+  html body .ordl.wrong{background:var(--oops-soft)}
+  html body .cmsg.bad .cbub{box-shadow:0 0 0 2px var(--oops-line)}html body .cmsg.bad .cmark{background:var(--oops)}
+  html body .teach.bad .ybub{background:var(--oops-soft);color:var(--ink)}`;document.head.appendChild(css)})();
 
 /* ===================== FIREBASE: перенос по коду, вход через Telegram, соревнование ===================== */
 // Firestore через REST, без SDK. Работает в приложении на телефоне и в Telegram-версии

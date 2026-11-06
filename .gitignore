@@ -1,0 +1,10 @@
+android/build/
+android/assets/
+android/release.keystore
+ios/build/
+ios/Payload/
+ios/*.ipa
+ios/YasnyEnglish.xcodeproj/
+ios/Resources/index.html
+*.apk
+*.tar.gz

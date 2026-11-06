@@ -1,0 +1,42 @@
+name: YasnyEnglish
+options:
+  bundleIdPrefix: ru.yasny
+  deploymentTarget:
+    iOS: "15.0"
+targets:
+  YasnyEnglish:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Resources
+        buildPhase: resources
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: Ясный английский
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        ITSAppUsesNonExemptEncryption: false
+        UIBackgroundModes: []
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ru.yasny.english
+        PRODUCT_NAME: YasnyEnglish
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SWIFT_VERSION: "5.0"
+        CODE_SIGNING_ALLOWED: "NO"
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGN_IDENTITY: ""
+        ENABLE_BITCODE: "NO"

@@ -5366,7 +5366,7 @@ try{speechSynthesis.addEventListener&&speechSynthesis.addEventListener("voicesch
 // Firestore через REST, без SDK. Работает в приложении на телефоне и в Telegram-версии
 // (веб-артефакт claude.ai до Firebase не достучится из-за CSP — там остаётся длинный код YE1:).
 const FB={key:"AIzaSyC6he3wGh6d8YlzRVCaIENrt9uSZdnWlNw",pid:"yasny-english",on:!!window.__NATIVE_APP,AUTH:"yasny-fb-auth",SEC:"yasny-fb-sync"};
-const TG_BOT="";   // username бота без @ — нужен для кнопки «Войти через Telegram» в приложении
+const TG_BOT="yasny_english_bot";   // username бота без @ — нужен для кнопки «Войти через Telegram» в приложении
 const TG_APP="";   // короткое имя Mini App, если она создана через /newapp; пусто — главная Mini App бота
 const FB_BASE=`https://firestore.googleapis.com/v1/projects/${FB.pid}/databases/(default)/documents/`;
 const CODE_ABC="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // без 0/O, 1/I/L

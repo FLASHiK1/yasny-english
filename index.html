@@ -569,6 +569,21 @@ body.onb .buddy{display:none}
 .dline.b .dsp{background:var(--ok);color:#fff}
 .weekly .rstats.wk{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px;margin-top:10px}
 .weekly em{font-style:normal;font-size:12px}.weekly em.up{color:var(--ok)}.weekly em.down{color:var(--bad)}
+.wlvls{display:flex;flex-direction:column;gap:6px}
+.wlvl{appearance:none;border:1px solid transparent;background:transparent;border-radius:12px;display:flex;align-items:center;gap:12px;padding:6px 8px;cursor:pointer;color:var(--ink);font:inherit;text-align:left}
+.wlvl.on{border-color:var(--accent);background:var(--soft)}
+.wlvl .lvlbig{font-size:22px;min-width:44px}
+.wlb{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.wbar3{display:flex;height:8px;border-radius:5px;overflow:hidden;background:var(--line)}
+.wbar3 i{display:block;height:100%}.wbar3 .k,.wleg .k{background:var(--ok)}.wbar3 .l,.wleg .l{background:var(--accent)}.wleg .n{background:var(--line)}
+.wleg{display:flex;gap:6px;align-items:center;margin-top:4px}.wleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-left:6px}
+.wgrp{margin-bottom:10px}.wgrp>summary{display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 2px;list-style:none}
+.wgrp>summary::-webkit-details-marker{display:none}.wgrp>summary .lvlbig{font-size:18px;min-width:34px}.wgrp>summary .small{margin-left:auto}
+.wgrp .wi:first-child{border-top:0}
+.wmore{width:100%;border-top:1px solid var(--line);border-radius:0}
+.achprev{display:block;color:inherit;text-decoration:none}
+.achstrip{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+@media (max-width:420px){.wi{grid-template-columns:minmax(0,1fr) auto;gap:2px 10px}.wi .r{grid-column:1;grid-row:2;color:var(--muted);font-size:14px}.wi>.row{grid-column:2;grid-row:1/span 2}}
 </style>
 
 <header>
@@ -2294,13 +2309,13 @@ function chips(){try{renderTabbar((location.hash||"#today").slice(1)||"today")}c
 
 /* ===================== VIEWS ===================== */
 const V=$("#view");
-const ROUTES=["today","mistakes","cards","grammar","translate","listen","words","test","read","speak","practice","verbs","course","library","hello","learn","train","profile","stats","rules","path","talk"];
+const ROUTES=["today","mistakes","cards","grammar","translate","listen","words","test","read","speak","practice","verbs","course","library","hello","learn","train","profile","stats","rules","path","talk","settings","ach"];
 function route(){
   let r=(location.hash||"#today").slice(1);if(!ROUTES.includes(r))r="today";
   renderTabbar(r);setTimeout(checkAch,300);
   if(r!=="mistakes"&&MS&&MS.active&&!MS.cur)MS=null;
   try{speechSynthesis.cancel()}catch(e){}
-  ({today:viewToday,mistakes:viewMistakes,test:viewTest,read:viewRead,speak:viewSpeak,practice:viewPractice,course:viewCourse,library:viewLibrary,hello:viewHello,learn:viewLearn,train:viewTrain,profile:viewProfile,stats:viewStats,rules:viewRules,path:viewPath,talk:viewTalk,verbs:viewVerbs,cards:viewCards,grammar:viewGrammar,translate:viewTranslate,listen:viewListen,words:viewWords})[r]();
+  ({today:viewToday,mistakes:viewMistakes,test:viewTest,read:viewRead,speak:viewSpeak,practice:viewPractice,course:viewCourse,library:viewLibrary,hello:viewHello,learn:viewLearn,train:viewTrain,profile:viewProfile,stats:viewStats,rules:viewRules,path:viewPath,talk:viewTalk,settings:viewSettings,ach:viewAch,verbs:viewVerbs,cards:viewCards,grammar:viewGrammar,translate:viewTranslate,listen:viewListen,words:viewWords})[r]();
   chips();syncUI();window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
@@ -3628,13 +3643,13 @@ ${XF.open==="imp"?`<textarea id="xfin" placeholder="Вставь сюда код
 ${XF.msg?`<div class="small" style="margin-top:8px">${esc(XF.msg)}</div>`:""}</section>`}
 function bindTransfer(){
   const on=(id,f)=>{const el=$("#"+id);if(el)el.onclick=f};
-  on("xfexp",()=>{XF.open="exp";XF.msg="";XF.code="YE1:"+btoa(unescape(encodeURIComponent(JSON.stringify(S))));viewWords()});
-  on("xfimp",()=>{XF.open="imp";XF.msg="";viewWords()});
+  on("xfexp",()=>{XF.open="exp";XF.msg="";XF.code="YE1:"+btoa(unescape(encodeURIComponent(JSON.stringify(S))));viewSettings()});
+  on("xfimp",()=>{XF.open="imp";XF.msg="";viewSettings()});
   on("xfcopy",()=>{const ta=$("#xfcode");const fb=()=>{ta.focus();ta.select();toast("Выдели текст и скопируй вручную")};try{navigator.clipboard.writeText(XF.code).then(()=>toast("Код скопирован"),fb)}catch(e){fb()}});
   on("xfgo",()=>{const v=($("#xfin").value||"").trim();
     try{if(!v.startsWith("YE1:"))throw 0;const remote=JSON.parse(decodeURIComponent(escape(atob(v.slice(4)))));if(!remote||typeof remote!=="object"||!remote.cards)throw 0;
-      S=mergeState(S,remote);save();CS=null;TS=null;LS=null;XF={open:false,code:"",msg:"Готово: прогресс объединён."};chips();viewWords()}
-    catch(e){XF.msg="Код не подошёл. Скопируй его целиком, начиная с YE1:";viewWords()}});
+      S=mergeState(S,remote);save();CS=null;TS=null;LS=null;XF={open:false,code:"",msg:"Готово: прогресс объединён."};chips();viewSettings()}
+    catch(e){XF.msg="Код не подошёл. Скопируй его целиком, начиная с YE1:";viewSettings()}});
 }
 /* ---------- МИКРОФОН (в приложении для телефона) ---------- */
 const ICON_MIC='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>';
@@ -4088,7 +4103,7 @@ const TABS=[
 {id:"mistakes",t:"Ошибки",icon:'<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/><path d="M12 8v5M12 16v.5"/>',routes:["mistakes"]},
 {id:"profile",t:"Профиль",icon:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',routes:["profile","words","library","stats"]}
 ];
-const CRUMB={path:"learn",talk:"train",rules:"learn",course:"learn",cards:"learn",grammar:"learn",verbs:"learn",test:"learn",translate:"train",practice:"train",listen:"train",read:"train",speak:"train",words:"profile",library:"profile",stats:"profile"};
+const CRUMB={settings:"profile",ach:"profile",path:"learn",talk:"train",rules:"learn",course:"learn",cards:"learn",grammar:"learn",verbs:"learn",test:"learn",translate:"train",practice:"train",listen:"train",read:"train",speak:"train",words:"profile",library:"profile",stats:"profile"};
 function tabFor(r){return (TABS.find(t=>t.routes.includes(r))||TABS[0]).id}
 function renderTabbar(r){
   const bar=$("#tabbar");if(!bar)return;const cur=tabFor(r),md=dueMist().length;
@@ -4416,18 +4431,19 @@ function gemSettingsHTML(){
 }
 function bindGemSettings(){
   const sv=$("#gmsave");if(sv)sv.onclick=async()=>{const k=($("#gmkey").value||"").trim();if(!k){toast("Вставь ключ");return}
-    GS2.busy=true;GS2.msg="";viewWords();
+    GS2.busy=true;GS2.msg="";viewSettings();
     try{S.settings.gmModels=null;const m=await gemModels(k,true);gemSetKey(k);await aiReset();GS2.msg="Готово! ИИ работает в приложении. Модели: "+m.quick+(m.quick!==m.def?", "+m.def:"")}
     catch(e){GS2.msg=e&&e.code==="bad_key"?"Ключ не подошёл. Проверь, что скопирован целиком.":e&&e.code==="no_model"?"Ключу недоступны подходящие модели Gemini.":"Не удалось проверить ключ. Нужен интернет."}
-    GS2.busy=false;viewWords()};
-  const ts=$("#gmtest");if(ts)ts.onclick=async()=>{GS2.busy=true;GS2.msg="";viewWords();
+    GS2.busy=false;viewSettings()};
+  const ts=$("#gmtest");if(ts)ts.onclick=async()=>{GS2.busy=true;GS2.msg="";viewSettings();
     try{const m=await gemModels(gemKey(),true);GS2.msg="Ключ работает. Модели: "+m.quick+(m.quick!==m.def?", "+m.def:"")}catch(e){GS2.msg=e&&e.code==="bad_key"?"Ключ больше не работает. Подключи новый.":"Не удалось проверить: нужен интернет."}
-    GS2.busy=false;viewWords()};
-  const dl=$("#gmdel");if(dl)dl.onclick=async()=>{gemSetKey("");S.settings.gmModels=null;save();await aiReset();GS2.msg="Ключ отключён.";viewWords()};
+    GS2.busy=false;viewSettings()};
+  const dl=$("#gmdel");if(dl)dl.onclick=async()=>{gemSetKey("");S.settings.gmModels=null;save();await aiReset();GS2.msg="Ключ отключён.";viewSettings()};
 }
 
 /* ===================== ДИЗАЙН v2: иконки, карта курса, праздники ===================== */
 const IC={
+settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
 path:'<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h8"/>',
 course:'<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
 cards:'<rect x="3" y="7" width="13" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-3"/>',
@@ -4450,7 +4466,7 @@ check:'<path d="M5 12.5 10 17 19 7"/>',
 star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>'
 };
 function ico(name,cls){return `<svg class="ico ${cls||""}" viewBox="0 0 24 24" aria-hidden="true">${IC[name]||""}</svg>`}
-const HUB={"#path":["path","c-green"],"#talk":["practice","c-violet"],"#course":["course","c-blue"],"#cards":["cards","c-orange"],"#rrev":["rrev","c-violet"],"#rules":["rules","c-teal"],"#grammar":["grammar","c-violet"],"#verbs":["verbs","c-pink"],"#test":["test","c-green"],
+const HUB={"#settings":["settings","c-blue"],"#ach":["star","c-orange"],"#path":["path","c-green"],"#talk":["practice","c-violet"],"#course":["course","c-blue"],"#cards":["cards","c-orange"],"#rrev":["rrev","c-violet"],"#rules":["rules","c-teal"],"#grammar":["grammar","c-violet"],"#verbs":["verbs","c-pink"],"#test":["test","c-green"],
   "#translate":["translate","c-blue"],"#practice":["practice","c-pink"],"#read":["read","c-teal"],"#listen":["listen","c-orange"],"#speak":["speak","c-green"],"#stats":["stats","c-blue"],"#words":["words","c-orange"],"#library":["library","c-teal"],"#mistakes":["mistakes","c-pink"]};
 function tile(h,t,d,badge,prog,key){
   const [ic,col]=HUB[key||h]||["words","c-blue"];
@@ -4567,27 +4583,12 @@ function celebrateLevel(from,to){celebrate({badge:`${from} → ${to}`,title:`Н�
 
 /* ---------- WORDS ---------- */
 let WF={q:"",f:"all",confirm:false};
-function viewWords(){
+function viewSettings(){
   const list=allWords();
   const cnt={new:0,learn:0,known:0};list.forEach(w=>cnt[status(w.id)]++);
-  V.innerHTML=`<h1>Слова</h1><p class="sub">${list.length} ${plural(list.length,["слово","слова","слов"])}: выучено ${cnt.known}, учу ${cnt.learn}, новых ${cnt.new}. «Выучено» — когда интервал повторения дошёл до трёх недель.</p>
+  V.innerHTML=`<h1>Настройки</h1><p class="sub">Уровень, цели, озвучка, напоминания, ИИ и перенос прогресса.</p>
   <div class="stack">
-  <section class="sheet"><h2>Добавить своё слово</h2>
-    <form id="addf" class="form">
-      <input type="text" id="aen" placeholder="По-английски, например: get rid of" required autocomplete="off" autocapitalize="off">
-      <input type="text" id="aru" placeholder="Перевод: избавиться от" required autocomplete="off">
-      <input type="text" id="aex" class="full" placeholder="Пример (необязательно): I want to get rid of this old sofa." autocomplete="off">
-      <div class="full row"><button class="btn primary" type="submit">Добавить в карточки</button><span class="small muted">Свои слова идут первыми среди новых.</span></div>
-    </form></section>
-  <section>
-    <div class="row" style="margin-bottom:10px"><input type="text" id="wq" placeholder="Поиск" value="${esc(WF.q)}" style="flex:1;min-width:160px">
-    <div class="seg" role="group" aria-label="Фильтр">${[["all","Все"],["learn","Учу"],["known","Выучено"],["new","Новые"]].map(([k,t])=>`<button data-f="${k}" aria-pressed="${WF.f===k}">${t}</button>`).join("")}</div></div>
-    <div class="wl" id="wl"></div>
-  </section>
-  ${setsHTML()}
-  ${gemSettingsHTML()}
-  ${transferHTML()}
-  <section class="sheet"><h2>Настройки</h2>
+  <section class="sheet"><h2>Основное</h2>
     <div class="settings">
       <label for="slvl">Рабочий уровень <span class="small muted">· <a href="#test">тест</a></span></label><select id="slvl">${LEVELS.map(l=>`<option value="${l}" ${l===S.level?"selected":""}>${l} · ${LVLNAME[l]}</option>`).join("")}</select>
       <label for="snew">Новых слов в день</label><select id="snew">${[5,10,15,20,30].map(n=>`<option ${n===S.settings.newPerDay?"selected":""}>${n}</option>`).join("")}</select>
@@ -4601,13 +4602,11 @@ function viewWords(){
     </div>
     <p class="small muted" style="margin:14px 0 10px" data-sync></p>
     <div class="row">${WF.confirm?`<span>Удалить весь прогресс и свои слова?</span><button class="btn" id="rsyes" style="color:var(--bad);border-color:var(--bad)">Да, удалить</button><button class="btn ghost" id="rsno">Отмена</button>`:`<button class="btn ghost" id="rs">Сбросить прогресс</button>`}</div>
-  </section></div>`;
-  renderWL();bindSets();bindTransfer();bindGemSettings();syncUI();
-  $("#wq").oninput=e=>{WF.q=e.target.value;renderWL()};
-  V.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{WF.f=b.dataset.f;V.querySelectorAll("[data-f]").forEach(x=>x.setAttribute("aria-pressed",x===b));renderWL()});
-  $("#addf").onsubmit=e=>{e.preventDefault();const en=$("#aen").value.trim(),ru=$("#aru").value.trim(),ex=$("#aex").value.trim();
-    if(!en||!ru)return;if(allWords().some(w=>norm(w.en)===norm(en))){toast("Это слово уже есть в списке");return}
-    S.custom.push({id:"c:"+en.toLowerCase(),en,ru,ipa:"",ex,exru:""});save();toast("Добавлено: "+en);viewWords()};
+  </section>
+  ${gemSettingsHTML()}
+  ${transferHTML()}
+  </div>`;
+  bindTransfer();bindGemSettings();syncUI();
   $("#slvl").onchange=e=>{setLevel(e.target.value,"manual");toast("Уровень: "+e.target.value);chips()};
   $("#snew").onchange=e=>{S.settings.newPerDay=+e.target.value;save();CS=null;toast("Сохранено")};
   $("#sweek").onchange=e=>{S.settings.weekGoal=+e.target.value;save();toast("Сохранено")};
@@ -4620,8 +4619,8 @@ function viewWords(){
     toast(v==="off"?"Напоминание выключено":"Напомню каждый день в "+v)};
   $("#svoice").onchange=e=>{S.settings.voice=e.target.value;save();speak("Hello! This is how I sound.")};
   const on=(id,f)=>{const el=$("#"+id);if(el)el.onclick=f};
-  on("rs",()=>{WF.confirm=true;viewWords()});on("rsno",()=>{WF.confirm=false;viewWords()});
-  on("rsyes",()=>{S=JSON.parse(JSON.stringify(DEF));S.resetAt=Date.now();save();CS=GS=TS=LS=MS=TT=null;WF.confirm=false;toast("Прогресс сброшен");viewWords();chips()});
+  on("rs",()=>{WF.confirm=true;viewSettings()});on("rsno",()=>{WF.confirm=false;viewSettings()});
+  on("rsyes",()=>{S=JSON.parse(JSON.stringify(DEF));S.resetAt=Date.now();save();CS=GS=TS=LS=MS=TT=null;WF.confirm=false;toast("Прогресс сброшен");viewSettings();chips()});
 }
 function renderWL(){
   const q=norm(WF.q);
@@ -5044,6 +5043,90 @@ viewTrain=function(){
   const html=tile("#talk","Разговор с Ясиком",`${TALK.length} вопросов о тебе · ${micAvail()?"отвечай голосом":"отвечай письменно или голосом в приложении"}`,"",{v:tl/TALK.length});
   if(sp)sp.insertAdjacentHTML("beforebegin",html);else g.insertAdjacentHTML("beforeend",html);
   const ls=g.querySelector('a[href="#listen"] .tbody span');if(ls)ls.textContent="Диктант и диалоги: послушай и ответь";
+};
+
+/* ===================== МОИ СЛОВА (по уровням) ===================== */
+WF.lv=WF.lv||"all";WF.more=WF.more||{};
+function viewWords(){
+  const list=allWords();
+  const cnt={new:0,learn:0,known:0};list.forEach(w=>cnt[status(w.id)]++);
+  const groups=LEVELS.concat(["own"]).map(L=>{const ws=list.filter(w=>L==="own"?w.custom:(!w.custom&&(w.lvl||"A1")===L));const c={new:0,learn:0,known:0};ws.forEach(w=>c[status(w.id)]++);return{L,ws,c}}).filter(g=>g.ws.length);
+  V.innerHTML=`<h1>Мои слова</h1><p class="sub">${list.length} ${plural(list.length,["слово","слова","слов"])} в приложении. «Выучено» — когда слово держится в памяти три недели.</p>
+  <div class="stack">
+  <section class="kpis"><div><b>${cnt.known}</b><span>выучено</span></div><div><b>${cnt.learn}</b><span>учу</span></div><div><b>${cnt.new}</b><span>впереди</span></div></section>
+  <section class="sheet wlvls">${groups.map(g=>{const t=g.ws.length;return `<button class="wlvl ${WF.lv===g.L?"on":""}" data-wlv="${g.L}"><span class="lvlbig">${g.L==="own"?"★":g.L}</span><span class="wlb"><span class="wbar3"><i class="k" style="width:${g.c.known/t*100}%"></i><i class="l" style="width:${g.c.learn/t*100}%"></i></span><span class="small muted">${g.L==="own"?"Свои · ":""}${g.c.known} из ${t} выучено${g.c.learn?` · учу ${g.c.learn}`:""}</span></span></button>`}).join("")}
+    <div class="small muted wleg"><i class="k"></i>выучено <i class="l"></i>учу <i class="n"></i>впереди</div></section>
+  <section>
+    <div class="row" style="margin-bottom:8px"><input type="search" id="wq" placeholder="Найти слово по-английски или по-русски" value="${esc(WF.q)}" style="flex:1;min-width:0"></div>
+    <div class="row" style="margin-bottom:10px;justify-content:space-between">
+      <div class="seg" role="group" aria-label="Статус">${[["all","Все"],["learn","Учу"],["known","Выучено"],["new","Новые"]].map(([k,t])=>`<button data-f="${k}" aria-pressed="${WF.f===k}">${t}</button>`).join("")}</div>
+      ${WF.lv!=="all"?`<button class="btn ghost small" id="wlall">Все уровни ×</button>`:""}</div>
+    <div id="wl"></div>
+  </section>
+  <details class="sheet" ${WF.addOpen?"open":""} id="wadd"><summary><b>Добавить своё слово</b></summary>
+    <form id="addf" class="form" style="margin-top:12px">
+      <input type="text" id="aen" placeholder="По-английски, например: get rid of" required autocomplete="off" autocapitalize="off">
+      <input type="text" id="aru" placeholder="Перевод: избавиться от" required autocomplete="off">
+      <input type="text" id="aex" class="full" placeholder="Пример (необязательно): I want to get rid of this old sofa." autocomplete="off">
+      <div class="full row"><button class="btn primary" type="submit">Добавить в карточки</button><span class="small muted">Свои слова идут первыми среди новых.</span></div>
+    </form></details>
+  ${setsHTML()}
+  <div class="row"><a class="btn ghost" href="#settings">${ico("settings")} Настройки: слов в день, цель, озвучка</a></div>
+  </div>`;
+  renderWL();bindSets();
+  $("#wq").oninput=e=>{WF.q=e.target.value;renderWL()};
+  V.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{WF.f=b.dataset.f;V.querySelectorAll("[data-f]").forEach(x=>x.setAttribute("aria-pressed",x===b));renderWL()});
+  V.querySelectorAll("[data-wlv]").forEach(b=>b.onclick=()=>{WF.lv=WF.lv===b.dataset.wlv?"all":b.dataset.wlv;viewWords()});
+  const wa=$("#wlall");if(wa)wa.onclick=()=>{WF.lv="all";viewWords()};
+  $("#wadd").ontoggle=e=>{WF.addOpen=e.target.open};
+  $("#addf").onsubmit=e=>{e.preventDefault();const en=$("#aen").value.trim(),ru=$("#aru").value.trim(),ex=$("#aex").value.trim();
+    if(!en||!ru)return;if(allWords().some(w=>norm(w.en)===norm(en))){toast("Это слово уже есть в списке");return}
+    S.custom.push({id:"c:"+en.toLowerCase(),en,ru,ipa:"",ex,exru:""});save();toast("Добавлено: "+en);viewWords()};
+}
+renderWL=function(){
+  const box=$("#wl");if(!box)return;
+  const q=norm(WF.q),ql=WF.q.toLowerCase().trim();
+  const lbl={new:"новое",learn:"учу",known:"выучено"};
+  const all=allWords().filter(w=>(WF.f==="all"||status(w.id)===WF.f)&&(!q||norm(w.en).includes(q)||w.ru.toLowerCase().includes(ql)));
+  const groups=LEVELS.concat(["own"]).filter(L=>WF.lv==="all"||WF.lv===L).map(L=>({L,ws:all.filter(w=>L==="own"?w.custom:(!w.custom&&(w.lvl||"A1")===L))})).filter(g=>g.ws.length);
+  if(!groups.length){box.innerHTML=`<div class="wl"><div class="wi"><span class="muted">Ничего не найдено</span></div></div>`;return}
+  const one=groups.length===1||!!q;
+  box.innerHTML=groups.map(g=>{const lim=WF.more[g.L]||40,shown=g.ws.slice(0,lim);
+    return `<details class="wgrp" ${one||g.L===T()||WF.open===g.L?"open":""} data-wg="${g.L}"><summary><span class="lvlbig">${g.L==="own"?"★":g.L}</span><b>${g.L==="own"?"Свои слова":LVLNAME[g.L][0].toUpperCase()+LVLNAME[g.L].slice(1)}</b><span class="small muted">${g.ws.length}</span></summary>
+    <div class="wl">${shown.map(w=>{const st=status(w.id),c=S.cards[w.id];
+      return `<div class="wi"><span class="e">${esc(w.en)}</span><span class="r">${esc(w.ru)}</span><span class="row" style="gap:6px;flex-wrap:nowrap"><span class="pill ${st}" title="${c?"Следующее повторение: "+new Date(c.due).toLocaleDateString("ru-RU"):""}">${lbl[st]}</span>${sayBtn(w.en)}${w.custom?`<button class="btn ghost small" data-del="${esc(w.id)}" aria-label="Удалить ${esc(w.en)}" style="padding:2px 6px">×</button>`:""}</span></div>`}).join("")}
+    ${g.ws.length>lim?`<button class="btn ghost wmore" data-wm="${g.L}">Показать ещё ${Math.min(60,g.ws.length-lim)} из ${g.ws.length-lim}</button>`:""}</div></details>`}).join("");
+  box.querySelectorAll("[data-wm]").forEach(b=>b.onclick=()=>{WF.more[b.dataset.wm]=(WF.more[b.dataset.wm]||40)+60;WF.open=b.dataset.wm;renderWL()});
+  box.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const id=b.dataset.del;S.custom=S.custom.filter(c=>c.id!==id);S.deleted=(S.deleted||[]).concat(id);delete S.cards[id];save();renderWL()});
+};
+
+/* ===================== ДОСТИЖЕНИЯ ===================== */
+function achDate(v){return typeof v==="string"&&/^\d{4}-\d\d-\d\d$/.test(v)?new Date(v+"T12:00:00").toLocaleDateString("ru-RU",{day:"numeric",month:"long"}):""}
+function viewAch(){
+  const got=ACH.filter(a=>(S.ach||{})[a.id]).sort((a,b)=>String(S.ach[b.id]).localeCompare(String(S.ach[a.id]))),left=ACH.filter(a=>!(S.ach||{})[a.id]);
+  V.innerHTML=`<h1>Достижения</h1><p class="sub">Получено ${got.length} из ${ACH.length}.</p>
+  <div class="stack"><div class="meter"><i style="width:${got.length/ACH.length*100}%"></i></div>
+  ${got.length?`<section><h2>Получено</h2><div class="achs">${got.map(a=>`<div class="achi on">${medal(true,44)}<b>${esc(a.t)}</b><span>${esc(a.d)}</span>${achDate(S.ach[a.id])?`<span class="small muted">${achDate(S.ach[a.id])}</span>`:""}</div>`).join("")}</div></section>`:yasay("happy","Пока ни одного — но первое придёт уже после первого ответа!",56)}
+  ${left.length?`<section><h2>Впереди</h2><div class="achs">${left.map(a=>`<div class="achi">${medal(false,44)}<b>${esc(a.t)}</b><span>${esc(a.d)}</span></div>`).join("")}</div></section>`:""}
+  </div>`;
+}
+// Профиль: компактно — плитки и последние достижения
+const _viewProfile=viewProfile;
+viewProfile=function(){
+  _viewProfile();
+  const tl=V.querySelector(".tiles");
+  if(tl){const ws=allWords().length,known=knownCount();
+    tl.outerHTML=`<div class="tiles2">
+    ${tile("#words","Мои слова",`${known} выучено из ${ws} · поиск, уровни, свои слова`,"",{v:known/Math.max(1,ws)})}
+    ${tile("#settings","Настройки","Уровень, цель, слов в день, озвучка, напоминания, ИИ")}
+    ${tile("#stats","Статистика","Графики, точность, прогресс по уровням")}
+    ${tile("#library","Библиотека",`Тематические наборы: установлено ${Object.keys(S.packs||{}).length}`)}
+    </div>`}
+  const sec=[...V.querySelectorAll("section")].find(s=>s.querySelector(".achs"));
+  if(sec){const got=ACH.filter(a=>(S.ach||{})[a.id]).sort((a,b)=>String(S.ach[b.id]).localeCompare(String(S.ach[a.id])));
+    sec.outerHTML=`<a class="sheet achprev" href="#ach"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Достижения</h2><span class="small muted">${got.length} из ${ACH.length} ›</span></div>
+    <div class="achstrip">${got.slice(0,5).map(a=>`<span title="${esc(a.t)}">${medal(true,40)}</span>`).join("")}${got.length<5?ACH.filter(a=>!(S.ach||{})[a.id]).slice(0,5-got.length).map(a=>`<span title="${esc(a.t)}">${medal(false,40)}</span>`).join(""):""}</div>
+    <div class="meter" style="margin-top:8px"><i style="width:${got.length/ACH.length*100}%"></i></div></a>`}
 };
 
 autoPacks();applyPacks();migrateRrev();applyFreeze();

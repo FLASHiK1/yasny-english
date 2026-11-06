@@ -2367,7 +2367,7 @@ function renderTest(){
     const wrongN=Object.values(S.mist).filter(m=>m.k==="quiz"&&!m.done).length;
     V.innerHTML=`<h1>Твой уровень: ${L}</h1><p class="sub">${LVLNAME[L]}</p>${steps}
     <div class="sheet anim stack"><p style="margin:0">${msg}</p>
-    <p class="small muted" style="margin:0">Уровень не навсегда. Приложение следит за точностью ответов и предложит перейти выше, когда станет легко. Его можно поменять и вручную на вкладке «Слова».</p>
+    <p class="small muted" style="margin:0">Уровень не навсегда. Приложение следит за точностью ответов и предложит перейти выше, когда станет легко. Его можно поменять и вручную в «Профиль → Настройки».</p>
     <div class="row"><a class="btn primary" href="#today">Начать занятия</a>${wrongN?`<a class="btn" href="#mistakes">Разобрать ошибки теста (${wrongN})</a>`:""}</div></div>`;
     return;
   }
@@ -2957,7 +2957,7 @@ function getAI(){
 getAI().then(()=>{if(AI.off&&["practice"].includes((location.hash||"").slice(1)))route()});
 function aiErr(e){
   const c=e&&e.code;
-  if(c==="bad_key")return"Ключ Gemini не подошёл. Проверь его в настройках на вкладке «Слова».";
+  if(c==="bad_key")return"Ключ Gemini не подошёл. Проверь его в «Профиль → Настройки».";
   if(c==="gem_limit")return"Дневной лимит бесплатного ключа Gemini закончился (сбросится ночью). Нажми «Спросить в Gemini» — откроется приложение Gemini с готовым запросом.";
   if(c==="no_model")return"Ключу Gemini недоступны подходящие модели.";
   if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(c)){AI.off=true;return"ИИ недоступен: доступ к Claude для этой страницы не разрешён. Остальные разделы работают как обычно."}
@@ -3008,7 +3008,7 @@ function mergeState(a,b){
   out.totalAns=Math.max(newer.totalAns||0,older.totalAns||0);
   return Object.assign({},DEF,out,{settings:Object.assign({},DEF.settings,out.settings||{})});
 }
-function syncLabel(){return{local:window.__NATIVE_APP?"Прогресс хранится на этом телефоне. Перенести его можно на вкладке «Слова»":"Прогресс хранится только в этом браузере",loading:"Подключаюсь к аккаунту…",synced:"Прогресс сохранён в аккаунте claude.ai и одинаков на всех устройствах",offline:"Нет связи с аккаунтом, прогресс пока сохраняется в браузере",error:"Не удалось сохранить в аккаунт, прогресс пока сохраняется в браузере"}[SYNC.state]}
+function syncLabel(){return{local:window.__NATIVE_APP?"Прогресс хранится на этом телефоне. Перенести его можно в «Профиль → Настройки»":"Прогресс хранится только в этом браузере",loading:"Подключаюсь к аккаунту…",synced:"Прогресс сохранён в аккаунте claude.ai и одинаков на всех устройствах",offline:"Нет связи с аккаунтом, прогресс пока сохраняется в браузере",error:"Не удалось сохранить в аккаунт, прогресс пока сохраняется в браузере"}[SYNC.state]}
 function syncUI(){document.querySelectorAll("[data-sync]").forEach(el=>{el.textContent=syncLabel();el.dataset.state=SYNC.state})}
 function scheduleSync(){if(!SYNC.ref||SYNC.state==="loading")return;clearTimeout(SYNC.timer);SYNC.timer=setTimeout(pushSync,2500)}
 function pushSync(){
@@ -3102,10 +3102,10 @@ function renderVerb(){
 
 /* ---------- ПИСЬМО И РАЗГОВОР С ИИ ---------- */
 let PR={mode:"write",ti:0,custom:"",text:"",busy:false,res:null,err:"",ctl:null,chat:null};
-function aiOffBox(){if(window.__NATIVE_APP)return `<div class="sheet stack"><h2 style="margin:0">ИИ работает в веб-версии</h2><p class="muted" style="margin:0">Проверка письма и разговор идут через Claude и доступны, когда приложение открыто на claude.ai (в браузере или в приложении Claude). Остальные разделы здесь работают полностью и без интернета. Прогресс между версиями можно перенести на вкладке «Слова».</p></div>`;return `<div class="sheet stack"><h2 style="margin:0">ИИ сейчас недоступен</h2><p class="muted" style="margin:0">Проверка письма и разговор работают через Claude, когда приложение открыто на claude.ai под твоим аккаунтом и ты разрешил странице обращаться к Claude. Запросы расходуют лимиты твоей подписки, как обычные сообщения в чате.</p></div>`}
+function aiOffBox(){if(window.__NATIVE_APP)return `<div class="sheet stack"><h2 style="margin:0">ИИ работает в веб-версии</h2><p class="muted" style="margin:0">Проверка письма и разговор идут через Claude и доступны, когда приложение открыто на claude.ai (в браузере или в приложении Claude). Остальные разделы здесь работают полностью и без интернета. Прогресс между версиями можно перенести в «Профиль → Настройки».</p></div>`;return `<div class="sheet stack"><h2 style="margin:0">ИИ сейчас недоступен</h2><p class="muted" style="margin:0">Проверка письма и разговор работают через Claude, когда приложение открыто на claude.ai под твоим аккаунтом и ты разрешил странице обращаться к Claude. Запросы расходуют лимиты твоей подписки, как обычные сообщения в чате.</p></div>`}
 function viewPractice(){
   const seg=`<div class="seg" role="group" aria-label="Режим" style="margin-bottom:16px">${[["write","Письмо"],["chat","Разговор"]].map(([k,t])=>`<button data-pm="${k}" aria-pressed="${PR.mode===k}">${t}</button>`).join("")}</div>`;
-  const head=`<h1>Письмо и разговор</h1><p class="sub">Практика с ИИ-преподавателем под уровень ${T()}. Найденные ошибки попадают в «Ошибки».</p>${AI.off&&canOpenGemini()?`<div class="rulehint new" style="margin-bottom:14px">${yasik("think",40,{teacher:false,anim:"idle"})}<span>Сейчас проверка идёт через приложение Gemini. Подключи бесплатный ключ на вкладке «Слова» — и разбор будет появляться прямо здесь.</span><a class="btn small" href="#words">Подключить</a></div>`:""}${seg}`;
+  const head=`<h1>Письмо и разговор</h1><p class="sub">Практика с ИИ-преподавателем под уровень ${T()}. Найденные ошибки попадают в «Ошибки».</p>${AI.off&&canOpenGemini()?`<div class="rulehint new" style="margin-bottom:14px">${yasik("think",40,{teacher:false,anim:"idle"})}<span>Сейчас проверка идёт через приложение Gemini. Подключи бесплатный ключ в «Профиль → Настройки» — и разбор будет появляться прямо здесь.</span><a class="btn small" href="#words">Подключить</a></div>`:""}${seg}`;
   if(AI.off&&!canOpenGemini()){V.innerHTML=head+aiOffBox();bindPm();return}
   if(PR.mode==="write")renderWrite(head);else renderChat(head);
   bindPm();

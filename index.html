@@ -2367,13 +2367,13 @@ function chips(){try{renderTabbar((location.hash||"#today").slice(1)||"today")}c
 
 /* ===================== VIEWS ===================== */
 const V=$("#view");
-const ROUTES=["today","mistakes","cards","grammar","translate","listen","words","test","read","speak","practice","verbs","course","library","hello","learn","train","profile","stats","rules","path","talk","settings","ach"];
+const ROUTES=["today","mistakes","cards","grammar","translate","listen","words","test","read","speak","practice","verbs","course","library","hello","learn","train","profile","stats","rules","path","talk","settings","ach","duel"];
 function route(){
   let r=(location.hash||"#today").slice(1);if(!ROUTES.includes(r))r="today";
   renderTabbar(r);setTimeout(checkAch,300);
   if(r!=="mistakes"&&MS&&MS.active&&!MS.cur)MS=null;
   try{speechSynthesis.cancel()}catch(e){}
-  ({today:viewToday,mistakes:viewMistakes,test:viewTest,read:viewRead,speak:viewSpeak,practice:viewPractice,course:viewCourse,library:viewLibrary,hello:viewHello,learn:viewLearn,train:viewTrain,profile:viewProfile,stats:viewStats,rules:viewRules,path:viewPath,talk:viewTalk,settings:viewSettings,ach:viewAch,verbs:viewVerbs,cards:viewCards,grammar:viewGrammar,translate:viewTranslate,listen:viewListen,words:viewWords})[r]();
+  ({today:viewToday,mistakes:viewMistakes,test:viewTest,read:viewRead,speak:viewSpeak,practice:viewPractice,course:viewCourse,library:viewLibrary,hello:viewHello,learn:viewLearn,train:viewTrain,profile:viewProfile,stats:viewStats,rules:viewRules,path:viewPath,talk:viewTalk,settings:viewSettings,ach:viewAch,duel:viewDuel,verbs:viewVerbs,cards:viewCards,grammar:viewGrammar,translate:viewTranslate,listen:viewListen,words:viewWords})[r]();
   chips();syncUI();window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
@@ -4160,9 +4160,9 @@ const TABS=[
 {id:"learn",t:"Учить",icon:'<path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v15H7.5A2.5 2.5 0 0 0 5 20.5zM5 20.5A2.5 2.5 0 0 1 7.5 18H19v3H7.5"/>',routes:["learn","course","cards","grammar","verbs","test","rules","path"]},
 {id:"train",t:"Практика",icon:'<path d="M4 5h16v11H10l-4 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/>',routes:["train","translate","practice","listen","read","speak","talk"]},
 {id:"mistakes",t:"Повтор",icon:'<path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/>',routes:["mistakes"]},
-{id:"profile",t:"Профиль",icon:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',routes:["profile","words","library","stats","settings","ach"]}
+{id:"profile",t:"Профиль",icon:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',routes:["profile","words","library","stats","settings","ach","duel"]}
 ];
-const CRUMB={settings:"profile",ach:"profile",path:"learn",talk:"train",rules:"learn",course:"learn",cards:"learn",grammar:"learn",verbs:"learn",test:"learn",translate:"train",practice:"train",listen:"train",read:"train",speak:"train",words:"profile",library:"profile",stats:"profile"};
+const CRUMB={settings:"profile",ach:"profile",duel:"profile",path:"learn",talk:"train",rules:"learn",course:"learn",cards:"learn",grammar:"learn",verbs:"learn",test:"learn",translate:"train",practice:"train",listen:"train",read:"train",speak:"train",words:"profile",library:"profile",stats:"profile"};
 function tabFor(r){return (TABS.find(t=>t.routes.includes(r))||TABS[0]).id}
 function renderTabbar(r){if(r!=="test")document.body.classList.remove("focus");
   const bar=$("#tabbar");if(!bar)return;const cur=tabFor(r),md=dueMist().length;
@@ -5361,6 +5361,417 @@ viewSettings=function(){
   if(vs.length){const sv=$("#svoice");if(sv){const lab=V.querySelector('label[for="svoice"]');sv.remove();if(lab)lab.remove()}}
 };
 try{speechSynthesis.addEventListener&&speechSynthesis.addEventListener("voiceschanged",()=>{if((location.hash||"").slice(1)==="settings")viewSettings()})}catch(e){}
+
+/* ===================== FIREBASE: перенос по коду, вход через Telegram, соревнование ===================== */
+// Firestore через REST, без SDK. Работает в приложении на телефоне и в Telegram-версии
+// (веб-артефакт claude.ai до Firebase не достучится из-за CSP — там остаётся длинный код YE1:).
+const FB={key:"AIzaSyC6he3wGh6d8YlzRVCaIENrt9uSZdnWlNw",pid:"yasny-english",on:!!window.__NATIVE_APP,AUTH:"yasny-fb-auth",SEC:"yasny-fb-sync"};
+const TG_BOT="";   // username бота без @ — нужен для кнопки «Войти через Telegram» в приложении
+const TG_APP="";   // короткое имя Mini App, если она создана через /newapp; пусто — главная Mini App бота
+const FB_BASE=`https://firestore.googleapis.com/v1/projects/${FB.pid}/databases/(default)/documents/`;
+const CODE_ABC="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // без 0/O, 1/I/L
+function rndFrom(abc,n){const a=new Uint32Array(n);crypto.getRandomValues(a);let s="";for(const x of a)s+=abc[x%abc.length];return s}
+function rndCode(n){return rndFrom(CODE_ABC,n)}
+function rndSecret(){return rndFrom("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",24)}
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}}
+function lsSet(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function hhmm(t){return new Date(t).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}
+function netMsg(){return navigator.onLine===false?"Нет интернета. Подключись и попробуй ещё раз.":"Не получилось связаться с сервером. Попробуй ещё раз чуть позже."}
+
+/* ---------- анонимный вход ---------- */
+let fbTok=null,fbAuthP=null;
+function fbAuth(){
+  const a=fbTok||lsGet(FB.AUTH);
+  if(a&&a.id&&a.exp>Date.now()+60e3)return Promise.resolve(a.id);
+  return fbAuthP||(fbAuthP=(async()=>{
+    if(a&&a.rt){
+      try{const r=await fetch("https://securetoken.googleapis.com/v1/token?key="+FB.key,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"grant_type=refresh_token&refresh_token="+encodeURIComponent(a.rt)});
+        if(r.ok){const d=await r.json();fbTok={id:d.id_token,rt:d.refresh_token,exp:Date.now()+(+d.expires_in||3600)*1000};lsSet(FB.AUTH,fbTok);return fbTok.id}}catch(e){}
+    }
+    const r=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key="+FB.key,{method:"POST",headers:{"Content-Type":"application/json"},body:'{"returnSecureToken":true}'});
+    if(!r.ok)throw new Error("auth "+r.status);
+    const d=await r.json();fbTok={id:d.idToken,rt:d.refreshToken,exp:Date.now()+(+d.expiresIn||3600)*1000};lsSet(FB.AUTH,fbTok);return fbTok.id;
+  })().finally(()=>{fbAuthP=null}));
+}
+
+/* ---------- Firestore REST ---------- */
+function fbEnc(v){
+  if(v===null||v===undefined)return{nullValue:null};
+  if(typeof v==="boolean")return{booleanValue:v};
+  if(typeof v==="number")return Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v};
+  if(typeof v==="string")return{stringValue:v};
+  if(Array.isArray(v))return{arrayValue:{values:v.map(fbEnc)}};
+  if(v.__b!==undefined)return{bytesValue:v.__b};
+  return{mapValue:{fields:fbFields(v)}};
+}
+function fbFields(o){const f={};for(const k in o)if(o[k]!==undefined)f[k]=fbEnc(o[k]);return f}
+function fbDec(x){
+  if("stringValue" in x)return x.stringValue;if("integerValue" in x)return +x.integerValue;if("doubleValue" in x)return x.doubleValue;
+  if("booleanValue" in x)return x.booleanValue;if("bytesValue" in x)return{__b:x.bytesValue};
+  if("arrayValue" in x)return(x.arrayValue.values||[]).map(fbDec);if("mapValue" in x)return fbObj(x.mapValue.fields);return null;
+}
+function fbObj(f){const o={};for(const k in f||{})o[k]=fbDec(f[k]);return o}
+async function fbReq(method,path,body,query){
+  for(let i=0;;i++){
+    const tok=await fbAuth();
+    const r=await fetch(FB_BASE+path+(query||""),{method,headers:Object.assign({Authorization:"Bearer "+tok},body?{"Content-Type":"application/json"}:{}),body:body?JSON.stringify(body):undefined});
+    if(r.status===404&&method==="GET")return null;
+    if(r.ok)return r.json();
+    if(i<2&&(r.status===401||r.status===409||r.status>=500)){if(r.status===401){fbTok=null;lsSet(FB.AUTH,null)}await new Promise(res=>setTimeout(res,400*(i+1)));continue}
+    throw new Error("firestore "+r.status);
+  }
+}
+async function fbGet(p){const d=await fbReq("GET",p);return d?fbObj(d.fields):null}
+async function fbSet(p,o){await fbReq("PATCH",p,{fields:fbFields(o)})}
+async function fbDel(p){try{await fbReq("DELETE",p)}catch(e){}}
+async function fbList(p){const d=await fbReq("GET",p,null,"?pageSize=50");return((d&&d.documents)||[]).map(x=>Object.assign(fbObj(x.fields),{_id:x.name.split("/").pop()}))}
+
+/* ---------- упаковка состояния (gzip + base64, чтобы влезть в лимит документа 1 МБ) ---------- */
+function b64(u8){let s="";for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s)}
+function unb64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+async function packState(obj){
+  const j=JSON.stringify(obj);let out={s:j},size=j.length*2;
+  if(window.CompressionStream){try{const u=new Uint8Array(await new Response(new Blob([j]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());out={z:{__b:b64(u)}};size=u.length}catch(e){}}
+  if(size>1000000)throw new Error("too big");
+  return out;
+}
+async function unpackState(d){
+  if(!d)return null;
+  if(typeof d.s==="string")return JSON.parse(d.s);
+  if(d.z&&d.z.__b)return JSON.parse(await new Response(new Blob([unb64(d.z.__b)]).stream().pipeThrough(new DecompressionStream("gzip"))).text());
+  return null;
+}
+function okState(x){return !!(x&&typeof x==="object"&&x.cards&&typeof x.cards==="object")}
+// слить пришедшее состояние с текущим (как при вставке длинного кода)
+function takeRemote(remote){
+  if(!okState(remote))return false;
+  const before=JSON.stringify(S),fresh=!S.totalAns&&!S.onboarded&&!Object.keys(S.cards||{}).length;
+  S=fresh?Object.assign(JSON.parse(JSON.stringify(DEF)),remote):mergeState(S,remote);
+  save();CS=null;TS=null;LS=null;
+  if(S.onboarded&&location.hash==="#hello")location.hash="#today";
+  return JSON.stringify(S)!==before;
+}
+
+/* ---------- ПЕРЕНОС ПО КОРОТКОМУ КОДУ ---------- */
+// A: transfer/{6 символов} = {k:"state", exp, z}; B вводит код, сливает, пишет обратно {k:"back"} —
+// A ждёт ответ и тоже сливает. В итоге прогресс одинаковый на обоих устройствах.
+const XS={code:"",exp:0,open:false,busy:false,msg:"",poll:null};
+function xsRerender(){if((location.hash||"").slice(1)==="settings")viewSettings()}
+function xsStop(){clearInterval(XS.poll);XS.poll=null}
+async function xsGet(){
+  XS.busy=true;XS.msg="";XS.open=false;xsRerender();
+  try{
+    if(XS.code)fbDel("transfer/"+XS.code);
+    const code=rndCode(6),exp=Date.now()+15*60e3;
+    await fbSet("transfer/"+code,Object.assign({k:"state",exp},await packState(S)));
+    XS.code=code;XS.exp=exp;xsStop();XS.poll=setInterval(xsCheckBack,3000);
+  }catch(e){XS.msg=String(e&&e.message)==="too big"?"Прогресс слишком большой для короткого кода — воспользуйся длинным кодом ниже.":netMsg()}
+  XS.busy=false;xsRerender();
+}
+async function xsCheckBack(){
+  if(!XS.code)return xsStop();
+  if(Date.now()>XS.exp){fbDel("transfer/"+XS.code);XS.code="";XS.msg="Срок кода истёк. Если нужно, получи новый.";xsStop();xsRerender();return}
+  if(document.hidden)return;
+  try{const d=await fbGet("transfer/"+XS.code);
+    if(d&&d.k==="back"){xsStop();const code=XS.code;XS.code="";takeRemote(await unpackState(d));fbDel("transfer/"+code);chips();
+      XS.msg="Готово: прогресс с другого устройства объединён. Теперь он одинаковый на обоих.";toast("Прогресс объединён");xsRerender();try{softRefresh()}catch(e){}}
+  }catch(e){}
+}
+async function xsGo(raw){
+  const code=String(raw||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(code.length!==6){XS.msg="В коде 6 символов — проверь, всё ли введено.";xsRerender();return}
+  if(code===XS.code){XS.msg="Это код с этого же устройства. Введи его на другом.";xsRerender();return}
+  XS.busy=true;XS.msg="";xsRerender();
+  try{
+    const d=await fbGet("transfer/"+code);
+    if(!d||d.k!=="state")XS.msg="Код не найден. Проверь буквы или получи новый.";
+    else if(d.exp<Date.now()){XS.msg="Срок кода истёк. Получи новый на другом устройстве.";fbDel("transfer/"+code)}
+    else{
+      const remote=await unpackState(d);if(!okState(remote))throw new Error("bad");
+      takeRemote(remote);chips();
+      await fbSet("transfer/"+code,Object.assign({k:"back",exp:d.exp},await packState(S)));
+      XS.open=false;XS.msg="Готово: прогресс объединён. На другом устройстве он обновится сам через пару секунд.";toast("Прогресс перенесён");
+    }
+  }catch(e){XS.msg=netMsg()}
+  XS.busy=false;xsRerender();
+}
+
+/* ---------- СИНХРОНИЗАЦИЯ ПО СЕКРЕТУ (приложение ⇄ Telegram) ---------- */
+const FSY={sec:lsGet(FB.SEC),timer:null,busy:false,again:false,at:0,err:false,lastJ:""};
+function canon(o){return JSON.stringify(o,(k,v)=>v&&typeof v==="object"&&!Array.isArray(v)?Object.keys(v).sort().reduce((r,x)=>(r[x]=v[x],r),{}):v)}
+async function fsSync(){
+  if(!FB.on||!FSY.sec)return;
+  if(FSY.busy){FSY.again=true;return}FSY.busy=true;
+  try{
+    const d=await fbGet("sync/"+FSY.sec),remote=d?await unpackState(d):null;
+    let push=true;
+    if(okState(remote)){
+      const m=mergeState(S,remote);
+      if(canon(m)!==canon(S)){S=m;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}CS=null;TS=null;LS=null;chips();try{softRefresh()}catch(e){}}
+      push=canon(S)!==canon(remote);
+    }
+    if(push){const j=JSON.stringify(S);if(j!==FSY.lastJ||!d){await fbSet("sync/"+FSY.sec,Object.assign({at:Date.now()},await packState(S)));FSY.lastJ=j}}
+    FSY.at=Date.now();FSY.err=false;
+  }catch(e){FSY.err=true}
+  FSY.busy=false;syncUI();
+  if(FSY.again){FSY.again=false;fsSchedule()}
+}
+function fsSchedule(){if(!FB.on||!FSY.sec)return;clearTimeout(FSY.timer);FSY.timer=setTimeout(fsSync,4000)}
+function fsSetSecret(sec){FSY.sec=sec;FSY.lastJ="";lsSet(FB.SEC,sec)}
+const _saveFB=save;
+save=function(){_saveFB.apply(this,arguments);fsSchedule();duelSchedule()};
+const _syncLabelFB=syncLabel;
+syncLabel=function(){
+  if(FB.on&&FSY.sec&&!window.__TG)return FSY.err?"Нет связи — прогресс пока сохраняется на телефоне и уйдёт в Telegram, когда появится интернет":"Прогресс общий с Telegram-версией"+(FSY.at?" · синхронизировано в "+hhmm(FSY.at):"");
+  return _syncLabelFB();
+};
+
+/* ---------- ВХОД ЧЕРЕЗ TELEGRAM ---------- */
+// Приложение: открывает t.me/<бот>?startapp=link_<код> и ждёт transfer/<код> = {k:"link", sec}.
+// Telegram-версия: видит start_param, берёт/создаёт секрет (хранит в облаке Telegram) и пишет его в transfer/<код>.
+const TGL={code:"",waitTill:0,poll:null,msg:""};
+function tgLinkUrl(){return `https://t.me/${TG_BOT}${TG_APP?"/"+TG_APP:""}?startapp=link_${TGL.code}`}
+function tlEnsureCode(){const p=lsGet("yasny-tglink");if(p&&p.code&&p.exp>Date.now()){TGL.code=p.code;TGL.waitTill=p.exp}else{TGL.code=rndCode(8);TGL.waitTill=0}}
+function tlStart(){
+  TGL.waitTill=Date.now()+10*60e3;lsSet("yasny-tglink",{code:TGL.code,exp:TGL.waitTill});TGL.msg="";
+  clearInterval(TGL.poll);TGL.poll=setInterval(tlCheck,3000);setTimeout(xsRerender,50);
+}
+async function tlCheck(){
+  if(!TGL.code||Date.now()>TGL.waitTill){clearInterval(TGL.poll);TGL.poll=null;if(TGL.waitTill){TGL.waitTill=0;lsSet("yasny-tglink",null);TGL.code="";TGL.msg="Не дождался ответа из Telegram. Нажми кнопку ещё раз.";xsRerender()}return}
+  if(document.hidden)return;
+  try{const d=await fbGet("transfer/"+TGL.code);
+    if(d&&d.k==="link"&&typeof d.sec==="string"&&d.sec.length>=16){
+      clearInterval(TGL.poll);TGL.poll=null;fbDel("transfer/"+TGL.code);lsSet("yasny-tglink",null);TGL.code="";TGL.waitTill=0;
+      fsSetSecret(d.sec);TGL.msg="Готово! Прогресс теперь общий с Telegram-версией.";toast("Вход через Telegram выполнен");
+      await fsSync();xsRerender();
+    }}catch(e){}
+}
+function tgLinkHTML(){
+  if(!FB.on||window.__TG)return"";
+  if(FSY.sec)return `<section class="sheet"><h2>Вход через Telegram</h2>
+    <p class="small" style="margin:-4px 0 10px"><span class="pill known">подключено</span> Прогресс общий с Telegram-версией и обновляется сам.${FSY.at?` Последняя синхронизация — в ${hhmm(FSY.at)}.`:""}</p>
+    ${TGL.msg?`<div class="small" style="margin-bottom:8px">${esc(TGL.msg)}</div>`:""}
+    <div class="row"><button class="btn" id="tlnow">Синхронизировать сейчас</button><button class="btn ghost" id="tloff">Отключить</button></div></section>`;
+  if(!TG_BOT)return"";
+  if(!TGL.code)tlEnsureCode();
+  const waiting=TGL.waitTill>Date.now();
+  return `<section class="sheet"><h2>Вход через Telegram</h2>
+    <p class="small muted" style="margin:-4px 0 12px">Откроется «Ясный английский» в Telegram — и прогресс станет общим: занимайся хоть в приложении, хоть в Telegram.</p>
+    <div class="row"><a class="btn primary" id="tlgo" href="${esc(tgLinkUrl())}" target="_blank" rel="noopener">Войти через Telegram</a></div>
+    ${waiting?`<p class="small muted" style="margin:10px 0 0">Жду подтверждения из Telegram… Вернись сюда, когда там откроется приложение.</p>`:""}
+    ${TGL.msg?`<div class="small" style="margin-top:8px">${esc(TGL.msg)}</div>`:""}</section>`;
+}
+// Telegram-версия: облако Telegram для секрета
+function tgCloud(){const tg=window.Telegram&&window.Telegram.WebApp;return window.__TG&&tg&&tg.CloudStorage&&tg.isVersionAtLeast&&tg.isVersionAtLeast("6.9")?tg.CloudStorage:null}
+function tgCloudGet(k){const c=tgCloud();return c?new Promise(res=>c.getItem(k,(e,v)=>res(e?null:v||null))):Promise.resolve(null)}
+function tgCloudSet(k,v){const c=tgCloud();return c?new Promise(res=>c.setItem(k,v,()=>res())):Promise.resolve()}
+async function tgSecret(create){
+  let sec=FSY.sec||await tgCloudGet("fb_sec");
+  if(!sec&&create)sec=rndSecret();
+  if(sec){if(sec!==FSY.sec)fsSetSecret(sec);await tgCloudSet("fb_sec",sec)}
+  return sec;
+}
+async function tgHandleLink(code){
+  if(!/^[A-Z0-9]{8}$/.test(code)||lsGet("yasny-tglinked")===code)return;
+  try{
+    const sec=await tgSecret(true);
+    await fbSet("transfer/"+code,{k:"link",sec,exp:Date.now()+10*60e3});
+    lsSet("yasny-tglinked",code);
+    celebrate({badge:"Telegram",title:"Готово!",text:"Вернись в приложение на телефоне — через пару секунд прогресс станет общим.",list:[],stats:[],btn:"Хорошо"});
+    fsSync();
+  }catch(e){toast("Не получилось связаться с сервером. Открой ссылку из приложения ещё раз.")}
+}
+function tgStartParam(){const tg=window.Telegram&&window.Telegram.WebApp;return(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.start_param)||new URLSearchParams(location.search).get("tgWebAppStartParam")||""}
+
+/* ---------- настройки: перенос + Telegram ---------- */
+const _transferHTMLFB=transferHTML,_bindTransferFB=bindTransfer;
+transferHTML=function(){
+  if(!FB.on)return _transferHTMLFB();
+  const longInner=_transferHTMLFB().replace(/^<section class="sheet"><h2>Перенос прогресса<\/h2>/,"").replace(/<\/section>$/,"");
+  const left=XS.code?Math.max(0,Math.ceil((XS.exp-Date.now())/60e3)):0;
+  return tgLinkHTML()+`<section class="sheet"><h2>Перенос прогресса</h2>
+  <p class="small muted" style="margin:-4px 0 12px">Получи короткий код на одном устройстве и введи его на другом — прогресс объединится на обоих. Нужен интернет.</p>
+  <div class="row"><button class="btn" id="xsget" ${XS.busy?"disabled":""}>${XS.code?"Новый код":"Получить код"}</button><button class="btn ghost" id="xsin" ${XS.busy?"disabled":""}>Ввести код</button></div>
+  ${XS.code?`<div class="xscode" aria-label="Код переноса">${XS.code.slice(0,3)} ${XS.code.slice(3)}</div>
+    <p class="small muted" style="margin:0">Введи этот код на другом устройстве: «Профиль → Настройки → Перенос прогресса → Ввести код». Действует ещё ${left} ${plural(left,["минуту","минуты","минут"])}. Жду…</p>`:""}
+  ${XS.open?`<div class="row" style="margin-top:10px;flex-wrap:nowrap"><input id="xscode" maxlength="7" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Код из 6 символов" class="xsin"><button class="btn primary" id="xsgo" ${XS.busy?"disabled":""}>Перенести</button></div>`:""}
+  ${XS.busy?`<div class="small muted" style="margin-top:8px">Секунду…</div>`:""}
+  ${XS.msg?`<div class="small" style="margin-top:8px">${esc(XS.msg)}</div>`:""}
+  <details style="margin-top:12px"><summary class="small">Длинный код — без интернета или для веб-версии</summary>${longInner}</details></section>`;
+};
+bindTransfer=function(){
+  _bindTransferFB();
+  if(!FB.on)return;
+  const on=(id,f)=>{const el=$("#"+id);if(el)el.onclick=f};
+  on("xsget",xsGet);
+  on("xsin",()=>{XS.open=true;XS.msg="";xsRerender();const i=$("#xscode");if(i)i.focus()});
+  const inp=$("#xscode");if(inp)inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();xsGo(inp.value)}};
+  on("xsgo",()=>xsGo(($("#xscode")||{}).value));
+  on("tlgo",()=>tlStart());
+  on("tlnow",async()=>{await fsSync();toast(FSY.err?"Нет связи":"Синхронизировано");xsRerender()});
+  on("tloff",()=>{fsSetSecret(null);lsSet(FB.SEC,null);TGL.msg="";toast("Telegram отключён — прогресс остаётся на телефоне");xsRerender()});
+};
+
+/* ===================== СОРЕВНОВАНИЕ ===================== */
+// rooms/{код пары}/members/{pid}: n — имя, pts — очки недели, wk — неделя, st — серия, kw — выучено слов,
+// h — очки по неделям (JSON), since — неделя вступления, ch — вызов (у автора), cp — прогресс вызова.
+const PTS_RULE="+1 за верный ответ, +2 за новое слово, +10 за урок";
+function wkKey(t){return dkey(weekStart(t)+3*3600e3)}
+function weekPts(from){const a=weekStats(from);return a.ok+2*a.words+10*a.lessons}
+function allPts(){let ok=0;for(const k in S.days)ok+=S.days[k].ok||0;return ok+2*Object.keys(S.cards||{}).length+10*(Object.keys(S.lessons||{}).length+Object.values(S.course||{}).filter(Boolean).length)}
+function ptsHist(){const h={},ws=weekStart();for(let i=1;i<=8;i++){const f=ws-i*7*DAY,p=weekPts(f);if(p)h[wkKey(f)]=p}return h}
+const DU={members:[],at:0,err:false,busy:false,timer:null,poll:null,lastDoc:"",msg:"",confirm:false};
+function duelDoc(){
+  const c=S.comp,ws=weekStart();
+  return{n:uname()||"Ученик",pts:weekPts(ws),wk:wkKey(ws),st:streak(),kw:knownCount(),h:JSON.stringify(ptsHist()),since:c.since||wkKey(ws),
+    ch:c.ch?JSON.stringify(c.ch):"",cp:c.cp?JSON.stringify({id:c.cp.id,p:Math.max(0,allPts()-c.cp.base),done:c.cp.done||0}):""};
+}
+function pj(s){try{return s?JSON.parse(s):null}catch(e){return null}}
+function duelChallenge(){let best=null;for(const m of DU.members){const c=pj(m.ch);if(c&&c.id&&(!best||c.at>best.at))best=c}return best}
+async function duelSync(){
+  if(!FB.on||!S.comp||DU.busy)return;DU.busy=true;
+  try{
+    const c=S.comp,path=`rooms/${c.room}/members/`;
+    let list=await fbList(path);DU.members=list;
+    // вызов: подхватываем самый свежий и запоминаем свою стартовую точку
+    const ch=duelChallenge();
+    if(ch&&(!c.cp||c.cp.id!==ch.id)){c.cp={id:ch.id,base:allPts(),done:0};save()}
+    if(ch&&c.cp&&c.cp.id===ch.id&&!c.cp.done&&allPts()-c.cp.base>=ch.goal){c.cp.done=Date.now();save()}
+    const doc=duelDoc(),j=JSON.stringify(doc);
+    if(j!==DU.lastDoc||!list.some(m=>m._id===c.pid)){await fbSet(path+c.pid,Object.assign({at:Date.now()},doc));DU.lastDoc=j;
+      const me=Object.assign({_id:c.pid,at:Date.now()},doc);DU.members=list.filter(m=>m._id!==c.pid).concat(me)}
+    DU.at=Date.now();DU.err=false;
+  }catch(e){DU.err=true}
+  DU.busy=false;if((location.hash||"").slice(1)==="duel")viewDuel();
+}
+function duelSchedule(){if(!FB.on||!S.comp)return;clearTimeout(DU.timer);DU.timer=setTimeout(duelSync,20000)}
+// победы по прошлым неделям (только с недели, когда оба уже были в паре)
+function duelWins(){
+  const ms=DU.members,wins={},run={};ms.forEach(m=>{wins[m._id]=0;run[m._id]=0});
+  if(ms.length<2)return{wins,run,last:null};
+  const since=ms.map(m=>m.since||"").sort().pop(),hs=ms.map(m=>[m._id,pj(m.h)||{}]),ws=weekStart();
+  let last=null;
+  for(let i=8;i>=1;i--){const k=wkKey(ws-i*7*DAY);if(k<since)continue;
+    const sc=hs.map(([id,h])=>[id,h[k]||0]).sort((a,b)=>b[1]-a[1]);
+    if(!sc[0][1]||sc[0][1]===sc[1][1]){ms.forEach(m=>run[m._id]=0);if(i===1)last={k,tie:true,sc};continue}
+    wins[sc[0][0]]++;ms.forEach(m=>run[m._id]=m._id===sc[0][0]?run[m._id]+1:0);if(i===1)last={k,win:sc[0][0],sc};
+  }
+  return{wins,run,last};
+}
+function duelName(id){const m=DU.members.find(x=>x._id===id);return m?(id===S.comp.pid?"ты":m.n):"?"}
+function viewDuel(){
+  const head=`<h1>Соревнование</h1><p class="sub">Учитесь наперегонки: очки за неделю, серия побед и вызовы.</p>`;
+  if(!FB.on){V.innerHTML=head+`<div class="stack">${yasay("think","Соревнование работает в приложении на телефоне и в Telegram-версии — там есть связь с общим сервером.",58)}</div>`;return}
+  clearInterval(DU.poll);DU.poll=setInterval(()=>{if((location.hash||"").slice(1)!=="duel"){clearInterval(DU.poll);DU.poll=null;return}if(!document.hidden)duelSync()},20000);
+  const rule=`<p class="small muted" style="margin:10px 0 0">Очки: ${PTS_RULE}. Неделя начинается в понедельник.</p>`;
+  if(!S.comp){
+    V.innerHTML=head+`<div class="stack">
+    ${yasay("happy","Вдвоём учиться веселее! Создай пару и отправь код другу — или введи код, который прислали тебе.",58)}
+    <section class="sheet"><h2>Создать пару</h2><p class="small muted" style="margin:-4px 0 12px">Получишь код из 6 символов — его нужно отправить другу.</p>
+      <button class="btn primary" id="dnew" ${DU.busy?"disabled":""}>Создать пару</button></section>
+    <section class="sheet"><h2>У меня есть код</h2>
+      <div class="row" style="flex-wrap:nowrap"><input id="dcode" class="xsin" maxlength="7" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Код пары"><button class="btn" id="djoin" ${DU.busy?"disabled":""}>Присоединиться</button></div>
+      ${DU.msg?`<div class="small" style="margin-top:8px">${esc(DU.msg)}</div>`:""}${rule}</section></div>`;
+    $("#dnew").onclick=duelCreate;
+    const inp=$("#dcode");inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();duelJoin(inp.value)}};
+    $("#djoin").onclick=()=>duelJoin(inp.value);
+    return;
+  }
+  if(!DU.at&&!DU.busy)setTimeout(duelSync,0);
+  const c=S.comp,me=c.pid,ms=[...DU.members].sort((a,b)=>(b.wk===wkKey()?b.pts:0)-(a.wk===wkKey()?a.pts:0));
+  const cur=m=>m.wk===wkKey()?m.pts:0,{wins,run,last}=duelWins();
+  const others=ms.filter(m=>m._id!==me);
+  let say="";
+  if(!others.length)say=yasay("think",`Пока ты здесь один(одна). Отправь другу код <b>${c.room}</b> — пусть откроет «Профиль → Соревнование» и введёт его.`,56);
+  else{const my=cur(ms.find(m=>m._id===me)||{pts:0}),top=Math.max(...others.map(cur)),d=my-top;
+    say=d>0?yasay("proud",`Ты впереди на ${d} ${plural(d,["очко","очка","очков"])}! Так держать.`,56):d<0?yasay("think",`До лидера ${-d} ${plural(-d,["очко","очка","очков"])} — можно догнать за пару занятий.`,56):yasay("happy",my?"Ничья! Кто сделает следующий шаг?":"Новая неделя — все на старте. Кто первый?",56)}
+  const rows=ms.map((m,i)=>`<div class="drow ${m._id===me?"me":""}"><span class="dpl">${i+1}</span><span class="dnm"><b>${esc(m._id===me?(m.n||"Ты")+" (ты)":m.n||"Ученик")}</b><span class="small muted">серия ${m.st||0} ${plural(m.st||0,["день","дня","дней"])} · ${m.kw||0} ${plural(m.kw||0,["слово","слова","слов"])}${wins[m._id]?` · побед ${wins[m._id]}`:""}${run[m._id]>1?` · ${run[m._id]} подряд`:""}</span></span><span class="dpts">${cur(m)}<span class="small muted">очк.</span></span></div>`).join("");
+  const ch=duelChallenge();let chHTML="";
+  if(ch){const ps=DU.members.map(m=>[m,pj(m.cp)]).filter(([m,p])=>p&&p.id===ch.id),won=ps.filter(([m,p])=>p.done).sort((a,b)=>a[1].done-b[1].done)[0];
+    chHTML=`<p style="margin:0 0 10px"><b>Кто первым наберёт ${ch.goal} очков?</b> <span class="small muted">· ${ch.by===me?"твой вызов":"бросил(а) "+esc(ch.byName||"друг")}</span></p>
+    ${won?`<p style="margin:0 0 10px">Победа: <b>${esc(won[0]._id===me?"ты!":won[0].n)}</b></p>`:""}
+    <div class="stack" style="gap:8px">${(ps.length?ps:[]).map(([m,p])=>`<div><div class="row" style="justify-content:space-between"><span class="small">${esc(m._id===me?"Ты":m.n)}</span><span class="small muted">${Math.min(p.p,ch.goal)}/${ch.goal}</span></div><div class="meter"><i style="width:${Math.min(100,p.p/ch.goal*100)}%"></i></div></div>`).join("")}</div>`}
+  const canNew=!ch||DU.members.some(m=>{const p=pj(m.cp);return p&&p.id===ch.id&&p.done});
+  const lastHTML=last&&others.length?`<section class="sheet"><h2>Прошлая неделя</h2><p style="margin:0">${last.tie?"Ничья":`Победа: <b>${esc(duelName(last.win))}</b>`} · ${last.sc.map(([id,p])=>`${esc(duelName(id))} — ${p}`).join(", ")}</p></section>`:"";
+  V.innerHTML=head+`<div class="stack">
+  ${say}
+  <section class="sheet"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Эта неделя</h2><span class="small muted">${DU.err?"нет связи":DU.at?"обновлено в "+hhmm(DU.at):"загружаю…"}</span></div>
+    <div class="dtable">${rows||'<p class="small muted">Загружаю…</p>'}</div>${rule}</section>
+  <section class="sheet"><h2>Вызов</h2>${chHTML||`<p class="small muted" style="margin:-4px 0 10px">Брось вызов — кто первым наберёт нужное число очков с этого момента.</p>`}
+    ${canNew&&others.length?`<div class="row" style="margin-top:10px"><span class="small muted">${ch?"Новый вызов:":"Бросить вызов:"}</span>${[100,200,500].map(g=>`<button class="btn small" data-chg="${g}">${g}</button>`).join("")}</div>`:""}
+    ${!others.length?`<p class="small muted" style="margin:0">Вызов можно бросить, когда в паре появится друг.</p>`:""}</section>
+  ${lastHTML}
+  <section class="sheet"><h2>Пара</h2><p style="margin:0 0 10px">Код пары: <b class="dcode">${c.room}</b></p>
+    <div class="row"><button class="btn" id="dcopy">Скопировать код</button><a class="btn ghost" href="https://t.me/share/url?url=${encodeURIComponent("https://flashik1.github.io/yasny-english/")}&text=${encodeURIComponent("Давай соревноваться в английском! Открой «Профиль → Соревнование» и введи код "+c.room)}" target="_blank" rel="noopener">Отправить в Telegram</a></div>
+    <div class="row" style="margin-top:12px">${DU.confirm?`<span>Выйти из пары?</span><button class="btn" id="dleave2" style="color:var(--bad);border-color:var(--bad)">Да, выйти</button><button class="btn ghost" id="dstay">Отмена</button>`:`<button class="btn ghost small" id="dleave">Выйти из пары</button>`}</div></section>
+  </div>`;
+  const on=(id,f)=>{const el=$("#"+id);if(el)el.onclick=f};
+  on("dcopy",()=>{try{navigator.clipboard.writeText(c.room).then(()=>toast("Код скопирован"),()=>toast("Код: "+c.room))}catch(e){toast("Код: "+c.room)}});
+  on("dleave",()=>{DU.confirm=true;viewDuel()});on("dstay",()=>{DU.confirm=false;viewDuel()});
+  on("dleave2",duelLeave);
+  V.querySelectorAll("[data-chg]").forEach(b=>b.onclick=()=>duelChallengeNew(+b.dataset.chg));
+}
+async function duelCreate(){
+  DU.busy=true;DU.msg="";viewDuel();
+  S.comp={room:rndCode(6),pid:rndCode(16),since:wkKey()};save();DU.members=[];DU.at=0;DU.lastDoc="";
+  DU.busy=false;await duelSync();if(DU.err){DU.msg=netMsg();S.comp=null;save()}viewDuel();
+}
+async function duelJoin(raw){
+  const room=String(raw||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(room.length!==6){DU.msg="В коде пары 6 символов.";viewDuel();return}
+  DU.busy=true;DU.msg="";viewDuel();
+  try{const list=await fbList(`rooms/${room}/members/`);DU.busy=false;
+    if(!list.length){DU.msg="Пара с таким кодом не найдена. Проверь буквы.";viewDuel();return}
+    if(list.length>=8){DU.msg="В этой паре уже слишком много участников.";viewDuel();return}
+    S.comp={room,pid:rndCode(16),since:wkKey()};save();DU.members=list;DU.at=0;DU.lastDoc="";
+    await duelSync();toast("Ты в паре! Удачи");
+  }catch(e){DU.busy=false;DU.msg=netMsg();viewDuel()}
+}
+async function duelLeave(){
+  const c=S.comp;DU.confirm=false;
+  if(c)fbDel(`rooms/${c.room}/members/${c.pid}`);
+  S.comp=null;save();DU.members=[];DU.at=0;DU.lastDoc="";viewDuel();
+}
+async function duelChallengeNew(goal){
+  const c=S.comp;if(!c)return;
+  const id=rndCode(8);c.ch={id,goal,at:Date.now(),by:c.pid,byName:uname()||"Ученик"};c.cp={id,base:allPts(),done:0};save();
+  await duelSync();toast(`Вызов брошен: кто первым ${goal} очков?`);
+}
+IC.duel='<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M8 20h8M10 17h4"/>';
+HUB["#duel"]=["duel","c-orange"];
+const _viewProfileFB=viewProfile;
+viewProfile=function(){
+  _viewProfileFB();
+  const tl=V.querySelector(".tiles2");if(!tl)return;
+  tl.insertAdjacentHTML("beforeend",tile("#duel","Соревнование",S.comp?`Эта неделя: ${weekPts(weekStart())} ${plural(weekPts(weekStart()),["очко","очка","очков"])} · пара ${S.comp.room}`:"Учитесь наперегонки с другом: очки, вызовы"));
+};
+(function(){
+  const css=document.createElement("style");
+  css.textContent=`.xscode{font:700 34px/1.1 var(--f-mono,monospace);letter-spacing:.18em;margin:14px 0 6px}
+  .xsin{flex:1;min-width:0;font-family:var(--f-mono,monospace);letter-spacing:.15em;text-transform:uppercase}
+  .dtable{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+  .drow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--bg)}
+  .drow.me{outline:2px solid var(--accent,var(--brand,#4f6bed));outline-offset:-2px}
+  .dpl{font-weight:700;width:1.4em;text-align:center}
+  .dnm{flex:1;min-width:0;display:flex;flex-direction:column}
+  .dnm b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dpts{font-weight:700;font-size:22px;display:flex;align-items:baseline;gap:4px}
+  .dcode{font-family:var(--f-mono,monospace);letter-spacing:.15em;font-size:18px}`;
+  document.head.appendChild(css);
+})();
+// запуск
+if(FB.on){
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden){if(FSY.timer){clearTimeout(FSY.timer);FSY.timer=null;fsSync()}}
+    else{fsSync();if(TGL.poll)tlCheck();if(XS.poll)xsCheckBack();if(S.comp)duelSync()}
+  });
+  setInterval(()=>{if(!document.hidden)fsSync()},60000);
+  setTimeout(async()=>{
+    if(window.__TG){const sp=tgStartParam();if(/^link_/.test(sp))await tgHandleLink(sp.slice(5));else if(!FSY.sec)await tgSecret(false)}
+    else{const p=lsGet("yasny-tglink");if(p&&p.exp>Date.now()){TGL.code=p.code;TGL.waitTill=p.exp;TGL.poll=setInterval(tlCheck,3000)}}
+    fsSync();if(S.comp)duelSync();
+  },800);
+}
 
 autoPacks();applyPacks();migrateRrev();applyFreeze();
 new MutationObserver(()=>queueMicrotask(()=>{mascotize();budCheck()})).observe(V,{childList:true,subtree:true});

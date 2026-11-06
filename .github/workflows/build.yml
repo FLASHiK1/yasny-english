@@ -1,9 +1,7 @@
 name: Сборка приложений
 
+# Сборка APK и IPA — только вручную (Actions → «Сборка приложений» → Run workflow)
 on:
-  push:
-    branches: [main]
-    paths-ignore: ['packs/**', 'README.md']
   workflow_dispatch:
 
 env:

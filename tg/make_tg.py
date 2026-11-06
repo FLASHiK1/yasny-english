@@ -26,10 +26,12 @@ tail=r'''
   /* ---------- Тема и кнопка «Назад» ---------- */
   if(tg){
     try{
-      var dark=tg.colorScheme==="dark";document.documentElement.dataset.theme=dark?"dark":"light";
+      var own=function(){return S.settings&&S.settings.mode&&S.settings.mode!=="auto"};
+      var dark=tg.colorScheme==="dark";if(!own())document.documentElement.dataset.theme=dark?"dark":"light";
       var bg=getComputedStyle(document.documentElement).getPropertyValue("--bg").trim()||(dark?"#0F1424":"#F1F3F7");
       if(tg.setHeaderColor)tg.setHeaderColor(bg);if(tg.setBackgroundColor)tg.setBackgroundColor(bg);
-      tg.onEvent&&tg.onEvent("themeChanged",function(){document.documentElement.dataset.theme=tg.colorScheme==="dark"?"dark":"light"});
+      tg.onEvent&&tg.onEvent("themeChanged",function(){if(!own())document.documentElement.dataset.theme=tg.colorScheme==="dark"?"dark":"light";try{applyTheme()}catch(e){}});
+      try{applyTheme()}catch(e){}
       var upd=function(){var r=(location.hash||"#today").slice(1);if(r==="today"||r==="hello")tg.BackButton.hide();else tg.BackButton.show()};
       tg.BackButton.onClick(function(){if(history.length>1)history.back();else location.hash="#today"});
       window.addEventListener("hashchange",upd);upd();

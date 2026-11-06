@@ -28,6 +28,8 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         ITSAppUsesNonExemptEncryption: false
+        NSMicrophoneUsageDescription: Микрофон нужен, чтобы проверять твоё произношение и отвечать голосом.
+        NSSpeechRecognitionUsageDescription: Распознавание речи нужно, чтобы понять, что ты сказал по-английски.
         UIBackgroundModes: []
     settings:
       base:

@@ -1,0 +1,163 @@
+{
+ "words": [
+  [
+   "Excuse me",
+   "извините (чтобы обратиться)",
+   "/ɪkˈskjuːz miː/",
+   "Excuse me, where is the exit?",
+   "Извините, где выход?",
+   "A1"
+  ],
+  [
+   "Where is the toilet?",
+   "где туалет?",
+   "/weər ɪz ðə ˈtɔɪlət/",
+   "Excuse me, where is the toilet?",
+   "Извините, где туалет?",
+   "A1"
+  ],
+  [
+   "I'd like",
+   "я бы хотел",
+   "/aɪd laɪk/",
+   "I'd like a room for two nights.",
+   "Я бы хотел номер на две ночи.",
+   "A1"
+  ],
+  [
+   "a single room",
+   "одноместный номер",
+   "/ə ˈsɪŋɡl ruːm/",
+   "Do you have a single room?",
+   "У вас есть одноместный номер?",
+   "A2"
+  ],
+  [
+   "a double room",
+   "двухместный номер",
+   "/ə ˈdʌbl ruːm/",
+   "We booked a double room.",
+   "Мы забронировали двухместный номер.",
+   "A2"
+  ],
+  [
+   "breakfast included",
+   "завтрак включён",
+   "/ˈbrekfəst ɪnˈkluːdɪd/",
+   "Is breakfast included?",
+   "Завтрак включён?",
+   "A2"
+  ],
+  [
+   "one way ticket",
+   "билет в одну сторону",
+   "/wʌn weɪ ˈtɪkɪt/",
+   "A one way ticket to Paris, please.",
+   "Билет до Парижа в одну сторону, пожалуйста.",
+   "A2"
+  ],
+  [
+   "What time does it leave?",
+   "во сколько отправляется?",
+   "/wɒt taɪm dʌz ɪt liːv/",
+   "The bus to Oxford — what time does it leave?",
+   "Автобус до Оксфорда — во сколько отправляется?",
+   "A1"
+  ],
+  [
+   "gate",
+   "выход на посадку",
+   "/ɡeɪt/",
+   "Our flight leaves from gate 12.",
+   "Наш рейс вылетает с выхода 12.",
+   "A2"
+  ],
+  [
+   "luggage",
+   "багаж",
+   "/ˈlʌɡɪdʒ/",
+   "Where can I get my luggage?",
+   "Где можно получить багаж?",
+   "A2"
+  ],
+  [
+   "taxi",
+   "такси",
+   "/ˈtæksi/",
+   "Can you call a taxi for me?",
+   "Можете вызвать мне такси?",
+   "A1"
+  ],
+  [
+   "How far is it?",
+   "как далеко это?",
+   "/haʊ fɑːr ɪz ɪt/",
+   "How far is it to the beach?",
+   "Далеко ли до пляжа?",
+   "A1"
+  ],
+  [
+   "Could you help me?",
+   "не могли бы вы мне помочь?",
+   "/kʊd juː help miː/",
+   "Could you help me with my bag?",
+   "Не могли бы вы помочь мне с сумкой?",
+   "A1"
+  ],
+  [
+   "I don't understand",
+   "я не понимаю",
+   "/aɪ dəʊnt ˌʌndəˈstænd/",
+   "Sorry, I don't understand. Can you repeat?",
+   "Извините, я не понимаю. Можете повторить?",
+   "A0"
+  ],
+  [
+   "Can you speak more slowly?",
+   "можете говорить медленнее?",
+   "/kæn juː spiːk mɔː ˈsləʊli/",
+   "Can you speak more slowly, please?",
+   "Можете говорить медленнее, пожалуйста?",
+   "A1"
+  ]
+ ],
+ "texts": [
+  {
+   "title": "At the hotel",
+   "l": "A1",
+   "text": "Good evening! I have a reservation. My name is Anna Petrova. — Good evening! Yes, a double room for three nights. Breakfast is included. It is from seven to ten in the restaurant. Here is your key. Your room is on the second floor. — Thank you! Is there Wi-Fi? — Yes, the password is on the card. Have a nice stay!",
+   "q": [
+    {
+     "q": "Сколько ночей забронировано?",
+     "o": [
+      "Три",
+      "Две",
+      "Одна"
+     ],
+     "a": "Три"
+    },
+    {
+     "q": "Во сколько завтрак?",
+     "o": [
+      "С семи до десяти",
+      "С восьми до одиннадцати",
+      "Завтрака нет"
+     ],
+     "a": "С семи до десяти"
+    },
+    {
+     "q": "Где пароль от Wi-Fi?",
+     "o": [
+      "На карточке",
+      "У администратора",
+      "В номере на столе"
+     ],
+     "a": "На карточке"
+    }
+   ]
+  }
+ ],
+ "id": "travel-phrases",
+ "title": "Фразы для путешествий",
+ "level": "A1"
+}

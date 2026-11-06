@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 JAR="${JAR:-$SDK/plat/android-35/android.jar}"; BT="${BT:-$SDK/bt/android-15}"
 [ -f "$JAR" ] || { echo "Не найден android.jar: $JAR"; exit 1; }
 rm -rf build && mkdir -p build/gen build/obj build/dex assets
-python3 make_assets.py ../index.html assets/index.html android
+python3 make_assets.py ../index.html assets/index.html android "${PACKS_URL:-}"
 "$BT/aapt2" compile --dir res -o build/res.zip
 "$BT/aapt2" link -o build/app.unsigned.apk -I "$JAR" --manifest AndroidManifest.xml -A assets \
   --java build/gen build/res.zip --min-sdk-version 24 --target-sdk-version 34 \

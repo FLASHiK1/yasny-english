@@ -275,6 +275,16 @@ mark.errmark{background:var(--bad-soft);color:var(--bad);border-radius:3px;paddi
 .dl .who{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--soft)}
 .dl.b .who{background:var(--mark)}
 .lesson:disabled{opacity:.5;cursor:default}
+.iconbtn.mic{width:40px;height:40px}
+.iconbtn.mic.rec,.micbig.rec{background:var(--bad);border-color:var(--bad)}
+.iconbtn.mic.rec svg{fill:#fff}
+@keyframes micpulse{0%{box-shadow:0 0 0 0 rgba(191,51,40,.45)}100%{box-shadow:0 0 0 12px rgba(191,51,40,0)}}
+.iconbtn.mic.rec,.micbig.rec{animation:micpulse 1.2s infinite}
+.micbig{display:inline-flex;align-items:center;gap:8px;font-size:17px;padding:12px 20px}
+.micbig svg{width:20px;height:20px;fill:currentColor}
+.btn svg{width:16px;height:16px;fill:currentColor;vertical-align:-3px}
+.diff .okw{color:var(--ok);font-weight:600}
+.packc{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @keyframes rise{from{transform:translateY(6px);opacity:.4}to{transform:none;opacity:1}}
 .card,.sheet.anim{animation:rise .25s ease-out}
@@ -298,6 +308,7 @@ mark.errmark{background:var(--bad-soft);color:var(--bad);border-radius:3px;paddi
       <a href="#read">Чтение</a>
       <a href="#speak">Произношение</a>
       <a href="#words">Слова</a>
+      <a href="#library">Библиотека</a>
     </nav>
   </div>
 </header>
@@ -1468,7 +1479,7 @@ const SCENES=[
 const KEY="yasny-eng-v1";
 function load(){try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):null}catch(e){return null}}
 function save(){S.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}if(typeof scheduleSync==="function")scheduleSync()}
-const DEF={cards:{},custom:[],lessons:{},tr:{},days:{},extraNew:{},mist:{},read:{},course:{},verbs:{},sets:{},genTexts:[],writings:[],frozen:[],freezes:0,deleted:[],lvlLog:[],totalAns:0,level:null,levelSrc:null,test:null,lvlDismiss:0,settings:{newPerDay:10,voice:"en-US",goal:30,dir:"ru-en"}};
+const DEF={cards:{},custom:[],lessons:{},tr:{},days:{},extraNew:{},mist:{},read:{},course:{},packs:{},verbs:{},sets:{},genTexts:[],writings:[],frozen:[],freezes:0,deleted:[],lvlLog:[],totalAns:0,level:null,levelSrc:null,test:null,lvlDismiss:0,settings:{newPerDay:10,voice:"en-US",goal:30,dir:"ru-en"}};
 let S=Object.assign(JSON.parse(JSON.stringify(DEF)),load()||{});
 S.settings=Object.assign({},DEF.settings,S.settings||{});
 
@@ -1586,13 +1597,13 @@ function chips(){
 
 /* ===================== VIEWS ===================== */
 const V=$("#view");
-const ROUTES=["today","mistakes","cards","grammar","translate","listen","words","test","read","speak","practice","verbs","course"];
+const ROUTES=["today","mistakes","cards","grammar","translate","listen","words","test","read","speak","practice","verbs","course","library"];
 function route(){
   let r=(location.hash||"#today").slice(1);if(!ROUTES.includes(r))r="today";
   document.querySelectorAll("#nav a").forEach(a=>a.setAttribute("aria-current",a.getAttribute("href")==="#"+r?"page":"false"));
   if(r!=="mistakes"&&MS&&MS.active&&!MS.cur)MS=null;
   try{speechSynthesis.cancel()}catch(e){}
-  ({today:viewToday,mistakes:viewMistakes,test:viewTest,read:viewRead,speak:viewSpeak,practice:viewPractice,course:viewCourse,verbs:viewVerbs,cards:viewCards,grammar:viewGrammar,translate:viewTranslate,listen:viewListen,words:viewWords})[r]();
+  ({today:viewToday,mistakes:viewMistakes,test:viewTest,read:viewRead,speak:viewSpeak,practice:viewPractice,course:viewCourse,library:viewLibrary,verbs:viewVerbs,cards:viewCards,grammar:viewGrammar,translate:viewTranslate,listen:viewListen,words:viewWords})[r]();
   chips();syncUI();window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
@@ -1823,7 +1834,7 @@ function renderReview(){
     inp=(t.prompt||"")+(t.input==="area"?`<textarea id="rin" placeholder="Твой перевод" autocomplete="off" autocapitalize="off" spellcheck="false" ${r?"disabled":""}>${r?esc(r.user):""}</textarea>`
       :`<input type="text" id="rin" class="big-input" placeholder="${m.k==="listen"?"Что прозвучало?":"Напиши по-английски"}" autocomplete="off" autocapitalize="off" spellcheck="false" ${r?"disabled":""} value="${r?esc(r.user):""}">`);
   }
-  if(!r&&t.input!=="choice")inp+=`<div class="row"><button class="btn primary" id="rchk">Проверить</button><button class="btn ghost" id="ridk">Не знаю</button></div>`;
+  if(!r&&t.input!=="choice")inp+=`<div class="row"><button class="btn primary" id="rchk">Проверить</button>${t.input!=="inline"?micBtn("rin"):""}<button class="btn ghost" id="ridk">Не знаю</button></div>`;
   let fb="";
   if(r){
     fb=r.ok?`<div class="verdict ok">Верно${r.typo?" <span>(с опечаткой)</span>":""}${m.synthetic?" · следующий повтор через "+r.syn:m.done?" · ошибка исправлена":` · ${m.s} из 3`}</div>`:`<div class="verdict bad">Пока нет. <span>Вернётся через 10 минут</span></div>`;
@@ -1897,7 +1908,7 @@ function renderCard(){
       if(CS.hint>=1&&w.ex){const b=markIn(w.ex,w.en,true);if(b)hint+=`<div class="example">${b}${w.exru?`<span class="ru">${esc(w.exru)}</span>`:""}</div>`}
       if(CS.hint>=2||(CS.hint>=1&&!(w.ex&&markIn(w.ex,w.en,true))))hint+=`<div class="hint">${esc(w.en.split(" ").map(x=>x[0]+"·".repeat(Math.max(0,x.length-1))).join("  "))}</div>`;
       body+=hint+`<input type="text" id="ans" class="big-input" placeholder="Напиши по-английски" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <div class="row"><button class="btn primary" id="chk">Проверить</button><button class="btn" id="hint" ${CS.hint>=2?"disabled":""}>Подсказка</button><button class="btn ghost" id="idk">Не помню</button></div>
+      <div class="row"><button class="btn primary" id="chk">Проверить</button>${micBtn("ans")}<button class="btn" id="hint" ${CS.hint>=2?"disabled":""}>Подсказка</button><button class="btn ghost" id="idk">Не помню</button></div>
       <div class="small muted">${isNew?"Новое слово можно не угадывать — нажми «Не помню», посмотри и запомни.":"Enter — проверить. Пустой Enter — показать ответ."}</div>`;
     }
   }else{
@@ -2054,7 +2065,7 @@ function renderTr(){
   <div class="progress" style="margin-bottom:16px"><i style="width:${TS.i/TS.items.length*100}%"></i></div>
   <div class="card"><div class="label">Переведи на английский · ${s.l}${S.mist["tr:"+TS.items[TS.i]]&&!S.mist["tr:"+TS.items[TS.i]].done?" · была ошибка":""}</div><div class="prompt" style="font-size:clamp(21px,4.4vw,28px)">${esc(s.ru)}</div>
   <textarea id="tin" placeholder="Твой перевод" autocomplete="off" autocapitalize="off" spellcheck="false" ${r?"disabled":""}${tiles?" hidden":""}>${r?esc(r.user):""}</textarea>${tiles?'<div class="tline" id="tline"></div><div class="tpool" id="tpool"></div>':""}
-  ${r?"":`<div class="row"><button class="btn primary" id="tchk">Проверить</button><button class="btn ghost" id="tidk">Показать ответ</button><span class="small muted">Ctrl+Enter — проверить</span></div>`}
+  ${r?"":`<div class="row"><button class="btn primary" id="tchk">Проверить</button>${tiles?"":micBtn("tin")}<button class="btn ghost" id="tidk">Показать ответ</button><span class="small muted">Ctrl+Enter — проверить</span></div>`}
   ${fb}</div>`;
   const tin=$("#tin");
   V.querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{S.settings.trMode=b.dataset.tm;save();renderTr()});
@@ -2127,7 +2138,7 @@ function lookup(raw){
   for(const x of c){if(!x)continue;const f=all.find(a=>a.en.toLowerCase()===x);if(f)return f}
   return null;
 }
-function allTexts(){return TEXTS.map((t,i)=>Object.assign({key:String(i)},t)).concat((S.genTexts||[]).map(t=>Object.assign({key:t.id},t)))}
+function allTexts(){return TEXTS.map((t,i)=>Object.assign({key:String(i)},t)).concat((S.genTexts||[]).map(t=>Object.assign({key:t.id},t))).concat(packTexts())}
 function textByKey(k){return allTexts().find(t=>t.key===String(k))}
 function viewRead(){
   if(RS&&RS.key!=null&&textByKey(RS.key)){renderText();return}
@@ -2215,7 +2226,7 @@ function audioQ(say){return `<div class="row"><button class="btn primary" data-s
 function newPair(){const pi=Math.floor(Math.random()*PAIRS.length),wh=Math.random()<.5?0:1;PS.cur={pi,wh,word:PAIRS[pi][wh],opts:Math.random()<.5?PAIRS[pi].slice():PAIRS[pi].slice().reverse()};PS.res=null;PS.said=false}
 function newShadow(){const t=li(T());const pool=allWords().filter(w=>w.ex&&li(w.lvl)<=t);PS.sh=pool[Math.floor(Math.random()*pool.length)];PS.shShow=false}
 function viewSpeak(){
-  const tabs=[["pairs","Различай звуки"],["sounds","Трудные звуки"],["shadow","Повторяй за диктором"]];
+  const tabs=[["pairs","Различай звуки"]].concat(micAvail()?[["say","Скажи вслух"]]:[]).concat([["sounds","Трудные звуки"],["shadow","Повторяй за диктором"]]);
   let body="";
   if(PS.tab==="sounds"){
     body=`<div class="sounds">${SOUNDS.map(s=>`<div class="sheet snd"><div class="row" style="justify-content:space-between"><span class="sym">${esc(s.s)}</span><span class="label">${esc(s.name)}</span></div><p style="margin:8px 0 10px">${esc(s.how)}</p><div class="row">${s.ex.map(w=>`<button class="btn small" data-say="${esc(w)}">${esc(w)}</button>`).join("")}</div></div>`).join("")}</div>`;
@@ -2226,19 +2237,21 @@ function viewSpeak(){
     <div class="pairopts">${c.opts.map(o=>{let cl="";if(r){if(o===c.word)cl=" right";else if(o===r)cl=" wrong"}return `<button class="btn${cl}" data-po="${esc(o)}" ${r?"disabled":""}>${esc(o)}</button>`}).join("")}</div>
     ${r?`<div class="verdict ${r===c.word?"ok":"bad"}">${r===c.word?"Верно":"Прозвучало: "+esc(c.word)}</div>
       <div class="row">${c.opts.map(o=>`<button class="btn small" data-say="${esc(o)}">Сравнить: ${esc(o)}</button>`).join("")}</div>
-      <div class="row"><button class="btn primary" id="pnext">Следующая пара</button></div>`:""}
+      ${micAvail()?`<div class="row"><button class="btn" id="psay">${ICON_MIC} Произнеси «${esc(c.word)}»</button></div><div id="psayres"></div>`:""}<div class="row"><button class="btn primary" id="pnext">Следующая пара</button></div>`:""}
     </div>
     <p class="small muted">Если не слышишь разницу, это нормально: русское ухо привыкло считать эти звуки одинаковыми. После 50–100 повторов разница становится заметной.</p>`;
+  }else if(PS.tab==="say"){
+    body=sayBody();
   }else{
     if(!PS.sh)newShadow();const w=PS.sh;
     body=`<div class="card"><div class="card-top"><span>Шэдоуинг: слушай и повторяй вслух</span><span>${w.lvl||""}</span></div>
     <ol class="steps-list"><li>Послушай фразу 2–3 раза.</li><li>Повтори вслух сразу за диктором, стараясь попасть в ритм и интонацию.</li><li>Открой текст и проверь, все ли слова ты расслышал.</li></ol>
     <div class="row"><button class="btn primary" data-say="${esc(w.ex)}">Слушать</button><button class="btn" data-say="${esc(w.ex)}" data-rate="0.65">Медленно</button><button class="btn ghost" id="shshow">${PS.shShow?"Скрыть текст":"Показать текст"}</button></div>
     ${PS.shShow?`<div class="example">${markIn(w.ex,w.en,false)}${w.exru?`<span class="ru">${esc(w.exru)}</span>`:""}</div>`:""}
-    <div class="row"><button class="btn" id="shok">Получилось, дальше</button><button class="btn ghost" id="shskip">Другая фраза</button></div></div>`;
+    ${micAvail()?`<div class="row"><button class="btn" id="shmic">${ICON_MIC} Проверить произношение</button></div><div id="shres"></div>`:""}<div class="row"><button class="btn" id="shok">Получилось, дальше</button><button class="btn ghost" id="shskip">Другая фраза</button></div></div>`;
   }
   V.innerHTML=`<h1>Произношение</h1>
-  <p class="sub">Микрофон на этой странице недоступен, поэтому приложение не слышит тебя. Зато здесь можно натренировать то, с чего начинается произношение: слышать разницу между звуками и повторять за носителем.</p>
+  <p class="sub">${micAvail()?"Приложение слушает тебя через микрофон: скажи слово или фразу и увидишь, какие слова распознались. Если распознаётся то, что ты хотел сказать, тебя поймёт и человек.":"Микрофон на этой странице недоступен, поэтому приложение не слышит тебя. Зато здесь можно натренировать то, с чего начинается произношение: слышать разницу между звуками и повторять за носителем. В приложении для телефона есть проверка произношения через микрофон."}</p>
   <div class="seg" role="group" aria-label="Режим" style="margin-bottom:16px;flex-wrap:wrap">${tabs.map(([k,t])=>`<button data-tab="${k}" aria-pressed="${PS.tab===k}">${t}</button>`).join("")}</div>
   ${body}`;
   V.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{PS.tab=b.dataset.tab;viewSpeak()});
@@ -2250,6 +2263,13 @@ function viewSpeak(){
   on("shok",()=>{bump(true,null);newShadow();viewSpeak();speak(PS.sh.ex)});
   on("shskip",()=>{newShadow();viewSpeak();speak(PS.sh.ex)});
   if(PS.tab==="pairs"&&PS.cur&&!PS.res&&!PS.said){PS.said=true;speak(PS.cur.word)}
+  if(PS.tab==="say")bindSay();
+  on("psay",()=>{const c=PS.cur,w=c.word,other=c.opts.find(o=>o!==w),out=$("#psayres");
+    micListen((t,fin,ev)=>{if(!out)return;if(!fin){out.innerHTML=`<div class="small muted">Слушаю: ${esc(t)}</div>`;return}
+      const alts=[t].concat((ev&&ev.alts)||[]).filter(Boolean);if(!alts.length){out.innerHTML="";return}
+      const has=x=>alts.some(a=>norm(a).split(" ").includes(x));const ok=has(w),bad=!ok&&has(other);
+      out.innerHTML=ok?`<div class="verdict ok">Распознано «${esc(w)}» — отлично</div>`:bad?`<div class="verdict bad">Похоже на «${esc(other)}». Послушай ещё раз и попробуй снова</div>`:`<div class="verdict warn">Распознано: «${esc(alts[0])}». Попробуй ещё</div>`;bump(ok,null)})});
+  on("shmic",()=>micCheck(PS.sh.ex,"shres"));
 }
 
 /* ---------- AI (Claude через аккаунт зрителя) ---------- */
@@ -2295,6 +2315,7 @@ function mergeState(a,b){
   out.lessons=pick(newer.lessons,older.lessons,(o,n)=>(o.best||0)>(n.best||0));
   out.read=pick(newer.read,older.read,(o,n)=>(o.best||0)>(n.best||0));
   out.tr=pick(newer.tr,older.tr,(o,n)=>(o.n||0)>(n.n||0));
+  out.packs=Object.assign({},older.packs||{},newer.packs||{});
   out.course=pick(newer.course,older.course,(o,n)=>(o.right||0)>(n.right||0));
   out.verbs=pick(newer.verbs,older.verbs,(o,n)=>(o.n||0)>(n.n||0));
   out.sets=Object.assign({},older.sets||{},newer.sets||{});
@@ -2510,7 +2531,7 @@ function renderChat(head){
   const sc=(C.scene||SCENES.find(s=>s.id===C.sc));
   V.innerHTML=head+`<section class="sheet chatbox"><div class="row" style="justify-content:space-between;margin-bottom:10px"><b>${esc(sc.name)} · ${C.L}</b><button class="btn ghost small" id="cend">Закончить</button></div>
   <div class="chatlog" id="chatlog"></div>
-  <div class="chatin"><textarea id="cin" placeholder="Ответь по-английски. Можно вставлять русские слова, если не знаешь английского" rows="2"></textarea><button class="btn primary" id="csend">Отправить</button></div></section>`;
+  <div class="chatin"><textarea id="cin" placeholder="Ответь по-английски. Можно вставлять русские слова, если не знаешь английского" rows="2"></textarea>${micBtn("cin")}<button class="btn primary" id="csend">Отправить</button></div></section>`;
   renderChatLog();
   const cin=$("#cin");cin.focus();
   const send=()=>{const t=cin.value.trim();if(!t||C.busy)return;cin.value="";C.msgs.push({role:"user",text:t});C.turns.push({role:"user",content:t});chatCall()};
@@ -2895,7 +2916,7 @@ function renderCL(){
     }else if(e.type==="type"){
       q=`<div class="label">${e.en?"Переведи на английский":"Как это по-английски?"}</div><div class="prompt" style="font-size:clamp(21px,4.4vw,28px)">${esc(e.ru||e.q)}</div>
       <input type="text" id="clin" class="big-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши по-английски" ${r?"disabled":""} value="${r?esc(r.user):""}">
-      ${r?"":`<div class="row"><button class="btn primary" id="clchk">Проверить</button><button class="btn ghost" id="clidk">Не знаю</button></div>`}`;
+      ${r?"":`<div class="row"><button class="btn primary" id="clchk">Проверить</button>${micBtn("clin")}<button class="btn ghost" id="clidk">Не знаю</button></div>`}`;
     }else if(e.type==="tiles"){
       if(!r&&CL.tilesFor!==CL.i){CL.tilesFor=CL.i;const words=e.en.flatMap(expand)[0].replace(/[.,!?]/g,"").split(/\s+/).filter(Boolean),low=words.map(x=>x.toLowerCase());
         const extra=[...new Set(shuffle(COURSE.slice(0,L.n).flatMap(x=>x.d.map(d=>d[1]))).join(" ").replace(/[.,!?]/g,"").split(/\s+/))].filter(x=>x&&!low.includes(x.toLowerCase())).slice(0,2);
@@ -2956,6 +2977,126 @@ function bindTransfer(){
       S=mergeState(S,remote);save();CS=null;TS=null;LS=null;XF={open:false,code:"",msg:"Готово: прогресс объединён."};chips();viewWords()}
     catch(e){XF.msg="Код не подошёл. Скопируй его целиком, начиная с YE1:";viewWords()}});
 }
+/* ---------- МИКРОФОН (в приложении для телефона) ---------- */
+const ICON_MIC='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>';
+const MIC={on:false,cb:null};
+function micAvail(){return !!(window.NativeApp&&window.NativeApp.speech)}
+function micErr(e){return{permission:"Нет доступа к микрофону. Разреши его в настройках телефона.",nomatch:"Не расслышал. Скажи ещё раз, чуть громче и ближе к телефону.",unavailable:"Распознавание речи недоступно на этом устройстве.",network:"Для распознавания речи нужен интернет."}[e]||"Не удалось распознать речь. Попробуй ещё раз."}
+function micUI(){document.querySelectorAll("[data-mic],.micbig").forEach(b=>b.classList.toggle("rec",MIC.on))}
+function micListen(cb){
+  if(!micAvail())return;
+  if(MIC.on){window.NativeApp.speech.stop();return}
+  MIC.cb=cb;MIC.on=true;micUI();
+  try{speechSynthesis.cancel()}catch(e){}
+  window.NativeApp.speech.start(S.settings.voice||"en-US");
+}
+if(window.NativeApp){
+  window.NativeApp.onSpeech=ev=>{
+    if(!ev)return;
+    if(ev.type==="partial"){if(MIC.cb)MIC.cb(ev.text||"",false,ev)}
+    else if(ev.type==="final"){MIC.on=false;micUI();const cb=MIC.cb;MIC.cb=null;if(cb)cb(ev.text||"",true,ev)}
+    else if(ev.type==="error"){MIC.on=false;micUI();const cb=MIC.cb;MIC.cb=null;toast(micErr(ev.error));if(cb)cb("",true,ev)}
+  };
+}
+window.__nativeReminderDenied=()=>toast("Уведомления запрещены. Разреши их в настройках телефона.");
+function micBtn(id){return micAvail()?`<button class="iconbtn mic${MIC.on?" rec":""}" data-mic="${id}" aria-label="Ответить голосом" title="Ответить голосом">${ICON_MIC}</button>`:""}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-mic]");if(!b)return;e.preventDefault();
+  const el=document.getElementById(b.dataset.mic);
+  micListen((t,fin)=>{if(el&&t){el.value=t;el.dispatchEvent(new Event("input",{bubbles:true}))}if(fin&&el)el.focus()})});
+
+// Оценка произношения: какие слова образца распознались в сказанном
+function scoreSpeech(target,alts){
+  const ow=target.split(/\s+/).filter(Boolean);let best={score:-1,marks:[],heard:""};
+  for(const a of alts){if(!a)continue;const hw=norm(a).split(" ").filter(Boolean);
+    const marks=ow.map(w=>{const ts=norm(w).split(" ").filter(Boolean);return ts.length===0||ts.every(t=>hw.some(h=>h===t||(t.length>4&&lev(h,t)<=1)))});
+    const sc=marks.filter(Boolean).length/Math.max(1,ow.length);if(sc>best.score)best={score:sc,marks,heard:a}}
+  if(best.score<0)best={score:0,marks:ow.map(()=>false),heard:""};
+  return best;
+}
+function scoreHTML(target,b){
+  const ow=target.split(/\s+/).filter(Boolean);const pct=Math.round(b.score*100);
+  return `<div class="diff">${ow.map((w,i)=>b.marks[i]?`<span class="okw">${esc(w)}</span>`:`<span class="miss">${esc(w)}</span>`).join(" ")}</div>
+  <div class="verdict ${pct>=90?"ok":pct>=60?"warn":"bad"}">${pct>=90?"Отлично, тебя понятно":pct>=60?"Почти: повтори выделенные слова":"Пока непонятно. Послушай образец и попробуй ещё"} <span>· ${pct}%</span></div>
+  <div class="small muted">Распознано: «${esc(b.heard||"—")}»</div>`;
+}
+function micCheck(target,outId){
+  const out=document.getElementById(outId);
+  micListen((t,fin,ev)=>{if(!out)return;
+    if(!fin){out.innerHTML=`<div class="small muted">Слушаю: ${esc(t)}</div>`;return}
+    if(!t&&!(ev&&ev.alts&&ev.alts.length)){out.innerHTML="";return}
+    const b=scoreSpeech(target,[t].concat((ev&&ev.alts)||[]));out.innerHTML=scoreHTML(target,b);bump(b.score>=.8,null)});
+}
+
+// Режим «Скажи вслух»
+function newSay(){const t=li(T());const pool=allWords().filter(w=>li(w.lvl)<=t&&w.ex);const w=pool[Math.floor(Math.random()*pool.length)];
+  PS.say=Math.random()<.45?{text:w.en,ru:w.ru}:{text:w.ex,ru:w.exru||""}}
+function sayBody(){
+  if(!PS.say)newSay();const s=PS.say;
+  return `<div class="card"><div class="card-top"><span>Скажи вслух по-английски</span><span>${PS.sayN?`${PS.sayOk} из ${PS.sayN} понятно`:""}</span></div>
+  <div class="prompt" style="font-size:clamp(22px,5vw,30px)">${esc(s.text)}</div>${s.ru?`<div class="small muted">${esc(s.ru)}</div>`:""}
+  <div class="row"><button class="btn" data-say="${esc(s.text)}">Послушать образец</button><button class="btn" data-say="${esc(s.text)}" data-rate="0.65">Медленно</button></div>
+  <div class="row"><button class="btn primary micbig${MIC.on?" rec":""}" id="saymic">${ICON_MIC}<span>${MIC.on?"Слушаю… нажми, чтобы закончить":"Говорить"}</span></button></div>
+  <div id="sayres"></div>
+  <div class="row"><button class="btn ghost" id="saynext">Другая фраза</button></div></div>
+  <p class="small muted">Распознавание работает как собеседник-носитель: если система поняла слово, тебя поймёт и человек. Слова, которые не распознались, выделены жёлтым.</p>`;
+}
+function bindSay(){
+  const s=PS.say,out=()=>document.getElementById("sayres");
+  const m=$("#saymic");if(m)m.onclick=()=>{
+    micListen((t,fin,ev)=>{const o=out();if(!o)return;
+      if(!fin){o.innerHTML=`<div class="small muted">Слушаю: ${esc(t)}</div>`;const b=$("#saymic span");if(b)b.textContent="Слушаю… нажми, чтобы закончить";return}
+      const b2=$("#saymic span");if(b2)b2.textContent="Говорить ещё раз";
+      if(!t&&!(ev&&ev.alts&&ev.alts.length)){o.innerHTML="";return}
+      const b=scoreSpeech(s.text,[t].concat((ev&&ev.alts)||[]));PS.sayN=(PS.sayN||0)+1;if(b.score>=.8)PS.sayOk=(PS.sayOk||0)+1;
+      o.innerHTML=scoreHTML(s.text,b);bump(b.score>=.8,null)});
+    const sp=$("#saymic span");if(sp)sp.textContent="Слушаю… нажми, чтобы закончить";
+  };
+  const n=$("#saynext");if(n)n.onclick=()=>{newSay();viewSpeak()};
+}
+
+/* ---------- БИБЛИОТЕКА НАБОРОВ ---------- */
+let LIB={idx:null,busy:false,err:"",working:""};
+function packsURL(){return window.__PACKS_URL||""}
+function packTexts(){const out=[];for(const id of Object.keys(S.packs||{})){const p=S.packs[id]&&S.packs[id].data;(p&&Array.isArray(p.texts)?p.texts:[]).forEach((t,i)=>{if(t&&t.text&&Array.isArray(t.q))out.push(Object.assign({key:"p-"+id+"-"+i,l:p.level||"A2"},t))})}return out}
+function applyPacks(){
+  for(const id of Object.keys(S.packs||{})){const p=S.packs[id]&&S.packs[id].data;if(!p)continue;
+    (Array.isArray(p.words)?p.words:[]).forEach(w=>{if(Array.isArray(w)&&w[0]&&w[1]&&!BASE_WORDS.some(x=>x.id===w[0]))BASE_WORDS.push(Object.assign(mkW(w,LEVELS.includes(w[5])?w[5]:(p.level||"A2")),{theme:"pack:"+id}))});
+    (Array.isArray(p.lessons)?p.lessons:[]).forEach(l=>{if(l&&l.id&&Array.isArray(l.ex)&&!LESSONS.some(x=>x.id===l.id))LESSONS.push(Object.assign({lvl:p.level||"A2",desc:"",theory:""},l,{pack:id}))});
+  }
+  LESSONS.sort((a,b)=>LEVELS.indexOf(a.lvl)-LEVELS.indexOf(b.lvl));
+}
+async function loadLib(){
+  LIB.busy=true;LIB.err="";viewLibrary();
+  try{const r=await fetch(packsURL()+"index.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();LIB.idx=Array.isArray(j.packs)?j.packs:[]}
+  catch(e){LIB.err="Не удалось загрузить список наборов. Проверь интернет и нажми «Обновить список»."}
+  LIB.busy=false;if((location.hash||"").slice(1)==="library")viewLibrary();
+}
+async function installPack(p){
+  LIB.working=p.id;LIB.err="";viewLibrary();
+  try{const r=await fetch(packsURL()+p.file+"?v="+(p.version||1),{cache:"no-store"});if(!r.ok)throw 0;const d=await r.json();
+    if(!d||typeof d!=="object"||!(d.words||d.texts||d.lessons))throw 0;
+    S.packs=S.packs||{};S.packs[p.id]={version:p.version||1,title:p.title,data:d};S.sets=S.sets||{};S.sets["pack:"+p.id]=true;save();
+    toast("Установлено: "+p.title);setTimeout(()=>location.reload(),500)}
+  catch(e){LIB.working="";LIB.err="Не удалось скачать «"+p.title+"». Попробуй ещё раз.";viewLibrary()}
+}
+function viewLibrary(){
+  if(!packsURL()){V.innerHTML=`<h1>Библиотека</h1><p class="sub">Дополнительные наборы слов, уроков и текстов скачиваются в приложении для телефона.</p>`;return}
+  if(!LIB.idx&&!LIB.busy&&!LIB.err){loadLib();return}
+  const inst=S.packs||{};
+  const extra=Object.keys(inst).filter(id=>!(LIB.idx||[]).some(p=>p.id===id));
+  V.innerHTML=`<div class="row" style="justify-content:space-between"><h1>Библиотека</h1><button class="btn ghost small" id="librefresh" ${LIB.busy?"disabled":""}>Обновить список</button></div>
+  <p class="sub">Дополнительные наборы. После установки слова попадут в карточки, уроки — в «Грамматику», тексты — в «Чтение». Новые наборы появляются здесь без обновления приложения.</p>
+  ${LIB.busy?'<div class="sheet muted">Загружаю список…</div>':""}${LIB.err?`<div class="verdict bad"><span>${esc(LIB.err)}</span></div>`:""}
+  <div class="stack">${(LIB.idx||[]).map(p=>{const i=inst[p.id];const upd=i&&(p.version||1)>(i.version||1);
+    return `<section class="sheet packc"><div style="min-width:0"><div class="row" style="gap:8px"><b>${esc(p.title)}</b>${p.level?`<span class="pill new">${esc(p.level)}</span>`:""}${i?`<span class="pill known">установлен</span>`:""}</div>
+    <p class="small muted" style="margin:4px 0 0">${esc(p.desc||"")}</p>${p.contents?`<p class="small" style="margin:4px 0 0">${esc(p.contents)}</p>`:""}</div>
+    <div class="row">${LIB.working===p.id?'<span class="small muted">Скачиваю…</span>':i?`${upd?`<button class="btn primary" data-inst="${esc(p.id)}">Обновить</button>`:""}<button class="btn ghost" data-rm="${esc(p.id)}">Удалить</button>`:`<button class="btn primary" data-inst="${esc(p.id)}">Установить</button>`}</div></section>`}).join("")}
+  ${extra.map(id=>`<section class="sheet packc"><div><b>${esc(inst[id].title||id)}</b> <span class="pill known">установлен</span></div><button class="btn ghost" data-rm="${esc(id)}">Удалить</button></section>`).join("")}</div>`;
+  const rf=$("#librefresh");if(rf)rf.onclick=()=>{LIB.idx=null;loadLib()};
+  V.querySelectorAll("[data-inst]").forEach(b=>b.onclick=()=>{const p=(LIB.idx||[]).find(x=>x.id===b.dataset.inst);if(p)installPack(p)});
+  V.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{const id=b.dataset.rm;delete S.packs[id];if(S.sets)delete S.sets["pack:"+id];save();toast("Набор удалён");setTimeout(()=>location.reload(),500)});
+}
+
 /* ---------- WORDS ---------- */
 let WF={q:"",f:"all",confirm:false};
 function viewWords(){
@@ -2984,6 +3125,7 @@ function viewWords(){
       <label for="sgoal">Дневная цель, ответов</label><select id="sgoal">${[15,30,50,80].map(n=>`<option ${n===S.settings.goal?"selected":""}>${n}</option>`).join("")}</select>
       <label for="sweek">Цель: дней в неделю</label><select id="sweek">${[3,4,5,6,7].map(n=>`<option ${n===(S.settings.weekGoal||5)?"selected":""}>${n}</option>`).join("")}</select>
       <label for="svoice">Произношение</label><select id="svoice"><option value="en-US" ${S.settings.voice==="en-US"?"selected":""}>Американское</option><option value="en-GB" ${S.settings.voice==="en-GB"?"selected":""}>Британское</option></select>
+      ${window.NativeApp&&window.NativeApp.reminder?`<label for="srem">Напоминание о занятии</label><select id="srem">${["off","08:00","12:00","18:00","19:00","20:00","21:00","22:00"].map(t=>`<option value="${t}" ${(S.settings.reminder||"off")===t?"selected":""}>${t==="off"?"Выключено":"каждый день в "+t}</option>`).join("")}</select>`:""}
     </div>
     <p class="small muted" style="margin:14px 0 10px" data-sync></p>
     <div class="row">${WF.confirm?`<span>Удалить весь прогресс и свои слова?</span><button class="btn" id="rsyes" style="color:var(--bad);border-color:var(--bad)">Да, удалить</button><button class="btn ghost" id="rsno">Отмена</button>`:`<button class="btn ghost" id="rs">Сбросить прогресс</button>`}</div>
@@ -2998,6 +3140,9 @@ function viewWords(){
   $("#snew").onchange=e=>{S.settings.newPerDay=+e.target.value;save();CS=null;toast("Сохранено")};
   $("#sweek").onchange=e=>{S.settings.weekGoal=+e.target.value;save();toast("Сохранено")};
   $("#sgoal").onchange=e=>{S.settings.goal=+e.target.value;save();toast("Сохранено")};
+  const srem=$("#srem");if(srem)srem.onchange=e=>{const v=e.target.value;S.settings.reminder=v;save();
+    if(v==="off")window.NativeApp.reminder.set(20,0,false);else{const [h,m]=v.split(":").map(Number);window.NativeApp.reminder.set(h,m,true)}
+    toast(v==="off"?"Напоминание выключено":"Напомню каждый день в "+v)};
   $("#svoice").onchange=e=>{S.settings.voice=e.target.value;save();speak("Hello! This is how I sound.")};
   const on=(id,f)=>{const el=$("#"+id);if(el)el.onclick=f};
   on("rs",()=>{WF.confirm=true;viewWords()});on("rsno",()=>{WF.confirm=false;viewWords()});
@@ -3013,5 +3158,6 @@ function renderWL(){
   $("#wl").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const id=b.dataset.del;S.custom=S.custom.filter(c=>c.id!==id);S.deleted=(S.deleted||[]).concat(id);delete S.cards[id];save();renderWL()});
 }
 
-applyFreeze();route();initSync();
+if(!packsURL()){const a=document.querySelector('#nav a[href="#library"]');if(a)a.hidden=true}
+applyPacks();applyFreeze();route();initSync();
 </script>

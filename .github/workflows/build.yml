@@ -3,7 +3,11 @@ name: Сборка приложений
 on:
   push:
     branches: [main]
+    paths-ignore: ['packs/**', 'README.md']
   workflow_dispatch:
+
+env:
+  PACKS_URL: https://raw.githubusercontent.com/${{ github.repository }}/main/packs/
 
 jobs:
   ios:
@@ -12,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Веб-часть приложения
-        run: python3 android/make_assets.py index.html ios/Resources/index.html ios
+        run: python3 android/make_assets.py index.html ios/Resources/index.html ios "$PACKS_URL"
       - name: XcodeGen
         run: brew install xcodegen
       - name: Генерация проекта

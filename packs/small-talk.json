@@ -1,0 +1,216 @@
+{
+ "words": [
+  [
+   "How's it going?",
+   "как дела? (разговорное)",
+   "/haʊz ɪt ˈɡəʊɪŋ/",
+   "Hi Tom! How's it going?",
+   "Привет, Том! Как дела?",
+   "A2"
+  ],
+  [
+   "Not bad",
+   "неплохо",
+   "/nɒt bæd/",
+   "Not bad, thanks. And you?",
+   "Неплохо, спасибо. А у тебя?",
+   "A1"
+  ],
+  [
+   "What do you do?",
+   "чем ты занимаешься? (о работе)",
+   "/wɒt duː juː duː/",
+   "So, what do you do?",
+   "Так чем ты занимаешься?",
+   "A1"
+  ],
+  [
+   "by the way",
+   "кстати",
+   "/baɪ ðə weɪ/",
+   "By the way, have you seen the new film?",
+   "Кстати, ты видел новый фильм?",
+   "A2"
+  ],
+  [
+   "Really?",
+   "правда?",
+   "/ˈrɪəli/",
+   "Really? That's amazing!",
+   "Правда? Это потрясающе!",
+   "A1"
+  ],
+  [
+   "That sounds great",
+   "звучит здорово",
+   "/ðæt saʊndz ɡreɪt/",
+   "A trip to Italy? That sounds great!",
+   "Поездка в Италию? Звучит здорово!",
+   "A2"
+  ],
+  [
+   "I see",
+   "понятно",
+   "/aɪ siː/",
+   "I see. And how long have you worked there?",
+   "Понятно. А сколько ты там работаешь?",
+   "A2"
+  ],
+  [
+   "Anyway",
+   "в общем, ладно",
+   "/ˈeniweɪ/",
+   "Anyway, I have to go now.",
+   "В общем, мне пора.",
+   "A2"
+  ],
+  [
+   "Nice talking to you",
+   "приятно было поговорить",
+   "/naɪs ˈtɔːkɪŋ tə juː/",
+   "I have to go. Nice talking to you!",
+   "Мне пора. Приятно было поговорить!",
+   "A2"
+  ],
+  [
+   "Take care",
+   "береги себя, пока",
+   "/teɪk keə/",
+   "See you soon. Take care!",
+   "До скорого. Береги себя!",
+   "A2"
+  ],
+  [
+   "What about you?",
+   "а ты?",
+   "/wɒt əˈbaʊt juː/",
+   "I love hiking. What about you?",
+   "Я люблю походы. А ты?",
+   "A1"
+  ],
+  [
+   "It depends",
+   "смотря как, по-разному",
+   "/ɪt dɪˈpendz/",
+   "Do you like big cities? — It depends.",
+   "Ты любишь большие города? — По-разному.",
+   "A2"
+  ]
+ ],
+ "lessons": [
+  {
+   "id": "pk-smalltalk",
+   "lvl": "A2",
+   "title": "Small talk: поддержать разговор",
+   "desc": "Вопросы-эхо, реакции и вежливое завершение",
+   "theory": "<p>В английском разговор поддерживают короткими <b>реакциями</b> и <b>встречными вопросами</b>. Молчание или ответ одним словом звучит холодно.</p><ul><li>Реакции: <i>Really? That sounds great! I see. Oh no!</i></li><li>Встречный вопрос: <i>What about you? And you?</i></li><li>Вопросы-эхо: <i>I live in Spain. — Oh, do you?</i> (повторяем вспомогательный глагол)</li><li>Завершить: <i>Anyway, I have to go. Nice talking to you!</i></li></ul>",
+   "ex": [
+    {
+     "type": "choice",
+     "q": "— I've just come back from Japan. — ___",
+     "o": [
+      "Really? How was it?",
+      "Yes.",
+      "I know."
+     ],
+     "a": "Really? How was it?",
+     "why": "Реакция + вопрос поддерживают разговор."
+    },
+    {
+     "type": "choice",
+     "q": "— I work in a bank. — Oh, ___ you?",
+     "o": [
+      "do",
+      "are",
+      "have"
+     ],
+     "a": "do",
+     "why": "Эхо-вопрос повторяет вспомогательный глагол: I work → do you?"
+    },
+    {
+     "type": "choice",
+     "q": "— I'm going to Paris next week. — Oh, ___ you?",
+     "o": [
+      "are",
+      "do",
+      "will"
+     ],
+     "a": "are",
+     "why": "I'm going → are you?"
+    },
+    {
+     "type": "choice",
+     "q": "Как вежливо закончить разговор?",
+     "o": [
+      "Anyway, I have to go. Nice talking to you!",
+      "Bye. I go.",
+      "Stop talking, please."
+     ],
+     "a": "Anyway, I have to go. Nice talking to you!",
+     "why": "Anyway + причина + Nice talking to you — вежливо."
+    },
+    {
+     "type": "choice",
+     "q": "— I love hiking. ___",
+     "o": [
+      "What about you?",
+      "What you?",
+      "And what?"
+     ],
+     "a": "What about you?",
+     "why": "What about you? — «А ты?»"
+    },
+    {
+     "type": "choice",
+     "q": "— How's it going? — ___",
+     "o": [
+      "Not bad, thanks. And you?",
+      "I'm going home.",
+      "It goes."
+     ],
+     "a": "Not bad, thanks. And you?",
+     "why": "How's it going? — «Как дела?», а не «куда идёшь»."
+    }
+   ]
+  }
+ ],
+ "texts": [
+  {
+   "title": "Meeting a neighbour",
+   "l": "A2",
+   "text": "Hi! You're the new neighbour, right? I'm Mike from number twelve. — Oh, hi Mike! Yes, I'm Olga. We moved in last week. — Nice to meet you, Olga. How do you like the area? — It's great. It's quiet, and the park is really close. — Oh, do you run? I run there every morning. — Really? I've just started running! — Great, we can run together sometime. Anyway, I have to go to work. Nice talking to you! — You too. Take care!",
+   "q": [
+    {
+     "q": "Когда Ольга переехала?",
+     "o": [
+      "На прошлой неделе",
+      "Вчера",
+      "Месяц назад"
+     ],
+     "a": "На прошлой неделе"
+    },
+    {
+     "q": "Что Ольге нравится в районе?",
+     "o": [
+      "Тишина и парк рядом",
+      "Магазины",
+      "Много кафе"
+     ],
+     "a": "Тишина и парк рядом"
+    },
+    {
+     "q": "Что предлагает Майк?",
+     "o": [
+      "Бегать вместе",
+      "Пойти в кафе",
+      "Помочь с переездом"
+     ],
+     "a": "Бегать вместе"
+    }
+   ]
+  }
+ ],
+ "id": "small-talk",
+ "title": "Small talk: как поддержать разговор",
+ "level": "A2"
+}

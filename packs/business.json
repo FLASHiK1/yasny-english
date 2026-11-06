@@ -1,0 +1,155 @@
+{
+ "words": [
+  [
+   "I hope this email finds you well",
+   "надеюсь, у вас всё хорошо (начало письма)",
+   "/aɪ həʊp ðɪs ˈiːmeɪl faɪndz juː wel/",
+   "Hi Tom, I hope this email finds you well.",
+   "Привет, Том, надеюсь, у тебя всё хорошо.",
+   "B1"
+  ],
+  [
+   "I'm writing to",
+   "пишу, чтобы…",
+   "/aɪm ˈraɪtɪŋ tə/",
+   "I'm writing to confirm our meeting.",
+   "Пишу, чтобы подтвердить нашу встречу.",
+   "B1"
+  ],
+  [
+   "Please find attached",
+   "во вложении",
+   "/pliːz faɪnd əˈtætʃt/",
+   "Please find attached the report.",
+   "Отчёт во вложении.",
+   "B1"
+  ],
+  [
+   "Let me know",
+   "дайте знать",
+   "/let miː nəʊ/",
+   "Let me know if you have any questions.",
+   "Дайте знать, если будут вопросы.",
+   "A2"
+  ],
+  [
+   "at your earliest convenience",
+   "как только сможете",
+   "/ət jɔːr ˈɜːliɪst kənˈviːniəns/",
+   "Please reply at your earliest convenience.",
+   "Пожалуйста, ответьте, как только сможете.",
+   "B2"
+  ],
+  [
+   "Best regards",
+   "с уважением (в конце письма)",
+   "/best rɪˈɡɑːdz/",
+   "Best regards, Anna",
+   "С уважением, Анна",
+   "A2"
+  ],
+  [
+   "agenda",
+   "повестка",
+   "/əˈdʒendə/",
+   "Let's look at the agenda.",
+   "Давайте посмотрим повестку.",
+   "B1"
+  ],
+  [
+   "to schedule a meeting",
+   "назначить встречу",
+   "/tə ˈʃedjuːl ə ˈmiːtɪŋ/",
+   "Can we schedule a meeting for Monday?",
+   "Можем назначить встречу на понедельник?",
+   "B1"
+  ],
+  [
+   "to postpone",
+   "перенести (на позже)",
+   "/tə pəˈspəʊn/",
+   "We need to postpone the call.",
+   "Нам нужно перенести созвон.",
+   "B1"
+  ],
+  [
+   "Can you hear me?",
+   "вы меня слышите?",
+   "/kæn juː hɪə miː/",
+   "Sorry, can you hear me now?",
+   "Извините, теперь меня слышно?",
+   "A2"
+  ],
+  [
+   "You're on mute",
+   "у вас выключен микрофон",
+   "/jɔːr ɒn mjuːt/",
+   "Tom, I think you're on mute.",
+   "Том, кажется, у тебя выключен микрофон.",
+   "B1"
+  ],
+  [
+   "to sum up",
+   "подводя итог",
+   "/tə sʌm ʌp/",
+   "To sum up, we need two more weeks.",
+   "Подводя итог: нам нужно ещё две недели.",
+   "B1"
+  ],
+  [
+   "action items",
+   "задачи по итогам встречи",
+   "/ˈækʃn ˈaɪtəmz/",
+   "I'll send the action items after the call.",
+   "Я пришлю задачи после созвона.",
+   "B2"
+  ],
+  [
+   "to be on the same page",
+   "одинаково понимать ситуацию",
+   "/tə biː ɒn ðə seɪm peɪdʒ/",
+   "Let's make sure we're on the same page.",
+   "Давайте убедимся, что мы понимаем друг друга.",
+   "B2"
+  ]
+ ],
+ "texts": [
+  {
+   "title": "An email to a colleague",
+   "l": "B1",
+   "text": "Hi Sarah, I hope this email finds you well. I'm writing to confirm our meeting with the client on Thursday at 10 a.m. Please find attached the latest version of the presentation. Unfortunately, Mark can't join us, so we may need to postpone the second part of the discussion until next week. Could you please check the agenda and let me know if anything is missing? I'd also appreciate it if you could prepare a short summary of the budget. Thanks in advance. Best regards, Dmitry",
+   "q": [
+    {
+     "q": "Зачем Дмитрий пишет письмо?",
+     "o": [
+      "Подтвердить встречу с клиентом",
+      "Отменить проект",
+      "Попросить отпуск"
+     ],
+     "a": "Подтвердить встречу с клиентом"
+    },
+    {
+     "q": "Что приложено к письму?",
+     "o": [
+      "Презентация",
+      "Договор",
+      "Счёт"
+     ],
+     "a": "Презентация"
+    },
+    {
+     "q": "О чём Дмитрий просит Сару?",
+     "o": [
+      "Проверить повестку и подготовить сводку бюджета",
+      "Позвонить клиенту",
+      "Забронировать переговорную"
+     ],
+     "a": "Проверить повестку и подготовить сводку бюджета"
+    }
+   ]
+  }
+ ],
+ "id": "business",
+ "title": "Деловой английский: письма и встречи",
+ "level": "B1"
+}

@@ -2642,7 +2642,7 @@ function renderCard(){
     if(dir==="ru-en"){
       if(r&&r.status==="ok")body+=`<div class="verdict ok">Верно</div>`;
       else if(r&&r.status==="typo")body+=`<div class="verdict warn">Почти, проверь написание. <span>${r.choice?"Ты выбрал":"Ты написал"}: ${esc(r.user)}</span></div>`;
-      else if(r&&r.user)body+=`<div class="verdict bad">Не то. <span>${r.choice?"Ты выбрал":"Ты написал"}: ${esc(r.user)}</span></div>`;
+      else if(r&&r.user)body+=`<div class="verdict bad">Не совсем. <span>${r.choice?"Ты выбрал":"Ты написал"}: ${esc(r.user)}</span></div>`;
       if(r&&!r.choice&&r.user&&r.status!=="ok")body+=r.formOnly?`<div class="why">Слово верное, но в другой форме. В карточках пиши начальную форму: «${esc(w.en)}».</div>`:issuesHTML(r,r.status==="typo");
       body+=`<div class="answer"><span class="en">${esc(w.en)}</span>${sayBtn(w.en)}</div>${w.ipa?`<div class="ipa">${esc(w.ipa)}</div>`:""}`;
     }else{
@@ -2710,7 +2710,7 @@ function renderLesson(){
     if(done){
       const ok=GS.ok;
       const tp=ok&&GS.cres&&GS.cres.status==="typo";
-      fb=`<div class="verdict ${tp?"warn":ok?"ok":"bad"}">${tp?"Верно, но с опечаткой":ok?"Верно":"Неверно"}${(!ok||tp)&&!e.o?` <span>Правильно: <b>${esc(e.a[0])}</b>${GS.ans?` · у тебя: ${esc(GS.ans)}`:""}</span>`:""}</div>
+      fb=`<div class="verdict ${tp?"warn":ok?"ok":"bad"}">${tp?"Верно, но с опечаткой":ok?"Верно":"Не совсем"}${(!ok||tp)&&!e.o?` <span>Правильно: <b>${esc(e.a[0])}</b>${GS.ans?` · у тебя: ${esc(GS.ans)}`:""}</span>`:""}</div>
       ${GS.ans&&GS.cres&&GS.cres.status!=="ok"?issuesHTML(GS.cres,false):""}
       <div class="why">${esc(e.why)}</div>
       <div class="row"><button class="btn primary" id="gnext">${GS.i+1<GS.items.length?"Дальше":"Результат"}</button>${e.type==="audio"?sayBtn(e.say):/[а-яё]/i.test(e.q.replace(/\([^)]*\)/g,""))?"":sayBtn(e.q.replace(/___\s*\([^)]*\)|___/,e.o?(e.a==="—"?"":e.a):e.a[0]).replace(/\([^)]*\)/g,"").replace(/\s+/g," ").trim(),"Озвучить предложение")}</div>`;
@@ -2783,7 +2783,7 @@ function renderTr(){
   let fb="";
   if(r){
     const others=vars.filter(v=>v!==r.best).slice(0,3);
-    fb=r.status==="ok"?`<div class="verdict ok">Верно${r.aiOk?" <span>· ИИ засчитал твой вариант</span>":""}</div>`:r.status==="typo"?`<div class="verdict warn">Верно, только опечатка <span>· засчитано</span></div>`:`<div class="verdict bad">Есть ошибки</div>`;
+    fb=r.status==="ok"?`<div class="verdict ok">Верно${r.aiOk?" <span>· ИИ засчитал твой вариант</span>":""}</div>`:r.status==="typo"?`<div class="verdict warn">Верно, только опечатка <span>· засчитано</span></div>`:`<div class="verdict bad">Чуть-чуть не так</div>`;
     if(r.status!=="ok"&&r.user)fb+=issuesHTML(r,true);
     if(r.status==="bad"&&r.user)fb+=`<div><div class="label" style="margin-bottom:4px">Сравнение с ближайшим вариантом</div><div class="diff">${wordDiff(r.user,r.best)}</div><div class="small muted">Жёлтым — чего не хватает, зачёркнуто — лишнее.</div></div>`;
     fb+=`<div><div class="label" style="margin-bottom:4px">Правильно</div><div class="answer"><span style="font-size:19px;font-weight:500">${esc(r.best)}</span>${sayBtn(r.best)}</div>${others.length?`<div class="small muted" style="margin-top:6px">Тоже верно:</div><ul class="variants">${others.map(v=>`<li>${esc(v)}</li>`).join("")}</ul>`:""}</div>`;
@@ -2834,7 +2834,7 @@ function renderListen(){
   const w=LS.w,r=LS.res,has="speechSynthesis" in window;
   let fb="";
   if(r){
-    fb=(r.status==="ok"?`<div class="verdict ok">Всё точно</div>`:r.status==="typo"?`<div class="verdict warn">Почти, одна-две буквы</div>`:`<div class="verdict bad">Есть расхождения</div>`)+
+    fb=(r.status==="ok"?`<div class="verdict ok">Всё точно</div>`:r.status==="typo"?`<div class="verdict warn">Почти, одна-две буквы</div>`:`<div class="verdict bad">Чуть-чуть не так</div>`)+
     (r.status!=="ok"&&r.user?issuesHTML(r,true)+(r.status==="bad"?`<div class="diff">${wordDiff(r.user,w.ex)}</div>`:""):"")+
     `<div class="example"><span class="row" style="gap:8px;flex-wrap:nowrap"><span>${markIn(w.ex,w.en,false)}</span>${sayBtn(w.ex)}</span>${w.exru?`<span class="ru">${esc(w.exru)}</span>`:""}</div>
     <div class="small muted">Слово: <b>${esc(w.en)}</b> — ${esc(w.ru)}</div>
@@ -3658,7 +3658,7 @@ function renderCL(){
     }
     let fb="";
     if(r){
-      fb=r.ok?`<div class="verdict ok">Верно${r.typo?" <span>(с опечаткой)</span>":""}</div>`:`<div class="verdict bad">${e.type==="choice"||e.type==="audio"?"Не то":"Правильно так:"} ${e.type==="choice"||e.type==="audio"?"":`<span><b>${esc(r.best||(e.a&&e.a[0])||"")}</b></span>`}</div>`;
+      fb=r.ok?`<div class="verdict ok">Верно${r.typo?" <span>(с опечаткой)</span>":""}</div>`:`<div class="verdict bad">${e.type==="choice"||e.type==="audio"?"Не совсем":"Правильно так:"} ${e.type==="choice"||e.type==="audio"?"":`<span><b>${esc(r.best||(e.a&&e.a[0])||"")}</b></span>`}</div>`;
       if(r.cres&&r.user&&r.cres.status!=="ok")fb+=issuesHTML(r.cres,!e.why);
       if(!r.ok&&(e.type==="tiles"||e.type==="type")&&r.user)fb+=`<div class="diff">${wordDiff(r.user,r.best)}</div>`;
       if((e.type==="tiles"||e.type==="type")&&r.best)fb+=`<div class="answer"><span style="font-size:18px;font-weight:500">${esc(r.best)}</span>${sayBtn(r.best)}</div>`;
@@ -4011,10 +4011,10 @@ function replay(svg,anim){if(!svg)return;svg.classList.forEach(c=>{if(c.startsWi
 const BUD={mood:"happy",idleT:null,sleepT:null,sayT:null,animT:null,shown:false,lastCards:0,greeted:false};
 const BUD_ROUTES=["cards","grammar","translate","course","mistakes","listen","verbs","speak","read","practice"];
 const BUD_OK=["Да!","Верно!","Так!","Отлично!","Ура!","Точно!","Красота!"];
-const BUD_BAD=["Хм…","Ничего!","Разберёмся","Бывает!","Почти!"];
+const BUD_BAD=["Пустяк!","Справимся!","Это мелочь","Ничего!","Почти!","Разберёмся"];
 const BUD_TEST=["Принято","Дальше!","Хорошо идёшь","Не спеши","Записал"];
 const BUD_START=["Внимательно!","Ты сможешь!","Поехали!","Я рядом","Начнём!"];
-const BUD_TAP=["Ты молодец, что занимаешься каждый день!","Ошибки — это нормально. Я их запоминаю, чтобы мы их победили.","Говори слова вслух — так они запоминаются быстрее.","Не знаешь ответ? Нажми «Не знаю» — это честнее, чем угадывать.","Лучше 10 минут каждый день, чем час раз в неделю.","Английский — это навык. Каждое задание делает тебя сильнее!"];
+const BUD_TAP=["Ты молодец, что занимаешься каждый день!","Неверный ответ — не ошибка, а пустяк. Я его запомню, и мы с ним справимся.","Говори слова вслух — так они запоминаются быстрее.","Не знаешь ответ? Нажми «Не знаю» — это честнее, чем угадывать.","Лучше 10 минут каждый день, чем час раз в неделю.","Английский — это навык. Каждое задание делает тебя сильнее!"];
 function budOn(){return S.settings.buddy!==false}
 function budEl(){return document.getElementById("buddy")}
 function budDraw(mood,anim){
@@ -4070,7 +4070,7 @@ function uname(){return (S.profile&&S.profile.name)||""}
 // Учитель: после каждого ответа Ясик хвалит или объясняет ошибку.
 const PRAISE=["Молодец!","Отлично!","Верно!","Так держать!","Именно так!","Супер!","Браво!","Умница!","Точно!"];
 const COMBO_MSG={3:"Три подряд — отличная серия!",5:"Пять подряд! Ты в ударе.",10:"Десять подряд! Это уже уверенное знание.",20:"Двадцать подряд! Я горжусь тобой."};
-const WRONG_OPEN=["Давай разберёмся.","Смотри, в чём дело.","Почти! Вот подсказка.","Не страшно, это частая ошибка.","Ничего, на ошибках и учатся."];
+const WRONG_OPEN=["Это не ошибка, а пустяк — сейчас разберёмся.","Пустяк! Смотри, как правильно.","Ничего страшного — это просто шаг к правильному ответу.","Мелочь, справимся вместе.","Не ошибка, а маленькая подсказка, что стоит повторить.","Пустяки! С этим справляются все — и ты справишься.","Это просто заминка. Смотри, в чём дело."];
 let COMBO=0;
 function mascotize(){
   V.querySelectorAll(".card .verdict:not([data-ya])").forEach(v=>{
@@ -4086,9 +4086,9 @@ function mascotize(){
       if(nm&&!COMBO_MSG[COMBO]&&Math.random()<.3)p=p.replace(/!$/,", "+nm+"!");
       msg=p+(expl?" "+expl:"");
     }else if(state==="warn"){mood="happy";msg=expl||"Почти! Смысл верный, проверь написание."}
-    else{mood="think";msg=pick(WRONG_OPEN)+" "+(expl||"Запомни правильный вариант и скажи его вслух пару раз. Это задание вернётся к тебе в «Повторе» — в следующий раз получится.")}
+    else{mood="happy";msg=pick(WRONG_OPEN)+" "+(expl||"Скажи правильный вариант вслух пару раз — и он запомнится. Я ещё верну это задание в «Повторе», в следующий раз будет легко.")}
     const el=document.createElement("div");el.className="teach "+state;
-    el.innerHTML=yasik(mood,54,{teacher:false,anim:state==="ok"?(COMBO>=3?"party":"jump"):state==="bad"?"tilt":"nod"})+`<div class="ybub">${esc(msg)}</div>`;
+    el.innerHTML=yasik(mood,54,{teacher:false,anim:state==="ok"?(COMBO>=3?"party":"jump"):"nod"})+`<div class="ybub">${esc(msg)}</div>`;
     v.after(el);
   });
 }
@@ -4144,7 +4144,7 @@ function checkAch(){if(document.body.classList.contains("focus"))return;
 function resultHTML(o){
   const pct=o.total?Math.round(o.right/o.total*100):100,n=todayN(),goal=S.settings.goal,st=streak(),nm=uname();
   const mood=pct>=85?"proud":pct>=60?"happy":"think";
-  const say=pct>=90?`${nm?nm+", это":"Это"} блестяще! ${o.note||""}`:pct>=70?`Хорошая работа${nm?", "+nm:""}! ${o.note||""}`:pct>=50?`Неплохо! Ошибки я сохранил — повторим их, и всё уложится. ${o.note||""}`:`Сегодня было трудно, и это нормально. Ошибки ждут в «Повторе» — завтра будет легче. ${o.note||""}`;
+  const say=pct>=90?`${nm?nm+", это":"Это"} блестяще! ${o.note||""}`:pct>=70?`Хорошая работа${nm?", "+nm:""}! ${o.note||""}`:pct>=50?`Неплохо! Пару пустяков я отложил в «Повтор» — разберёмся с ними, и всё уложится. ${o.note||""}`:`Сегодня было непросто — и это нормально. Это не ошибки, а пустяки, с которыми мы справимся: я отложил их в «Повтор», завтра будет легче. ${o.note||""}`;
   return `<div class="result anim">
     ${yasay(mood,esc(say.trim()),88,pct>=85?"party":pct>=60?"jump":"idle")}
     <h1 style="text-align:center;margin:4px 0 0">${esc(o.title)}</h1>
@@ -5529,7 +5529,7 @@ function renderSit(){
   ${r?"":`<div class="row"><button class="btn ghost small" id="sitru">${SI.showRu?"Скрыть перевод":"Перевод"}</button></div>`}
   <div class="label" style="margin-top:4px">Твой ответ</div>
   <div class="choices col">${SI.o.map(o=>{let c="";if(r){if(o===t.o[0])c=" right";else if(o===r.user)c=" wrong"}return `<button class="btn${c}" data-o="${esc(o)}" ${r?"disabled":""}>${esc(o)}</button>`}).join("")}</div>
-  ${r?`<div class="verdict ${r.ok?"ok":"bad"}">${r.ok?"Отлично сказано!":"Лучше сказать так: "+esc(t.o[0])}</div><p class="small" style="margin:0">${esc(t.why)}</p><div class="row"><button class="btn primary" id="sitnext">${SI.i+1<s.turns.length?"Дальше":"Итог"}</button></div>`:""}</div>`;
+  ${r?`<div class="verdict ${r.ok?"ok":"bad"}">${r.ok?"Отлично сказано!":"Пустяк! Лучше сказать так: "+esc(t.o[0])}</div><div class="why">${esc(t.why)}</div><div class="row"><button class="btn primary" id="sitnext">${SI.i+1<s.turns.length?"Дальше":"Итог"}</button></div>`:""}</div>`;
   const ru=$("#sitru");if(ru)ru.onclick=()=>{SI.showRu=!SI.showRu;renderSit()};
   V.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{if(SI.res)return;const ok=b.dataset.o===t.o[0];SI.res={ok,user:b.dataset.o};if(ok)SI.ok++;practiceLog("sit",ok);mistake("sit",s.id+":"+SI.i,ok,b.dataset.o,{t:"sit",l:s.l});bump(ok,s.l);renderSit();speak(t.o[0])});
   const nx=$("#sitnext");if(nx){nx.focus();nx.onclick=()=>{SI.log.push({n:t.n,a:t.o[0],ok:SI.res.ok});SI.i++;SI.res=null;SI.showRu=false;if(SI.i<s.turns.length){SI.o=shuffle(s.turns[SI.i].o.slice());renderSit();setTimeout(()=>speak(s.turns[SI.i].n),200)}else renderSit()}}
@@ -5550,10 +5550,10 @@ function renderFix(){
   else if(FX.stage==="fix")body=`<div class="label">Верно, ошибка здесь! Как исправить?</div><div class="fixline">${ch.map(c=>`<span class="fixw ${c.bad?"bad":""}">${esc(c.w)}</span>`).join(" ")}</div>
     <div class="choices col">${FX.o.map(o=>`<button class="btn" data-fx="${esc(o)}">${o?esc(o):`убрать «${esc(f[1])}»`}</button>`).join("")}</div>`;
   else{const good=fixed(f);
-    body=`<div class="verdict ${FX.res?"ok":"bad"}">${FX.res?"Исправлено!":FX.miss?"Ошибка была в другом месте":"Не то исправление"}</div>
+    body=`<div class="verdict ${FX.res?"ok":"bad"}">${FX.res?"Исправлено!":FX.miss?"Почти! Ошибка пряталась в другом месте":"Почти! Исправить нужно чуть иначе"}</div>
     <div class="fixline">${ch.map(c=>`<span class="fixw ${c.bad?"bad":""}">${esc(c.w)}</span>`).join(" ")}</div>
     <div class="example"><span class="row" style="gap:8px;flex-wrap:nowrap"><span><b>${esc(good)}</b></span>${sayBtn(good)}</span></div>
-    <p class="small" style="margin:0">${esc(f[4])}</p><div class="row"><button class="btn primary" id="fxnext">Следующее</button></div>`}
+    <div class="why">${esc(f[4])}</div><div class="row"><button class="btn primary" id="fxnext">Следующее</button></div>`}
   V.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:6px"><h1 style="margin:0">Найди ошибку</h1><span class="small muted">${FX.n?`Верно: ${FX.ok} из ${FX.n}`:f[5]}</span></div>
   <p class="sub">В каждом предложении ровно одна ошибка — найди её и исправь.</p><div class="card">${body}</div>`;
   const done=(ok,user)=>{FX.n++;if(ok)FX.ok++;S.fixSeen=(S.fixSeen||[]).concat(f[0]).slice(-40);practiceLog("fix",ok);mistake("fix",FIXES.indexOf(f),ok,user||"",{t:"fix",l:f[5]});bump(ok,f[5]);FX.stage="done";FX.res=ok;renderFix()};
@@ -5592,7 +5592,7 @@ function renderOrder(){
   V.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:6px"><h1 style="margin:0">Собери диалог</h1><span class="small muted">${OD.n?`Верно: ${OD.ok} из ${OD.n}`:d.l}</span></div>
   <p class="sub">Восстанови переписку: нажимай на реплики по порядку. Нажми на отправленную реплику, чтобы вернуть её.</p>
   <div class="card cwrap">${head}<div class="chat" id="chat">${placed||`<p class="small muted cempty">С чего начался разговор?</p>`}${typing}</div>
-  ${res?`<div class="verdict ${res.ok?"ok":"bad"}">${res.ok?"Всё по порядку!":"Порядок другой — сравни с правильным"}</div>${rightChat}
+  ${res?`<div class="verdict ${res.ok?"ok":"bad"}">${res.ok?"Всё по порядку!":"Почти! Порядок чуть другой — сравни"}</div>${rightChat}
     <div class="row"><button class="btn" id="odplay">Послушать по ролям</button><button class="btn primary" id="odnext">Следующий диалог</button></div>`
   :`<div class="ctray">${left.map(i=>{const L=lines[i];return `<button class="cpick ${L[0]==="A"?"a":"b"}" data-pk="${i}">${av(L[0])}<span>${esc(L[1])}</span></button>`}).join("")}
     ${pick.length===lines.length?`<div class="row" style="justify-content:center"><button class="btn primary" id="odchk">Проверить</button><button class="btn ghost" id="odreset">Заново</button></div>`:""}</div>`}</div>`;
@@ -5672,7 +5672,7 @@ function renderSprint(){
     if(!SP.saved){SP.saved=true;SP.rec=rec;S.sprint=S.sprint||{best:0,n:0};S.sprint.n++;if(rec)S.sprint.best=SP.ok;save()}
     V.innerHTML=`<h1>Спринт</h1><div class="card" style="text-align:center">${yasay(SP.rec?"proud":SP.ok>=10?"happy":"think",SP.rec?`Новый рекорд — <b>${SP.ok}</b>!`:`Результат: <b>${SP.ok}</b>. Рекорд — ${S.sprint.best}.`,72)}
     <div class="rstats"><div><b>${SP.ok}</b><span>верно</span></div><div><b>${SP.n}</b><span>всего</span></div><div><b>${SP.best}</b><span>лучшая серия</span></div></div>
-    ${SP.miss.length?`<div style="text-align:left"><div class="label" style="margin-bottom:6px">Где ошибся(лась)</div>${SP.miss.slice(0,6).map(m=>`<div class="small"><b>${esc(m.en)}</b> — ${esc(m.ru)}</div>`).join("")}</div>`:""}
+    ${SP.miss.length?`<div style="text-align:left"><div class="label" style="margin-bottom:6px">Что повторить</div>${SP.miss.slice(0,6).map(m=>`<div class="small"><b>${esc(m.en)}</b> — ${esc(m.ru)}</div>`).join("")}</div>`:""}
     <div class="row" style="justify-content:center"><button class="btn primary" id="spagain">Ещё раз</button><a class="btn ghost" href="#train">К практике</a></div></div>`;
     $("#spagain").onclick=()=>{SP={state:"run",ws:sprintWords(),t0:Date.now(),n:0,ok:0,combo:0,best:0,miss:[]};sprintNext();renderSprint()};
     return;

@@ -5740,6 +5740,215 @@ taskOf=function(m){
 const _promptTextP=promptText;
 promptText=function(m){if(m.k==="sit"){const [id,ix]=m.ref.split(":");const s=SITS.find(x=>x.id===id);return s?s.turns[+ix].n:""}if(m.k==="fix"){const f=FIXES[+m.ref];return f?f[0]:""}return _promptTextP(m)};
 
+/* ===================== СИТУАЦИИ С РАЗВИЛКАМИ ===================== */
+// Узел: {n — реплика собеседника, ru, o:[[ответ, 1 — верно / 0 — нет, следующий узел, объяснение]]}.
+// Неверный ответ со «следующим узлом» уводит в ответвление: собеседник реагирует, и можно поправиться.
+// Несколько верных ответов могут вести в разные стороны. Узел с end — концовка.
+const SITS2=[
+{id:"bakery",l:"A1",t:"В пекарне",d:"Купить хлеб и, может быть, булочки",start:"a",nodes:{
+ a:{n:"Good morning! What would you like?",ru:"Доброе утро! Что желаете?",o:[["A loaf of bread, please.",1,"b"],["Bread. Give.",0,"a1","Так звучит грубо. Вежливо: A loaf of bread, please."],["I would like.",0,null,"После would like нужно сказать, что именно: I'd like a loaf of bread."]]},
+ a1:{n:"Er… sorry? What would you like?",ru:"Э… простите? Что вы хотите?",o:[["Sorry! A loaf of bread, please.",1,"b"],["Bread give me!",0,null,"Ещё раз, но вежливо: A loaf of bread, please."],["Nothing.",0,null,"Не сдавайся! Добавь please: A loaf of bread, please."]]},
+ b:{n:"White or brown?",ru:"Белый или серый?",o:[["Brown, please.",1,"c"],["White, please.",1,"c"],["Yes, please.",0,null,"Это вопрос «или — или», «yes» тут не подходит. Выбери: brown или white."]]},
+ c:{n:"Anything else? The cinnamon buns are fresh.",ru:"Что-нибудь ещё? Булочки с корицей свежие.",o:[["Ooh, two cinnamon buns, please!",1,"d1"],["No, thank you. That's all.",1,"d2"],["Two cinnamon bun, please.",0,"d1","Две булочки — buns, с -s на конце."]]},
+ d1:{n:"Great choice! That's four pounds. And here's a cookie for you — it's on the house!",ru:"Отличный выбор! С вас четыре фунта. А вот вам печенье — за счёт заведения!",o:[["Wow, thank you so much!",1,"e1"],["It's on the house? Where?",0,"e1","On the house — «за счёт заведения», то есть бесплатно. Можно просто поблагодарить."],["I don't want.",0,"e1","Если не хочешь, вежливо: No, thank you."]]},
+ d2:{n:"That's two pounds, please.",ru:"С вас два фунта.",o:[["Here you are.",1,"e2"],["Here are you.",0,null,"Когда передаёшь деньги — Here you are."],["Two pounds? OK, give.",0,null,"Вежливее: Here you are."]]},
+ e1:{n:"You're welcome! Enjoy!",ru:"Пожалуйста! Приятного аппетита!",end:"Хлеб, булочки и печенье в подарок — вежливость окупается!"},
+ e2:{n:"Thank you! Have a lovely day!",ru:"Спасибо! Хорошего дня!",end:"Хлеб куплен — коротко, вежливо и без лишних слов."}}},
+{id:"bus",l:"A1",t:"В автобусе",d:"Купить билет и узнать, где выходить",start:"a",nodes:{
+ a:{n:"Hello! Where are you going?",ru:"Здравствуйте! Куда едете?",o:[["To the city centre, please.",1,"b"],["I go the city centre.",0,null,"Направление — to: To the city centre, please."],["From the city centre.",0,"a1","From — «откуда». Нужно to — «куда»."]]},
+ a1:{n:"From the city centre? But we're going to the city centre now…",ru:"Из центра? Но мы как раз едем в центр…",o:[["Sorry, I mean to the city centre.",1,"b"],["Yes, from.",0,null,"Поправься: Sorry, I mean to the city centre."],["What?",0,null,"Можно поправиться: Sorry, I mean to the city centre."]]},
+ b:{n:"Single or return?",ru:"В одну сторону или туда и обратно?",o:[["Single, please.",1,"c"],["Return, please.",1,"c2"],["One, please.",0,null,"Single — билет в одну сторону, return — туда и обратно."]]},
+ c:{n:"That's two pounds fifty.",ru:"Два фунта пятьдесят.",o:[["Can I pay by card?",1,"d"],["Can I pay with my phone?",1,"d"],["How much is it?",0,null,"Цену уже назвали: two pounds fifty. Лучше спросить про оплату: Can I pay by card?"]]},
+ c2:{n:"That's four pounds.",ru:"Четыре фунта.",o:[["Here you are.",1,"d"],["Can I pay by card?",1,"d"],["Is it cheap?",0,null,"Лучше спросить, как оплатить: Can I pay by card?"]]},
+ d:{n:"Sure. Anything else?",ru:"Конечно. Что-то ещё?",o:[["Can you tell me when to get off?",1,"e1"],["No, thanks.",1,"e2"],["Where I go out?",0,"d1","Выходить из автобуса — get off: Can you tell me when to get off?"]]},
+ d1:{n:"Sorry? Do you mean where to get off?",ru:"Простите? Вы имеете в виду, где выходить?",o:[["Yes! Where do I get off for the museum?",1,"e1"],["Yes, where I out?",0,null,"Get off — выходить: Where do I get off for the museum?"],["No.",0,null,"Скажи: Yes! Where do I get off for the museum?"]]},
+ e1:{n:"The museum? That's the fourth stop. I'll tell you!",ru:"Музей? Это четвёртая остановка. Я подскажу!",end:"Водитель сам подскажет остановку — точно не проедешь."},
+ e2:{n:"OK, take a seat!",ru:"Хорошо, присаживайтесь!",end:"Билет куплен. В следующий раз можно спросить, где выходить: When do I get off?"}}},
+{id:"call",l:"A1",t:"Звонок подруге",d:"Позвать подругу в парк",start:"a",nodes:{
+ a:{n:"Hi! It's Lucy. How are you?",ru:"Привет! Это Люси. Как дела?",o:[["I'm fine, thanks! And you?",1,"b"],["I'm Lucy.",0,"a1","Люси — это она. На «How are you?» отвечают: I'm fine, thanks!"],["Yes, I am.",0,null,"На «How are you?» отвечают: I'm fine или I'm good, thanks!"]]},
+ a1:{n:"Ha-ha, no, I'm Lucy! How are YOU?",ru:"Ха-ха, нет, Люси — это я! Как ТВОИ дела?",o:[["Oh, sorry! I'm good, thanks!",1,"b"],["I'm Lucy too.",0,null,"Ответь, как дела: I'm good, thanks!"],["Lucy is fine.",0,null,"Говори о себе: I'm good, thanks!"]]},
+ b:{n:"I'm great! What are you doing now?",ru:"Отлично! Что делаешь?",o:[["I'm watching TV.",1,"c"],["I'm reading a book.",1,"c"],["I watch TV now.",0,null,"Прямо сейчас — Present Continuous: I'm watching TV."]]},
+ c:{n:"Do you want to go to the park with me?",ru:"Хочешь пойти со мной в парк?",o:[["Yes, sure! When?",1,"d"],["Sorry, I can't. I'm busy today.",1,"e2"],["Yes, I want go.",0,null,"После want нужен to: I want to go. А проще всего: Yes, sure!"]]},
+ d:{n:"In an hour? At the café near the park.",ru:"Через час? У кафе возле парка.",o:[["Great! See you there!",1,"e1"],["After one hour? OK.",0,null,"«Через час» — in an hour, а не after."],["Great! See you in there!",0,null,"Без in: See you there!"]]},
+ e1:{n:"See you! Bye!",ru:"До встречи! Пока!",end:"Встреча назначена — до встречи в парке!"},
+ e2:{n:"Oh, OK. Maybe tomorrow?",ru:"Ну ладно. Может, завтра?",end:"Отказ получился вежливым, и подруга предложила завтра. Сказать «нет» без обид — тоже умение."}}},
+{id:"neighbour",l:"A1",t:"Новый сосед",d:"Познакомиться с соседом",start:"a",nodes:{
+ a:{n:"Hi! Are you new here?",ru:"Привет! Ты здесь недавно?",o:[["Yes, I am. I live in flat five.",1,"b"],["Yes, I new.",0,null,"Нужен глагол am: Yes, I am new или просто Yes, I am."],["No, I'm old.",0,"a1","«New here» — недавно здесь. А «old» значит «старый» — сосед удивится!"]]},
+ a1:{n:"Old? You look very young to me!",ru:"Старый? По-моему, ты очень молодо выглядишь!",o:[["Ha-ha, sorry! I mean, yes, I'm new here.",1,"b"],["I'm twenty-five.",0,null,"Лучше посмеяться и поправиться: Sorry! I mean, yes, I'm new here."],["Thank you, I'm old.",0,null,"Попробуй: Sorry! I mean, yes, I'm new here."]]},
+ b:{n:"Welcome! I'm Mike. I live next door.",ru:"Добро пожаловать! Я Майк. Живу по соседству.",o:[["Nice to meet you, Mike!",1,"c"],["Thank you, Mike. I'm Anna.",1,"c"],["Nice to meet me!",0,null,"Приятно познакомиться — Nice to meet you."]]},
+ c:{n:"Do you have a pet? I have a dog. He's very friendly.",ru:"У тебя есть питомец? У меня собака. Очень дружелюбный.",o:[["Yes, I have a cat.",1,"d1"],["No, I don't. But I love dogs!",1,"d2"],["Yes, I have cat.",0,null,"Перед животным нужен артикль: a cat."]]},
+ d1:{n:"A cat! I hope they can be friends.",ru:"Кошка! Надеюсь, они подружатся.",o:[["Me too!",1,"e"],["I too.",0,null,"«Я тоже» — Me too."],["So I hope too much.",0,null,"Проще: Me too!"]]},
+ d2:{n:"Great! Come and meet him sometime.",ru:"Отлично! Заходи как-нибудь познакомиться с ним.",o:[["Thank you, I'd love to!",1,"e"],["Thank you, I love.",0,null,"«С удовольствием» — I'd love to!"],["Yes, I come.",0,null,"Вежливо: Thank you, I'd love to!"]]},
+ e:{n:"See you around!",ru:"Ещё увидимся!",end:"Теперь у тебя есть знакомый сосед — и, кажется, новый друг."}}},
+{id:"market",l:"A1",t:"На рынке",d:"Купить фрукты и узнать цену",start:"a",nodes:{
+ a:{n:"Hi there! Lovely apples today!",ru:"Привет! Сегодня чудесные яблоки!",o:[["How much are the apples?",1,"b"],["How much is the apples?",0,null,"Apples — много, поэтому are: How much are the apples?"],["How many are the apples?",0,null,"Цена — how much. How many — «сколько штук»."]]},
+ b:{n:"Two pounds a kilo.",ru:"Два фунта за килограмм.",o:[["A kilo, please.",1,"c"],["Two kilos, please.",1,"c"],["A kilo apples, please.",0,null,"Нужно of: a kilo of apples. Или коротко: A kilo, please."]]},
+ c:{n:"Here you are. Would you like some strawberries too? They're sweet.",ru:"Вот, пожалуйста. Может, ещё клубники? Она сладкая.",o:[["Yes, please. A small box.",1,"d1"],["No, thanks. Just the apples.",1,"d2"],["Yes, please. A small boxes.",0,null,"A — значит одна: a small box."]]},
+ d1:{n:"Try one first! … Good?",ru:"Сначала попробуйте! … Ну как?",o:[["Mmm, it's delicious!",1,"e1"],["It's very tasty!",1,"e1"],["It's deliciously!",0,null,"После it's — прилагательное: delicious."]]},
+ d2:{n:"No problem. That's two pounds.",ru:"Без проблем. Два фунта.",o:[["Here you are. Thank you!",1,"e2"],["Keep it.",0,null,"Keep the change — «сдачи не надо», но сдачи тут нет. Просто: Here you are."],["Here is you are.",0,null,"Правильно: Here you are."]]},
+ e1:{n:"Then I'll give you an extra one for free!",ru:"Тогда добавлю вам ещё одну бесплатно!",end:"Яблоки, клубника и подарок от продавца — улыбка творит чудеса."},
+ e2:{n:"Thanks! Come again!",ru:"Спасибо! Приходите ещё!",end:"Яблоки куплены — быстро и вежливо."}}},
+{id:"room",l:"A2",t:"Проблема в номере",d:"Не работает кондиционер",start:"a",nodes:{
+ a:{n:"Reception, how can I help you?",ru:"Ресепшен, чем могу помочь?",o:[["Hi, this is room 204. The air conditioning doesn't work.",1,"b"],["Hi, room 204. The air conditioning don't work.",0,null,"It (кондиционер) — doesn't: it doesn't work."],["Hi, I'm angry! Everything is bad!",0,"a1","Так не понять, что случилось. Скажи конкретно: The air conditioning doesn't work."]]},
+ a1:{n:"I'm sorry to hear that. What exactly is the problem?",ru:"Мне жаль. А в чём именно проблема?",o:[["The air conditioning doesn't work, and it's very hot.",1,"b"],["Everything!",0,null,"Конкретнее: The air conditioning doesn't work."],["It's broken the air.",0,null,"Сломан — doesn't work или is broken: The air conditioning is broken."]]},
+ b:{n:"I'm so sorry. I can send someone to fix it in thirty minutes, or move you to another room.",ru:"Прошу прощения. Могу прислать мастера через полчаса или переселить вас в другой номер.",o:[["I'd prefer another room, please.",1,"c1"],["Thirty minutes is fine. Thank you.",1,"c2"],["I prefer to move me.",0,null,"«Я бы предпочёл(ла)» — I'd prefer another room."]]},
+ c1:{n:"Of course. Room 310 is ready. It has a sea view.",ru:"Конечно. Номер 310 готов. С видом на море.",o:[["Wonderful! Thank you so much.",1,"e1"],["Thanks. Who brings my bags?",0,"d","Вежливее попросить: Could someone help me with my bags?"],["Sea view? It's wonderfully!",0,null,"It's wonderful — нужно прилагательное."]]},
+ d:{n:"Sorry? Oh, you'd like help with your bags?",ru:"Простите? А, вам помочь с сумками?",o:[["Yes, please. Could someone help me with my bags?",1,"e1"],["Yes. Bring.",0,null,"Вежливо: Could someone help me with my bags?"],["No.",0,null,"Попробуй: Yes, please. Could someone help me with my bags?"]]},
+ c2:{n:"Great. And as an apology, breakfast tomorrow is free.",ru:"Отлично. А в качестве извинения завтрак завтра бесплатно.",o:[["That's very kind of you!",1,"e2"],["You're kind very.",0,null,"Порядок слов: That's very kind of you!"],["Free? Why?",0,null,"Это извинение. Ответь: That's very kind of you!"]]},
+ e1:{n:"Enjoy your stay in room 310!",ru:"Приятного отдыха в номере 310!",end:"Вежливая жалоба — и номер с видом на море!"},
+ e2:{n:"You're welcome. Have a good evening!",ru:"Пожалуйста. Хорошего вечера!",end:"Мастер всё починит, а завтрак — в подарок. Вежливая жалоба работает."}}},
+{id:"train",l:"A2",t:"Поезд отменили",d:"Найти другой способ доехать",start:"a",nodes:{
+ a:{n:"I'm afraid the 10:15 to Oxford is cancelled.",ru:"К сожалению, поезд 10:15 до Оксфорда отменён.",o:[["Oh no! When is the next train?",1,"b"],["Oh no! When the next train is?",0,null,"В вопросе is встаёт перед подлежащим: When is the next train?"],["Why you cancelled it?",0,"a1","Вопрос без did и звучит грубовато. Лучше узнать про следующий поезд."]]},
+ a1:{n:"There's a problem with the line. I'm sorry.",ru:"Проблема на линии. Мне жаль.",o:[["I see. When is the next train?",1,"b"],["It's your problem.",0,null,"Сотрудник не виноват. Спроси: When is the next train?"],["OK. And now what?",0,null,"Спроси конкретно: When is the next train?"]]},
+ b:{n:"The next one is at 11:40. Or you can take a bus at 10:30.",ru:"Следующий в 11:40. Или можно сесть на автобус в 10:30.",o:[["I'll take the bus. Where does it leave from?",1,"c1"],["I'll wait for the train.",1,"c2"],["I will taking the bus.",0,null,"После will — начальная форма: I'll take the bus."]]},
+ c1:{n:"From the front of the station. Your train ticket is valid on the bus.",ru:"От входа в вокзал. Ваш билет на поезд действует и в автобусе.",o:[["Great, thanks for your help!",1,"e1"],["Really? That's great!",1,"e1"],["Thanks for your helping.",0,null,"Правильно: Thanks for your help."]]},
+ c2:{n:"OK. There's a café on platform 2 if you'd like to wait there.",ru:"Хорошо. На второй платформе есть кафе, если хотите подождать там.",o:[["Perfect, I'll get a coffee.",1,"e2"],["Perfect, I get a coffee.",0,null,"Решение прямо сейчас — will: I'll get a coffee."],["Where is platform two is?",0,null,"Одного is достаточно: Where is platform two?"]]},
+ e1:{n:"You're welcome. Have a good trip!",ru:"Пожалуйста. Хорошей поездки!",end:"Выход найден: в 10:30 ты уже едешь на автобусе."},
+ e2:{n:"Enjoy your coffee!",ru:"Приятного кофе!",end:"Кофе, спокойствие и поезд в 11:40 — тоже отличный план."}}},
+{id:"gym",l:"A2",t:"Записаться в спортзал",d:"Выбрать абонемент",start:"a",nodes:{
+ a:{n:"Hi! Can I help you?",ru:"Здравствуйте! Чем помочь?",o:[["Hi! I'd like to join the gym.",1,"b"],["Hi! I want join the gym.",0,null,"После want нужен to: I want to join. Вежливее: I'd like to join the gym."],["Hi! I'd like to joy the gym.",0,null,"Записаться — join. Joy — это «радость»."]]},
+ b:{n:"Great! We have two options: a monthly pass for forty pounds or a yearly pass for three hundred.",ru:"Отлично! Есть два варианта: абонемент на месяц за сорок фунтов или на год за триста.",o:[["Which one is cheaper per month?",1,"c"],["I'll take the monthly pass, please.",1,"d"],["Which one is more cheap?",0,null,"Cheap → cheaper: Which one is cheaper?"]]},
+ c:{n:"The yearly one. It's twenty-five pounds a month.",ru:"Годовой. Получается двадцать пять фунтов в месяц.",o:[["Then I'll take the yearly pass.",1,"d"],["I'll take the monthly one anyway.",1,"d"],["Then I take yearly.",0,null,"Решение в момент речи — I'll take: Then I'll take the yearly pass."]]},
+ d:{n:"Perfect. Do you have any injuries or health problems?",ru:"Отлично. Есть травмы или проблемы со здоровьем?",o:[["No, I don't. I'm fine.",1,"e"],["Sometimes my back hurts.",1,"d1"],["No, I'm not have.",0,null,"Отрицание с have: I don't have или коротко No, I don't."]]},
+ d1:{n:"Thanks for telling me. Our trainer can show you some safe exercises.",ru:"Спасибо, что сказали. Тренер покажет вам безопасные упражнения.",o:[["That would be great, thank you.",1,"e"],["It would be greatly.",0,null,"Правильно: That would be great."],["No need, I'm very strong!",0,null,"Лучше принять помощь: That would be great, thank you."]]},
+ e:{n:"Welcome to the club! See you tomorrow.",ru:"Добро пожаловать в клуб! До завтра.",end:"Абонемент оформлен. Завтра — первая тренировка!"}}},
+{id:"cinema",l:"A2",t:"Билеты в кино",d:"Купить билеты, когда всё распродано",start:"a",nodes:{
+ a:{n:"Hi, which film would you like to see?",ru:"Здравствуйте, на какой фильм хотите?",o:[["Two tickets for 'Space Cats' at seven, please.",1,"b"],["Two ticket for 'Space Cats', please.",0,null,"Два билета — two tickets, с -s."],["I'd like to look 'Space Cats'.",0,null,"Смотреть фильм — see или watch: I'd like to see 'Space Cats'."]]},
+ b:{n:"Sorry, the seven o'clock show is sold out. There are seats at nine.",ru:"Извините, на семь всё распродано. Есть места на девять.",o:[["Nine is fine. Two tickets, please.",1,"c"],["What a pity! Is there anything else at seven?",1,"b1"],["Sold out? What does it mean?",0,"b2","Sold out — «всё распродано». Можно согласиться на другое время."]]},
+ b2:{n:"It means there are no tickets left for seven.",ru:"Это значит, что на семь билетов не осталось.",o:[["Oh, I see. Then nine is fine.",1,"c"],["I see. I'll come tomorrow.",1,"e2"],["Then give for nine.",0,null,"Вежливо: Then nine is fine, please."]]},
+ b1:{n:"Yes, a comedy — 'My Crazy Grandma'.",ru:"Да, комедия «Моя сумасшедшая бабушка».",o:[["Sounds fun! Two tickets for that, please.",1,"c"],["Sounds great! Two tickets, please.",1,"c"],["Sounds funnily!",0,null,"После sounds — прилагательное: Sounds fun!"]]},
+ c:{n:"Would you like popcorn? Small or large?",ru:"Попкорн хотите? Маленький или большой?",o:[["Large, please — we're sharing.",1,"e1"],["No, thanks.",1,"e1"],["Yes, a big one popcorn.",0,null,"Проще: Large, please."]]},
+ e1:{n:"Enjoy the film!",ru:"Приятного просмотра!",end:"Билеты куплены — вечер обещает быть отличным."},
+ e2:{n:"OK, see you tomorrow!",ru:"Хорошо, до завтра!",end:"Тоже вариант: завтра будут билеты на любое время."}}},
+{id:"allergy",l:"A2",t:"В аптеке: аллергия",d:"Объяснить симптомы и понять, как пить лекарство",start:"a",nodes:{
+ a:{n:"Hello. What can I do for you?",ru:"Здравствуйте. Чем могу помочь?",o:[["I think I have an allergy. My eyes are red and itchy.",1,"b"],["I have allergic.",0,null,"Аллергия — an allergy: I have an allergy. Allergic — прилагательное: I'm allergic to cats."],["My eyes is red.",0,null,"Eyes — много, поэтому are: my eyes are red."]]},
+ b:{n:"Are you allergic to anything?",ru:"У вас на что-то аллергия?",o:[["Yes, I'm allergic to cats. I visited a friend with a cat yesterday.",1,"c"],["I don't know.",1,"c"],["Yes, I'm allergic on cats.",0,null,"Аллергия на — allergic to: I'm allergic to cats."]]},
+ c:{n:"I see. These tablets will help. Take one a day. They might make you sleepy.",ru:"Понятно. Эти таблетки помогут. По одной в день. От них может клонить в сон.",o:[["Can I drive after taking them?",1,"d"],["Sleepy? Then I'll take them at night.",1,"d2"],["Can I to drive after them?",0,null,"После can — без to: Can I drive?"]]},
+ d:{n:"It's better not to drive after taking them.",ru:"Лучше не садиться за руль после них.",o:[["OK, I'll take them in the evening then.",1,"d2"],["OK, I won't drive.",1,"d2"],["OK, I won't driving.",0,null,"После won't — начальная форма: I won't drive."]]},
+ d2:{n:"Good idea. That's six pounds.",ru:"Хорошая мысль. С вас шесть фунтов.",o:[["Here you are. Thanks for your help!",1,"e"],["Here you are. Thank you for help.",0,null,"Спасибо за помощь — Thanks for your help."],["Six? It's expensive very.",0,null,"Порядок: very expensive. Но лучше просто поблагодарить."]]},
+ e:{n:"Feel better soon!",ru:"Поправляйтесь!",end:"Лекарство куплено, и понятно, как его принимать. Будь здоров(а)!"}}},
+{id:"luggage",l:"A2",t:"Потерялся багаж",d:"Описать чемодан и договориться о доставке",start:"a",nodes:{
+ a:{n:"Good afternoon. How can I help?",ru:"Добрый день. Чем помочь?",o:[["My suitcase didn't arrive. I was on the flight from Moscow.",1,"b"],["My suitcase don't arrive.",0,null,"В прошлом — didn't arrive."],["I lost. Help!",0,"a1","Непонятно, что потерялось. Скажи: My suitcase didn't arrive."]]},
+ a1:{n:"Don't worry. What did you lose?",ru:"Не волнуйтесь. Что вы потеряли?",o:[["My suitcase. It didn't arrive.",1,"b"],["My suitcase lost me.",0,null,"Скажи: My suitcase didn't arrive или I lost my suitcase."],["All.",0,null,"Конкретнее: My suitcase didn't arrive."]]},
+ b:{n:"I'm sorry. Can you describe it?",ru:"Сожалею. Можете его описать?",o:[["It's a big blue suitcase with a yellow ribbon.",1,"c"],["It's big and blue, with a yellow ribbon on the handle.",1,"c"],["It's blue big suitcase.",0,null,"Порядок прилагательных: a big blue suitcase. И нужен артикль a."]]},
+ c:{n:"Thank you. It's probably still in Moscow. It'll be here tomorrow. Where are you staying?",ru:"Спасибо. Скорее всего, он ещё в Москве. Будет здесь завтра. Где вы остановились?",o:[["At the Park Hotel. Can you deliver it there?",1,"d"],["Tomorrow? But all my clothes are in it!",1,"c1"],["In the Park Hotel. Can you bring?",0,null,"В отеле — at the hotel. И нужно it: Can you bring it there?"]]},
+ c1:{n:"I understand. You can buy some things you need, and we'll pay you back. Keep the receipts.",ru:"Понимаю. Купите необходимое, а мы компенсируем. Сохраните чеки.",o:[["Really? That's great. I'm staying at the Park Hotel.",1,"d"],["OK, I'll keep the receipts. I'm at the Park Hotel.",1,"d"],["I will keeping receipts.",0,null,"После will — начальная форма: I'll keep the receipts."]]},
+ d:{n:"Of course. We'll bring it to the hotel tomorrow.",ru:"Конечно. Доставим в отель завтра.",o:[["Thank you so much!",1,"e"],["Thank you very much for your help!",1,"e"],["Thanks, you're welcome!",0,null,"You're welcome отвечают на спасибо. Тебе — просто Thank you!"]]},
+ e:{n:"Here's your reference number. Have a nice stay!",ru:"Вот номер вашего обращения. Хорошего отдыха!",end:"Чемодан найдётся и приедет прямо в отель. Всё решено!"}}},
+{id:"wrongdish",l:"A2",t:"Принесли не то блюдо",d:"Вежливо сказать, что заказ перепутали",start:"a",nodes:{
+ a:{n:"Here's your steak!",ru:"Ваш стейк!",o:[["Excuse me, I think there's a mistake. I ordered the fish.",1,"b"],["It's not my! I didn't order it!",0,"a1","Так звучит резко. Вежливо: Excuse me, I think there's a mistake. I ordered the fish."],["Excuse me, I ordered fish not this.",0,null,"Лучше: Excuse me, I think there's a mistake. I ordered the fish."]]},
+ a1:{n:"Oh! Sorry… What did you order?",ru:"Ой! Простите… А что вы заказывали?",o:[["The fish, please. No problem!",1,"b"],["Fish! Fish!",0,null,"Спокойнее: I ordered the fish."],["I order fish.",0,null,"В прошлом — ordered: I ordered the fish."]]},
+ b:{n:"I'm so sorry! I'll bring the fish right away.",ru:"Простите! Сейчас принесу рыбу.",o:[["No problem, thank you.",1,"c"],["It's OK. How long will it take?",1,"c"],["No problems.",0,null,"Устойчивая фраза: No problem."]]},
+ c:{n:"About ten minutes. Would you like some free bread while you wait?",ru:"Минут десять. Хотите бесплатного хлеба, пока ждёте?",o:[["Yes, please, that would be lovely.",1,"e1"],["No, thanks. I'm fine.",1,"e2"],["Yes, please, it would be lovely bread.",0,null,"Проще: Yes, please, that would be lovely."]]},
+ e1:{n:"Here you are. And dessert is on us today.",ru:"Пожалуйста. А десерт сегодня за наш счёт.",end:"Спокойный тон — и вместо проблемы бесплатный десерт!"},
+ e2:{n:"Of course. Your fish will be here soon.",ru:"Конечно. Рыба скоро будет.",end:"Путаницу исправили быстро: всё было сказано вежливо и чётко."}}},
+{id:"gift",l:"A2",t:"Подарок другу",d:"Выбрать подарок в магазине",start:"a",nodes:{
+ a:{n:"Hello! Are you looking for anything special?",ru:"Здравствуйте! Ищете что-то особенное?",o:[["Yes, I'm looking for a present for my friend.",1,"b"],["Yes, I search a present.",0,null,"Искать — look for: I'm looking for a present."],["Yes, a presence for my friend.",0,null,"Подарок — present или gift. Presence — «присутствие»."]]},
+ b:{n:"What does your friend like?",ru:"Что любит ваш друг?",o:[["She likes reading and cooking.",1,"c1"],["He's into music and games.",1,"c2"],["She like reading.",0,null,"С she — likes, с -s."]]},
+ c1:{n:"How about this cookbook? It's very popular.",ru:"Как насчёт этой кулинарной книги? Она очень популярна.",o:[["Perfect! Can you wrap it, please?",1,"d"],["How much does it cost?",1,"c3"],["How much it costs?",0,null,"В вопросе нужен does: How much does it cost?"]]},
+ c2:{n:"How about these headphones? They're on sale.",ru:"Как насчёт этих наушников? На них скидка.",o:[["Great! Can you wrap them, please?",1,"d"],["How much do they cost?",1,"c3"],["Can you wrap it?",0,null,"Headphones — они, значит them: Can you wrap them?"]]},
+ c3:{n:"Twenty-five pounds.",ru:"Двадцать пять фунтов.",o:[["OK, I'll take it. Can you wrap it, please?",1,"d"],["That's a bit expensive. Do you have anything cheaper?",1,"e2"],["It's too much expensive.",0,null,"Слишком дорого — too expensive, без much."]]},
+ d:{n:"Of course! Would you like a card too?",ru:"Конечно! Открытку тоже хотите?",o:[["Yes, please. I'll write a few words.",1,"e1"],["No, thank you.",1,"e1"],["Yes, I'll writing.",0,null,"После I'll — начальная форма: I'll write."]]},
+ e1:{n:"Here you are. I'm sure your friend will love it!",ru:"Вот, пожалуйста. Уверена, вашему другу понравится!",end:"Подарок упакован — день рождения удастся!"},
+ e2:{n:"Sure, this notebook is ten pounds.",ru:"Конечно, этот блокнот стоит десять фунтов.",end:"Подарок по бюджету найден. Спросить «есть ли дешевле» — совершенно нормально."}}},
+{id:"interview",l:"B1",t:"Собеседование",d:"Рассказать о себе и задать вопросы",start:"a",nodes:{
+ a:{n:"Thanks for coming. Could you tell me a bit about yourself?",ru:"Спасибо, что пришли. Расскажете немного о себе?",o:[["Sure. I'm a graphic designer, and I've worked in advertising for four years.",1,"b"],["Sure. I work as designer since four years.",0,null,"До сих пор — Present Perfect с for: I've worked… for four years. И a designer."],["I was born in 1998. My mother is a teacher…",0,"a1","Начни с работы и опыта, а не с детства."]]},
+ a1:{n:"Ha-ha, maybe a little more about your work?",ru:"Ха-ха, может, чуть больше о работе?",o:[["Of course! I've worked as a designer for four years.",1,"b"],["My work is good.",0,null,"Конкретнее: I've worked as a designer for four years."],["I always work very hard.",0,null,"Расскажи про опыт: I've worked as a designer for four years."]]},
+ b:{n:"Why do you want to work for us?",ru:"Почему вы хотите работать у нас?",o:[["I really like your projects, and I'd like to work with a bigger team.",1,"c"],["I'd like to grow and learn new things.",1,"c"],["Because you pay more.",0,"b1","Честно, но начинать с этого не стоит. Расскажи, чем нравится компания."]]},
+ b1:{n:"Well… is that the only reason?",ru:"Хм… и это единственная причина?",o:[["Not at all! I also love your projects and want to learn from your team.",1,"c"],["Yes.",0,null,"Добавь что-то о компании: I also love your projects."],["Money is important, no?",0,null,"Лучше: I also love your projects and want to learn from your team."]]},
+ c:{n:"What's your biggest weakness?",ru:"Ваша главная слабая сторона?",o:[["Sometimes I spend too much time on details, but I'm learning to plan better.",1,"d"],["I'm a bit of a perfectionist, but I'm working on it.",1,"d"],["I don't have any weaknesses.",0,null,"Так говорить рискованно. Назови слабость и расскажи, как с ней справляешься."]]},
+ d:{n:"Do you have any questions for us?",ru:"У вас есть вопросы к нам?",o:[["Yes. What would a typical day look like?",1,"e"],["Yes. What are the next steps?",1,"e"],["No.",0,null,"Лучше задать вопрос — это показывает интерес. Например: What would a typical day look like?"]]},
+ e:{n:"Great question. We'll be in touch by Friday.",ru:"Отличный вопрос. Мы свяжемся с вами до пятницы.",end:"Собеседование прошло уверенно — ждём ответа до пятницы!"}}},
+{id:"landlord",l:"B1",t:"Звонок хозяину квартиры",d:"Сломалась стиральная машина",start:"a",nodes:{
+ a:{n:"Hello, this is Mark.",ru:"Алло, это Марк.",o:[["Hi Mark, it's Anna from flat 3. I'm afraid the washing machine has stopped working.",1,"b"],["Hi Mark. Washing machine is broke.",0,null,"Сломана — is broken или has stopped working. И нужен артикль the."],["Hi Mark. You must fix the washing machine now!",0,"a1","Слишком требовательно для начала. Сначала объясни проблему."]]},
+ a1:{n:"Whoa, OK… What happened to it?",ru:"Ого, ладно… А что с ней случилось?",o:[["Sorry, I'm a bit stressed. It stopped working yesterday.",1,"b"],["It doesn't work and that's it.",0,null,"Объясни спокойно: It stopped working yesterday."],["It is broke.",0,null,"Правильно: It's broken. It stopped working yesterday."]]},
+ b:{n:"Oh no. When did it start?",ru:"Ой. Когда это началось?",o:[["Yesterday. It just won't turn on.",1,"c"],["Yesterday evening. It makes a strange noise and stops.",1,"c"],["It has started yesterday.",0,null,"С yesterday — Past Simple: It started yesterday."]]},
+ c:{n:"I can send a repairman on Thursday morning. Will you be at home?",ru:"Могу прислать мастера в четверг утром. Вы будете дома?",o:[["Thursday morning works for me.",1,"e"],["I'm afraid I'll be at work. Could he come in the evening?",1,"d"],["I will be at work. Can he come at evening?",0,null,"Вечером — in the evening."]]},
+ d:{n:"Let me check… Yes, he can come at six.",ru:"Сейчас проверю… Да, он может в шесть.",o:[["Perfect, thank you so much!",1,"e"],["Six suits me, thanks.",1,"e"],["At six? It's suit me.",0,null,"Мне подходит — It suits me, без is."]]},
+ e:{n:"No problem. Sorry about the trouble!",ru:"Без проблем. Извините за неудобства!",end:"Мастер придёт в удобное время — проблема решена спокойно и вежливо."}}},
+{id:"support",l:"B1",t:"Чат с поддержкой",d:"Заказ так и не доставили",start:"a",nodes:{
+ a:{n:"Hi! You're chatting with Emma from customer support. How can I help?",ru:"Здравствуйте! Вы в чате с Эммой из поддержки. Чем помочь?",o:[["Hi Emma. I ordered a lamp a week ago, but it hasn't arrived yet.",1,"b"],["Hi. My lamp didn't arrived.",0,null,"После didn't — начальная форма: didn't arrive. Или: It hasn't arrived yet."],["Where is my lamp?!",0,"a1","Слишком резко. Опиши проблему: I ordered a lamp a week ago, but it hasn't arrived yet."]]},
+ a1:{n:"I'd love to help! Could you give me some details?",ru:"С радостью помогу! Расскажете подробнее?",o:[["Sure. I ordered a lamp a week ago, but it hasn't arrived yet.",1,"b"],["Lamp. Week.",0,null,"Полным предложением: I ordered a lamp a week ago."],["I want my lamp.",0,null,"Попробуй: I ordered a lamp a week ago, but it hasn't arrived yet."]]},
+ b:{n:"Could you give me your order number, please?",ru:"Подскажете номер заказа?",o:[["Of course, it's 48172.",1,"c"],["Sure — 48172.",1,"c"],["Yes, my order number are 48172.",0,null,"Номер один, поэтому is: my order number is…"]]},
+ c:{n:"Thanks. I can see it was sent to the wrong address. I can send a new lamp tomorrow, or give you a full refund.",ru:"Спасибо. Вижу, его отправили не по тому адресу. Могу отправить новую лампу завтра или вернуть деньги.",o:[["A new lamp would be great, thanks.",1,"e1"],["I'd rather have a refund, please.",1,"e2"],["I'd rather to have a refund.",0,null,"После would rather — без to: I'd rather have a refund."]]},
+ e1:{n:"Done! You'll get it by Friday, and delivery is free.",ru:"Готово! Получите к пятнице, доставка бесплатно.",end:"Лампа уже в пути — спокойный разговор решил проблему."},
+ e2:{n:"Done! The money will be back in three to five days.",ru:"Готово! Деньги вернутся через три–пять дней.",end:"Деньги вернутся — получилось чётко сказать, чего хочется."}}},
+{id:"appointment",l:"B1",t:"Запись к врачу",d:"Записаться по телефону",start:"a",nodes:{
+ a:{n:"Riverside Medical Centre, good morning.",ru:"Медицинский центр «Риверсайд», доброе утро.",o:[["Good morning. I'd like to make an appointment with a doctor, please.",1,"b"],["Hello. I want doctor.",0,null,"Записаться — make an appointment: I'd like to make an appointment."],["Good morning. I'd like to make a meeting with a doctor.",0,null,"К врачу — appointment, а meeting — это деловая встреча."]]},
+ b:{n:"Is it urgent?",ru:"Это срочно?",o:[["Not really. I've had a sore throat for a week.",1,"c"],["Yes, I've had a high temperature since Monday.",1,"c2"],["Not really. I have a sore throat for a week.",0,null,"Длится до сих пор — Present Perfect: I've had a sore throat for a week."]]},
+ c:{n:"Dr Green is free on Wednesday at 10:20 or on Friday at four.",ru:"Доктор Грин свободна в среду в 10:20 или в пятницу в четыре.",o:[["Wednesday at 10:20 is perfect.",1,"d"],["Friday at four suits me better.",1,"d"],["Friday at four is suit me.",0,null,"Мне подходит — suits me, без is."]]},
+ c2:{n:"Then we can see you today at half past three. Can you come?",ru:"Тогда можем принять вас сегодня в половине четвёртого. Сможете?",o:[["Yes, I can. Thank you!",1,"d"],["Yes, I'll be there.",1,"d"],["Yes, I can to come.",0,null,"После can — без to: I can come."]]},
+ d:{n:"Can I have your name and date of birth?",ru:"Назовите, пожалуйста, имя и дату рождения.",o:[["Anna Smirnova, the fifth of May, 1998.",1,"e"],["Anna Smirnova, May the fifth, 1998.",1,"e"],["Anna Smirnova, five May 1998.",0,null,"Даты говорят так: the fifth of May или May the fifth."]]},
+ e:{n:"Thank you, Anna. See you then!",ru:"Спасибо, Анна. До встречи!",end:"Запись есть! Звонок в регистратуру прошёл как по нотам."}}},
+{id:"smalltalk",l:"B1",t:"У кофемашины",d:"Поболтать с коллегой о выходных",start:"a",nodes:{
+ a:{n:"Morning! Did you have a good weekend?",ru:"Доброе утро! Как выходные?",o:[["Yes, thanks! I went hiking with some friends. How about you?",1,"b"],["Yes, I have a good weekend.",0,null,"Выходные уже прошли — Past Simple: I had a good weekend."],["Yes.",0,"a1","Одно слово — и разговор затухнет. Расскажи немного и спроси в ответ."]]},
+ a1:{n:"Oh… good. Er… so, what did you do?",ru:"А… хорошо. Э… и что делал(а)?",o:[["I went hiking with some friends. It was amazing! And you?",1,"b"],["Nothing special.",0,null,"Можно и так, но лучше рассказать: I went hiking with some friends."],["I go hiking.",0,null,"В прошлом — went: I went hiking."]]},
+ b:{n:"I just stayed at home and watched a new series. Have you seen 'The Crown'?",ru:"А я просто сидел дома и смотрел новый сериал. Ты видел(а) «Корону»?",o:[["Yes, I have! I loved it.",1,"c1"],["No, I haven't. Is it good?",1,"c2"],["Yes, I saw. I loved.",0,null,"На Have you seen…? отвечают Yes, I have. А после love нужно it: I loved it."]]},
+ c1:{n:"Me too! Who's your favourite character?",ru:"Мне тоже! Кто твой любимый персонаж?",o:[["Definitely the Queen. She's brilliant.",1,"e"],["I think the Queen is the most interesting.",1,"e"],["The Queen is the most interest.",0,null,"Интересный — interesting: the most interesting."]]},
+ c2:{n:"It's great! You should watch it.",ru:"Отличный! Тебе стоит посмотреть.",o:[["Thanks, I'll start it tonight!",1,"e"],["I'll add it to my list.",1,"e"],["I should to watch it.",0,null,"После should — без to: I should watch it."]]},
+ e:{n:"Oops, my meeting! Talk later!",ru:"Ой, у меня встреча! Поговорим позже!",end:"Small talk удался: ты рассказал(а) о себе и задал(а) вопрос в ответ."}}}
+];
+// старые сценки — в тот же формат
+SITS.forEach(s=>{if(s.nodes)return;const N={};s.turns.forEach((t,i)=>{N["t"+i]={n:t.n,ru:t.ru,why:t.why,o:t.o.map((x,j)=>[x,j?0:1,j?null:(i+1<s.turns.length?"t"+(i+1):"fin"),j?t.why:""])}});N.fin={n:"",ru:"",end:""};s.start="t0";s.nodes=N});
+const SIT_ALL=SITS.concat(SITS2);
+function sitById(id){return SIT_ALL.find(x=>x.id===id)}
+function sitEnds(s){return Object.keys(s.nodes).filter(k=>s.nodes[k].end!==undefined&&(s.nodes[k].end||s.nodes[k].n))}
+function sitLen(s){const memo={};const f=(k,seen)=>{const N=s.nodes[k];if(!N||!N.o||seen.has(k))return 0;if(memo[k]!=null)return memo[k];seen.add(k);let m=0;N.o.forEach(o=>{if(o[1]&&o[2])m=Math.max(m,f(o[2],seen))});seen.delete(k);return memo[k]=1+m};return f(s.start,new Set())}
+function sitStart(s){SI={s,node:s.start,log:[],res:null,ok:0,total:0,len:sitLen(s)};SI.o=shuffle(s.nodes[s.start].o.slice());}
+viewSit=function(){
+  if(SI&&SI.s){renderSit();return}
+  const done=S.sit||{};
+  V.innerHTML=`<h1>Ситуации</h1><p class="sub">Собеседник говорит — выбери, как ответить. В сценках с развилками от ответа зависит, чем всё закончится.</p>
+  <div class="stack">${LEVELS.filter(L=>SIT_ALL.some(s=>s.l===L)).map(L=>`<section><h2>${L} · ${LVLNAME[L]}</h2><div class="tiles2">${SIT_ALL.filter(s=>s.l===L).map(s=>{const d=done[s.id],ends=sitEnds(s),fe=d&&d.ends?d.ends.filter(e=>ends.includes(e)).length:0,br=ends.length>1;
+    const sub=br?`${d?`концовки: ${fe} из ${ends.length}`:`${ends.length} концовки`}`:d?`лучший результат ${d.best}/${d.total||s.turns&&s.turns.length||""}`:"";
+    const full=d&&(br?fe>=ends.length:d.best>=(d.total||1));
+    return `<button class="tile2 c-teal sitpick" data-sit="${s.id}"><span class="tico">${ico("sit")}</span><span class="tbody"><b>${esc(s.t)}${br?' <span class="sitbr">развилки</span>':""}</b><span>${esc(s.d)}${sub?" · "+sub:""}</span></span>${full?`<em>${ico("check")}</em>`:`<i class="tchev">›</i>`}</button>`}).join("")}</div></section>`).join("")}</div>`;
+  V.querySelectorAll("[data-sit]").forEach(b=>b.onclick=()=>{const s=sitById(b.dataset.sit);sitStart(s);renderSit();window.scrollTo(0,0);setTimeout(()=>speak(s.nodes[s.start].n),250)});
+};
+renderSit=function(){
+  const s=SI.s,N=s.nodes[SI.node],r=SI.res;
+  const bub=(who,en,ru,cls)=>`<div class="dl ${who==="A"?"a":"b"} ${cls||""}"><span class="who">${who==="A"?"A":"Я"}</span><div style="min-width:0"><div class="answer" style="gap:6px"><span>${esc(en)}</span>${sayBtn(en)}</div>${ru?`<div class="small muted">${esc(ru)}</div>`:""}</div></div>`;
+  const logHTML=SI.log.map(x=>bub("A",x.n)+bub("B",x.a,"",x.said?"sitsaid":x.ok?"":"sitfix")).join("");
+  if(!N||!N.o){
+    const ends=sitEnds(s),eid=SI.node;const prev=(S.sit||{})[s.id];S.sit=S.sit||{};
+    const fe=new Set([...(prev&&prev.ends||[]),...(N&&ends.includes(eid)?[eid]:[])]);
+    S.sit[s.id]={best:Math.max(SI.ok,prev?prev.best:0),total:SI.total,date:dkey(),ends:[...fe]};questCount("sitDone");questCheck();save();
+    const br=ends.length>1,left=br?ends.length-fe.size:0;
+    V.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:6px"><h1 style="margin:0">${esc(s.t)}</h1></div>
+    <div class="card"><div class="dlg">${logHTML}${N&&N.n?bub("A",N.n,N.ru):""}</div></div>
+    ${resultHTML({title:s.t,right:SI.ok,total:SI.total,extra:N&&N.end?`<div class="sitend"><span class="label">Чем всё закончилось</span><b>${esc(N.end)}</b></div>`:"",note:br?(left?`Найдено концовок: ${fe.size} из ${ends.length}. Попробуй ответить иначе — история повернёт по-другому.`:`Все ${ends.length} концовки найдены!`):"",buttons:`<button class="btn primary" id="sitagain">${br&&left?"Другая концовка":"Ещё раз"}</button><button class="btn ghost" id="sitlist">Все ситуации</button>`})}`;
+    if(N&&N.n)setTimeout(()=>speak(N.n),200);
+    $("#sitagain").onclick=()=>{sitStart(s);renderSit();window.scrollTo(0,0);setTimeout(()=>speak(s.nodes[s.start].n),250)};
+    $("#sitlist").onclick=()=>{SI=null;viewSit()};return;
+  }
+  const best=N.o.find(o=>o[1]);
+  V.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:6px"><h1 style="margin:0">${esc(s.t)}</h1><span class="small muted">шаг ${SI.log.length+1}</span></div>
+  <div class="meter" style="margin-bottom:12px"><i style="width:${Math.min(100,SI.log.length/Math.max(1,SI.len)*100)}%"></i></div>
+  <div class="card"><div class="dlg">${logHTML}${bub("A",N.n,SI.showRu||r?N.ru:"")}</div>
+  ${r?"":`<div class="row"><button class="btn ghost small" id="sitru">${SI.showRu?"Скрыть перевод":"Перевод"}</button></div>`}
+  <div class="label" style="margin-top:4px">Твой ответ</div>
+  <div class="choices col">${SI.o.map(o=>{let c="";if(r){if(o[0]===r.user)c=r.ok?" right":" wrong";else if(!r.ok&&o===best)c=" right"}return `<button class="btn${c}" data-o="${esc(o[0])}" ${r?"disabled":""}>${esc(o[0])}</button>`}).join("")}</div>
+  ${r?`<div class="verdict ${r.ok?"ok":"bad"}">${r.ok?"Отлично сказано!":r.detour?"Собеседник немного удивится. Лучше было бы так: "+esc(best[0]):"Лучше сказать так: "+esc(best[0])}</div>${!r.ok&&r.why?`<div class="why">${esc(r.why)}</div>`:""}<div class="row"><button class="btn primary" id="sitnext">Дальше</button></div>`:""}</div>`;
+  const ru=$("#sitru");if(ru)ru.onclick=()=>{SI.showRu=!SI.showRu;renderSit()};
+  V.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{if(SI.res)return;const o=N.o.find(x=>x[0]===b.dataset.o),ok=!!o[1];
+    SI.res={ok,user:o[0],detour:!ok&&!!o[2],why:o[3]||N.why||"",next:o[2]||(ok?null:best[2])};SI.total++;if(ok)SI.ok++;
+    practiceLog("sit",ok);mistake("sit",s.id+":"+SI.node,ok,o[0],{t:"sit",l:s.l});bump(ok,s.l);renderSit();speak(ok||SI.res.detour?o[0]:best[0])});
+  const nx=$("#sitnext");if(nx){nx.focus();nx.onclick=()=>{const R=SI.res;
+    SI.log.push({n:N.n,a:R.ok||R.detour?R.user:best[0],ok:R.ok,said:R.detour});SI.node=R.next;SI.res=null;SI.showRu=false;
+    const M=s.nodes[SI.node];if(M&&M.o){SI.o=shuffle(M.o.slice());renderSit();setTimeout(()=>speak(M.n),200)}else renderSit()}}
+};
+taskOf=(function(prev){return function(m){
+  if(m.k==="sit"){const i=m.ref.indexOf(":"),s=sitById(m.ref.slice(0,i)),N=s&&s.nodes[m.ref.slice(i+1)];if(!N||!N.o)return null;
+    const best=N.o.find(o=>o[1]),wr=N.o.filter(o=>!o[1]);
+    return{label:"Ситуация · "+s.t,input:"choice",prompt:`<div class="answer" style="gap:6px"><span class="q" style="margin:0">${esc(N.n)}</span>${sayBtn(N.n)}</div><div class="small muted">${esc(N.ru)}</div><div class="label" style="margin-top:8px">Как ответить?</div>`,q:"",options:shuffle([best[0]].concat(wr.map(o=>o[0]))),answers:[best[0]],why:(wr.find(o=>o[3])||[])[3]||N.why||"",show:best[0],autoSay:N.n}}
+  return prev(m)}})(taskOf);
+promptText=(function(prev){return function(m){if(m.k==="sit"){const i=m.ref.indexOf(":"),s=sitById(m.ref.slice(0,i)),N=s&&s.nodes[m.ref.slice(i+1)];return N?N.n:""}return prev(m)}})(promptText);
+(function(){const css=document.createElement("style");css.textContent=`
+  .sitbr{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.02em;padding:2px 7px;border-radius:999px;background:var(--soft);color:var(--accent);vertical-align:2px;margin-left:4px}
+  .dl.sitsaid .answer span{color:var(--oops,#B4531F)}
+  .sitend{display:flex;flex-direction:column;gap:4px;text-align:left;padding:14px 16px;border-radius:16px;background:var(--soft);margin:4px 0}
+  .sitend b{font-size:17px;line-height:1.35}`;document.head.appendChild(css)})();
+
 /* ===================== ЯСИК: промахи — это не страшно ===================== */
 // Разные слова на каждый случай, без повторов подряд. Учитывает серию промахов и «камбэк» после промаха.
 const YW={

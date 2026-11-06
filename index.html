@@ -637,6 +637,11 @@ input.tfill{cursor:pointer;background:var(--soft);border-color:var(--accent)!imp
 .sw{appearance:none;border:0;background:var(--bg);border-radius:14px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font:inherit;font-size:13px;color:var(--ink);box-shadow:0 0 0 1px var(--line) inset}
 .sw i{width:30px;height:30px;border-radius:50%;display:block}
 .sw.on{box-shadow:0 0 0 2px var(--accent) inset;background:var(--soft);font-weight:600}
+.vlist{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto}
+.vrow{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:12px}
+.vrow.on{background:var(--soft)}
+.vpick{appearance:none;border:0;background:none;flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;gap:2px;cursor:pointer;font:inherit;color:var(--ink)}
+.vpick b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 
 <header>
@@ -5306,6 +5311,56 @@ viewSettings=function(){
   V.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>{S.settings.theme=b.dataset.th;save();applyTheme();viewSettings()});
   V.querySelectorAll("[data-tmode]").forEach(b=>b.onclick=()=>{S.settings.mode=b.dataset.tmode;save();applyTheme();viewSettings()});
 };
+
+/* ===================== ВЫБОР ГОЛОСА ===================== */
+const VQ_RE=/(google|natural|neural|enhanced|premium|siri|wavenet|online)/i;
+function enVoices(){let vs=[];try{vs=speechSynthesis.getVoices()||[]}catch(e){}
+  return vs.filter(v=>/^en[-_]/i.test(v.lang)).sort((a,b)=>(VQ_RE.test(b.name)?1:0)-(VQ_RE.test(a.name)?1:0)||a.lang.localeCompare(b.lang)||a.name.localeCompare(b.name))}
+function accentName(lang){const m={US:"американский",GB:"британский",AU:"австралийский",IE:"ирландский",IN:"индийский",ZA:"южноафриканский",CA:"канадский",NZ:"новозеландский",SC:"шотландский"};const c=(lang.split(/[-_]/)[1]||"").toUpperCase();return m[c]||lang}
+function pickVoice(alt){
+  const vs=enVoices();if(!vs.length)return null;
+  const name=S.settings.voiceName;let main=name&&vs.find(v=>v.name===name);
+  if(!main)main=vs.find(v=>v.lang.replace("_","-")===S.settings.voice&&VQ_RE.test(v.name))||vs.find(v=>v.lang.replace("_","-")===S.settings.voice)||vs[0];
+  if(!alt)return main;
+  return vs.find(v=>v!==main&&v.lang===main.lang)||vs.find(v=>v!==main)||main;
+}
+function voiceRate(){return S.settings.rate||1}
+speak=function(text,rate=1){
+  if(!("speechSynthesis" in window)){toast("Озвучка недоступна в этом браузере");return}
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const v=pickVoice(false);
+    u.lang=v?v.lang.replace("_","-"):S.settings.voice;if(v)u.voice=v;u.rate=rate*0.95*voiceRate();
+    speechSynthesis.speak(u)}catch(e){toast("Не получилось озвучить")}
+};
+// диалоги: второй собеседник — другим голосом
+voicesEn=function(){const a=pickVoice(false),b=pickVoice(true);return a?[a,b||a]:[]};
+const _speakSeqV=speakSeq;
+speakSeq=function(lines,rate,onLine,onDone){return _speakSeqV(lines,rate*voiceRate(),onLine,onDone)};
+const SAMPLE="Hello! I'm your English voice. Let's learn together.";
+function voiceHTML(){
+  const vs=enVoices(),cur=pickVoice(false),r=voiceRate();
+  const native=!!window.__NATIVE_APP&&!window.__TG&&!vs.length;
+  return `<section class="sheet"><h2>Голос</h2>
+  ${native?`<p class="small muted" style="margin:-4px 0 10px">В приложении на телефоне голос берётся из настроек телефона: Настройки → Специальные возможности → Синтез речи (на Android — «Синтезатор речи Google», там можно скачать голоса получше). Выбор голоса прямо здесь появится в следующей версии приложения.</p>`
+   :vs.length?`<p class="small muted" style="margin:-4px 0 10px">Нажми ▶, чтобы послушать. Голоса с пометкой «живой» обычно звучат естественнее.</p>
+  <div class="vlist">${vs.slice(0,24).map((v,i)=>`<div class="vrow ${cur&&v.name===cur.name?"on":""}"><button class="iconbtn" data-vplay="${i}" aria-label="Послушать">${ICON_PLAY}</button><button class="vpick" data-vpick="${i}"><b>${esc(v.name.replace(/^(Microsoft|Google|Apple)\s+/,"").replace(/\s*\(.*\)$/,"").slice(0,40))}</b><span class="small muted">${esc(accentName(v.lang))}${VQ_RE.test(v.name)?" · живой":""}</span></button>${cur&&v.name===cur.name?`<span class="pill known">выбран</span>`:""}</div>`).join("")}</div>`
+   :`<p class="small muted" style="margin:0">Голоса ещё загружаются… Если список не появится, этот браузер не даёт выбрать голос.</p>`}
+  <div class="label" style="margin:14px 0 8px">Скорость речи</div>
+  <div class="seg" role="group" aria-label="Скорость">${[[0.8,"Медленно"],[0.9,"Спокойно"],[1,"Обычно"],[1.1,"Быстро"]].map(([k,t])=>`<button data-vrate="${k}" aria-pressed="${k===r}">${t}</button>`).join("")}</div>
+  </section>`;
+}
+const _viewSettingsV=viewSettings;
+viewSettings=function(){
+  _viewSettingsV();
+  const th=V.querySelector(".swatches");const sec=th?th.closest("section"):null;
+  if(sec)sec.insertAdjacentHTML("afterend",voiceHTML());
+  const vs=enVoices();
+  V.querySelectorAll("[data-vplay]").forEach(b=>b.onclick=()=>{const v=vs[+b.dataset.vplay];try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(SAMPLE);u.voice=v;u.lang=v.lang;u.rate=0.95*voiceRate();speechSynthesis.speak(u)}catch(e){}});
+  V.querySelectorAll("[data-vpick]").forEach(b=>b.onclick=()=>{const v=vs[+b.dataset.vpick];S.settings.voiceName=v.name;S.settings.voice=/GB/i.test(v.lang)?"en-GB":"en-US";save();viewSettings();speak(SAMPLE)});
+  V.querySelectorAll("[data-vrate]").forEach(b=>b.onclick=()=>{S.settings.rate=+b.dataset.vrate;save();viewSettings();speak("This is how fast I speak now.")});
+  // старый выбор «Произношение» больше не нужен, если есть список голосов
+  if(vs.length){const sv=$("#svoice");if(sv){const lab=V.querySelector('label[for="svoice"]');sv.remove();if(lab)lab.remove()}}
+};
+try{speechSynthesis.addEventListener&&speechSynthesis.addEventListener("voiceschanged",()=>{if((location.hash||"").slice(1)==="settings")viewSettings()})}catch(e){}
 
 autoPacks();applyPacks();migrateRrev();applyFreeze();
 new MutationObserver(()=>queueMicrotask(()=>{mascotize();budCheck()})).observe(V,{childList:true,subtree:true});

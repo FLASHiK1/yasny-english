@@ -11,6 +11,7 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -39,6 +40,14 @@ public class MainActivity extends Activity {
             if (!ttsReady || text == null) return;
             tts.setLanguage("en-GB".equals(lang) ? Locale.UK : Locale.US);
             tts.setSpeechRate(Math.max(0.3f, Math.min(2f, rate)));
+            tts.setPitch(1f);
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "yasny");
+        }
+        @JavascriptInterface public void speakP(String text, float rate, String lang, float pitch) {
+            if (!ttsReady || text == null) return;
+            tts.setLanguage("en-GB".equals(lang) ? Locale.UK : Locale.US);
+            tts.setSpeechRate(Math.max(0.3f, Math.min(2f, rate)));
+            tts.setPitch(Math.max(0.5f, Math.min(2f, pitch)));
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "yasny");
         }
         @JavascriptInterface public void stop() { if (tts != null) tts.stop(); }
@@ -55,6 +64,11 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void setReminder(final int h, final int m, final boolean on) {
             runOnUiThread(new Runnable() { public void run() { applyReminder(h, m, on); } });
         }
+    }
+
+    private void ttsDone() {
+        if (web == null) return;
+        web.post(new Runnable() { public void run() { web.evaluateJavascript("window.__ttsDone&&window.__ttsDone()", null); } });
     }
 
     private void send(JSONObject o) {
@@ -149,7 +163,14 @@ public class MainActivity extends Activity {
         super.onCreate(state);
         tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override public void onInit(int status) {
-                if (status == TextToSpeech.SUCCESS) { tts.setLanguage(Locale.US); ttsReady = true; }
+                if (status == TextToSpeech.SUCCESS) {
+                    tts.setLanguage(Locale.US); ttsReady = true;
+                    tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                        @Override public void onStart(String id) {}
+                        @Override public void onError(String id) { ttsDone(); }
+                        @Override public void onDone(String id) { ttsDone(); }
+                    });
+                }
             }
         });
         web = new WebView(this);

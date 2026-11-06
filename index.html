@@ -535,6 +535,38 @@ body.onb .buddy{display:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @keyframes rise{from{transform:translateY(6px);opacity:.4}to{transform:none;opacity:1}}
 .card,.sheet.anim{animation:rise .25s ease-out}
+
+/* путь, диалоги, итоги недели */
+.plvl{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.plvl.cur{border-color:var(--accent);box-shadow:0 0 0 3px var(--soft)}
+.plhead{appearance:none;border:0;background:transparent;width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;color:var(--ink);font:inherit}
+.plhead .tbar{margin-top:6px}
+.plvl.past .lvlbig{opacity:.6}
+.pth{list-style:none;margin:0;padding:4px 14px 14px;position:relative}
+.pst{display:flex;gap:12px;position:relative;padding:8px 0}
+.pst:not(:last-child)::before{content:"";position:absolute;left:17px;top:44px;bottom:-8px;width:2px;background:var(--line)}
+.pst.done:not(:last-child)::before{background:var(--ok)}
+.pdot{flex:0 0 36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--accent);position:relative;z-index:1;font-weight:700}
+.pdot .ico{width:18px;height:18px}
+.pst.done .pdot{background:var(--ok);color:#fff}
+.pst.skip .pdot{background:var(--line);color:var(--muted)}
+.pst.now .pdot{background:#FFD43B;color:#2A2238;box-shadow:0 0 0 6px rgba(255,212,59,.3);animation:cpulse 2s ease-in-out infinite}
+.pst.later{opacity:.62}
+.pbody{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.pbody .pk{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.plink{appearance:none;border:0;background:none;padding:0;font:inherit;font-weight:600;color:var(--ink);text-align:left;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.pbody .pd{font-size:13px;color:var(--muted)}
+.pst.now .pbody b{font-size:17px}
+.herolink{display:inline-block;margin-top:10px;margin-left:12px;color:inherit;opacity:.85;font-size:14px}
+.dplay{display:flex;align-items:center;gap:12px}
+.dlines{display:flex;flex-direction:column;gap:8px}
+.dline{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:12px;background:var(--soft);max-width:92%}
+.dline.b{align-self:flex-end;background:var(--ok-soft)}
+.dline.cur{outline:2px solid var(--accent)}
+.dsp{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--accent);color:var(--accent-ink)}
+.dline.b .dsp{background:var(--ok);color:#fff}
+.weekly .rstats.wk{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px;margin-top:10px}
+.weekly em{font-style:normal;font-size:12px}.weekly em.up{color:var(--ok)}.weekly em.down{color:var(--bad)}
 </style>
 
 <header>
@@ -1920,6 +1952,46 @@ const WORDS_X=[
 ["viable","жизнеспособный, осуществимый","/ˈvaɪəbl/","Is this a viable option?","Это реальный вариант?","B2"],
 ["widespread","широко распространённый","/ˈwaɪdspred/","The use of smartphones is widespread.","Смартфоны используют повсеместно.","B2"]
 ];
+/* ===================== ДИАЛОГИ НА СЛУХ И НОВЫЕ ТЕКСТЫ ===================== */
+const DIALOGS=[
+{id:"cafe",l:"A1",title:"В кафе",lines:[["A","Hi! What can I get you?","Привет! Что вам предложить?"],["B","Hi! Can I have a cappuccino, please?","Привет! Можно капучино, пожалуйста?"],["A","Sure. Small or large?","Конечно. Маленький или большой?"],["B","Large, please. And a piece of chocolate cake.","Большой, пожалуйста. И кусочек шоколадного торта."],["A","That's six pounds fifty.","С вас шесть фунтов пятьдесят."],["B","Here you are. Can I pay by card?","Вот, пожалуйста. Можно картой?"],["A","Of course. Your coffee will be ready in two minutes.","Конечно. Кофе будет готов через две минуты."]],
+q:[{q:"Что заказывает посетитель?",o:["Большой капучино и шоколадный торт","Маленький капучино","Чай и торт"],a:"Большой капучино и шоколадный торт"},{q:"Сколько стоит заказ?",o:["6 фунтов 50","5 фунтов","16 фунтов"],a:"6 фунтов 50"},{q:"Как он платит?",o:["Картой","Наличными","Не платит"],a:"Картой"}]},
+{id:"station",l:"A1",title:"Как пройти к вокзалу",lines:[["A","Excuse me, how do I get to the train station?","Извините, как пройти к вокзалу?"],["B","Go straight on and turn right at the bank.","Идите прямо и у банка поверните направо."],["A","Is it far?","Это далеко?"],["B","No, it's about five minutes on foot.","Нет, минут пять пешком."],["A","Great. Is there a café near the station?","Отлично. А рядом с вокзалом есть кафе?"],["B","Yes, there's a nice one opposite the entrance.","Да, хорошее кафе напротив входа."],["A","Thank you so much!","Большое спасибо!"],["B","You're welcome.","Пожалуйста."]],
+q:[{q:"Где нужно повернуть?",o:["Направо у банка","Налево у банка","Направо у парка"],a:"Направо у банка"},{q:"Сколько идти?",o:["Около пяти минут","Полчаса","Час"],a:"Около пяти минут"},{q:"Где кафе?",o:["Напротив входа на вокзал","Рядом с банком","Внутри вокзала"],a:"Напротив входа на вокзал"}]},
+{id:"weekend",l:"A2",title:"Планы на выходные",lines:[["A","Hey, what are you doing this weekend?","Слушай, что делаешь на выходных?"],["B","I'm going to visit my grandparents on Saturday. They live in a small village.","В субботу поеду к бабушке с дедушкой. Они живут в маленькой деревне."],["A","Nice! Are you going by train?","Здорово! На поезде поедешь?"],["B","No, by car. My brother is driving. What about you?","Нет, на машине, брат за рулём. А ты?"],["A","I don't have any plans yet. Maybe I'll go to the cinema.","Пока никаких планов. Может, схожу в кино."],["B","There's a new comedy. I saw the trailer, it looks funny.","Вышла новая комедия. Я видел трейлер, выглядит смешно."],["A","Good idea. I'll check the times.","Хорошая идея. Посмотрю расписание."]],
+q:[{q:"К кому поедет B в субботу?",o:["К бабушке и дедушке","К брату","К друзьям"],a:"К бабушке и дедушке"},{q:"Как они поедут?",o:["На машине","На поезде","На автобусе"],a:"На машине"},{q:"Что, возможно, сделает A?",o:["Сходит в кино","Поедет в деревню","Останется дома"],a:"Сходит в кино"}]},
+{id:"doctor",l:"A2",title:"У врача",lines:[["A","Good morning. What seems to be the problem?","Доброе утро. На что жалуетесь?"],["B","I've had a sore throat and a headache since Monday.","С понедельника болит горло и голова."],["A","Do you have a temperature?","Температура есть?"],["B","Yes, it was thirty-eight this morning.","Да, утром было тридцать восемь."],["A","Let me have a look. It's a cold, nothing serious.","Давайте посмотрим. Это простуда, ничего серьёзного."],["B","Do I need any medicine?","Нужны какие-то лекарства?"],["A","Drink lots of warm tea and take this twice a day. You should stay at home for two or three days.","Пейте побольше тёплого чая и принимайте это дважды в день. Вам стоит посидеть дома два-три дня."]],
+q:[{q:"С какого дня болеет пациент?",o:["С понедельника","Со вчера","Неделю"],a:"С понедельника"},{q:"Что сказал врач?",o:["Это простуда","Это грипп","Нужно в больницу"],a:"Это простуда"},{q:"Что советует врач?",o:["Пить тёплый чай и посидеть дома","Пойти на работу","Ничего не делать"],a:"Пить тёплый чай и посидеть дома"}]},
+{id:"jobcall",l:"B1",title:"Звонок о собеседовании",lines:[["A","Hello, is that Maria? This is Tom from BrightSoft. You applied for the designer position.","Здравствуйте, это Мария? Это Том из BrightSoft. Вы откликались на вакансию дизайнера."],["B","Yes, hello! Thanks for calling.","Да, здравствуйте! Спасибо, что позвонили."],["A","We liked your portfolio. Would you be available for an interview next week?","Нам понравилось ваше портфолио. Сможете прийти на собеседование на следующей неделе?"],["B","Sure. What days would work for you?","Конечно. Какие дни вам удобны?"],["A","How about Tuesday at ten, or Thursday afternoon?","Как насчёт вторника в десять или четверга после обеда?"],["B","Tuesday at ten would be perfect.","Вторник в десять — идеально."],["A","Great. It'll be online, and it should take about an hour. I'll send you a link by email.","Отлично. Собеседование онлайн, примерно час. Я пришлю ссылку на почту."],["B","Thank you. I'm looking forward to it.","Спасибо. Буду ждать."]],
+q:[{q:"На какую должность претендует Мария?",o:["Дизайнер","Менеджер","Программист"],a:"Дизайнер"},{q:"Когда будет собеседование?",o:["Во вторник в 10","В четверг днём","В понедельник"],a:"Во вторник в 10"},{q:"Как пройдёт собеседование?",o:["Онлайн","В офисе","По телефону"],a:"Онлайн"}]},
+{id:"hotel",l:"B1",title:"Жалоба в отеле",lines:[["A","Good evening. How can I help you?","Добрый вечер. Чем могу помочь?"],["B","Hi. I'm in room 214, and I'm afraid there's a problem. The air conditioning isn't working, and it's really hot.","Здравствуйте. Я в номере 214, и, боюсь, у меня проблема. Не работает кондиционер, очень жарко."],["A","I'm so sorry about that. I'll send someone from maintenance right away.","Очень сожалею. Сейчас же пришлю мастера."],["B","Thanks. Also, I asked for a quiet room, but mine is right above the bar.","Спасибо. И ещё: я просил тихий номер, а мой прямо над баром."],["A","Let me check. We have a room on the fifth floor, facing the garden. Would you like to move?","Сейчас проверю. Есть номер на пятом этаже с видом на сад. Хотите переехать?"],["B","Yes, please. That would be great.","Да, пожалуйста. Было бы отлично."],["A","No problem. And breakfast tomorrow is on us, to apologise for the trouble.","Без проблем. А завтрак завтра за наш счёт — в качестве извинения."]],
+q:[{q:"Что сломалось в номере?",o:["Кондиционер","Душ","Телевизор"],a:"Кондиционер"},{q:"Чем ещё недоволен гость?",o:["Номер над баром, шумно","Номер маленький","Нет вида"],a:"Номер над баром, шумно"},{q:"Что предложил администратор?",o:["Другой номер и бесплатный завтрак","Скидку 50%","Ничего"],a:"Другой номер и бесплатный завтрак"}]},
+{id:"office",l:"B2",title:"Офис или удалёнка?",lines:[["A","Have you heard? The company wants everyone back in the office four days a week.","Слышал? Компания хочет, чтобы все вернулись в офис на четыре дня в неделю."],["B","Seriously? I've been working from home for two years, and my productivity has never been better.","Серьёзно? Я два года работаю из дома, и продуктивность у меня как никогда."],["A","I get that, but some managers argue that collaboration suffers when people are remote.","Понимаю, но некоторые руководители считают, что на удалёнке страдает совместная работа."],["B","That's a fair point, but surely it depends on the team. Ours communicates perfectly well online.","Справедливо, но ведь это зависит от команды. Наша отлично общается онлайн."],["A","True. I think the real issue is trust. If results are good, why should it matter where you work?","Верно. По-моему, дело в доверии. Если результаты хорошие, какая разница, где ты работаешь?"],["B","Exactly. I'd be willing to come in once or twice a week, but four days seems excessive.","Именно. Я готов приходить раз-два в неделю, но четыре дня — это перебор."],["A","Maybe we should raise it at the next team meeting.","Может, поднимем этот вопрос на следующей встрече команды."]],
+q:[{q:"Чего хочет компания?",o:["Чтобы все работали в офисе 4 дня в неделю","Перевести всех на удалёнку","Сократить сотрудников"],a:"Чтобы все работали в офисе 4 дня в неделю"},{q:"Какой довод приводят руководители?",o:["Страдает совместная работа","Падает зарплата","Офис пустует"],a:"Страдает совместная работа"},{q:"Что готов делать B?",o:["Приходить 1–2 раза в неделю","Уволиться","Работать только в офисе"],a:"Приходить 1–2 раза в неделю"}]},
+{id:"booking",l:"B2",title:"Путаница с бронью",lines:[["A","Hi, I booked a table for four at eight, under the name Petrov.","Здравствуйте, я бронировал столик на четверых на восемь, на фамилию Петров."],["B","Let me see. I'm afraid I can't find a booking under that name for tonight.","Сейчас посмотрю. Боюсь, на сегодня брони на эту фамилию нет."],["A","That's strange. I booked it online last week and got a confirmation email.","Странно. Я бронировал онлайн на прошлой неделе и получил подтверждение на почту."],["B","Could you show me the email? Ah, I see. The booking was made for next Friday, not today.","Можете показать письмо? А, понятно. Бронь на следующую пятницу, а не на сегодня."],["A","Oh no, I must have chosen the wrong date. Is there any chance you could fit us in?","О нет, наверное, я выбрал не ту дату. Может, найдёте для нас место?"],["B","We're fully booked at eight, but I could offer you a table on the terrace at half past.","На восемь всё занято, но могу предложить столик на террасе в половине девятого."],["A","That would be lovely, thank you for sorting it out.","Было бы чудесно, спасибо, что разобрались."]],
+q:[{q:"В чём была проблема?",o:["Бронь на другой день","Бронь на другое имя","Ресторан закрыт"],a:"Бронь на другой день"},{q:"Как бронировали столик?",o:["Онлайн","По телефону","Лично"],a:"Онлайн"},{q:"Что предложили гостям?",o:["Столик на террасе в 8:30","Прийти завтра","Подождать час"],a:"Столик на террасе в 8:30"}]}
+];
+TEXTS.push(
+{l:"A0",title:"My cat",text:"I have a cat. Her name is Lucy. She is small and white. Lucy likes milk and fish. She sleeps on my bed. In the morning she says hello. I love my cat.",
+q:[{q:"Как зовут кошку?",o:["Люси","Лена","Лили"],a:"Люси"},{q:"Какого она цвета?",o:["Белая","Чёрная","Серая"],a:"Белая"},{q:"Где она спит?",o:["На кровати","На кухне","На диване"],a:"На кровати"}]},
+{l:"A1",title:"My weekend",text:"On Saturday I get up late, at ten o'clock. I have a big breakfast with my family. Then I go to the park with my dog. In the afternoon I meet my friends. We drink coffee and talk. On Sunday I clean my flat and cook dinner. In the evening I watch a film. I love weekends!",
+q:[{q:"Во сколько встаёт автор в субботу?",o:["В десять","В семь","В двенадцать"],a:"В десять"},{q:"С кем он идёт в парк?",o:["С собакой","С друзьями","С мамой"],a:"С собакой"},{q:"Что он делает в воскресенье?",o:["Убирает квартиру и готовит ужин","Работает","Едет к друзьям"],a:"Убирает квартиру и готовит ужин"}]},
+{l:"A1",title:"At the market",text:"There is a big market near my house. It is open every day from eight to two. You can buy fruit, vegetables, cheese and bread there. The fruit is fresh and cheap. I usually go to the market on Friday. I buy apples, tomatoes and some cheese. The sellers are very friendly.",
+q:[{q:"Когда работает рынок?",o:["Каждый день с 8 до 14","Только по выходным","Вечером"],a:"Каждый день с 8 до 14"},{q:"Когда обычно ходит автор?",o:["В пятницу","В понедельник","В воскресенье"],a:"В пятницу"},{q:"Какие продавцы?",o:["Дружелюбные","Строгие","Уставшие"],a:"Дружелюбные"}]},
+{l:"A2",title:"My first day",text:"Yesterday was my first day at my new job. I was very nervous. I got up early and arrived at the office at half past eight. My manager, Kate, showed me the office and introduced me to the team. Everybody was friendly. At lunch, two colleagues took me to a small Italian café. In the afternoon I started my first project. When I got home, I was tired but happy.",
+q:[{q:"Как чувствовал себя автор утром?",o:["Очень нервничал","Был спокоен","Был болен"],a:"Очень нервничал"},{q:"Кто показал ему офис?",o:["Менеджер Кейт","Коллега","Директор"],a:"Менеджер Кейт"},{q:"Где он обедал?",o:["В итальянском кафе","В офисе","Дома"],a:"В итальянском кафе"}]},
+{l:"A2",title:"A rainy holiday",text:"Last summer we went to Scotland for a week. We wanted to walk in the mountains, but it rained almost every day. So we changed our plans. We visited museums and castles, and we tried a lot of local food. On the last day the sun finally came out, and we climbed a small mountain. The view was amazing. It wasn't the holiday we planned, but it was still great.",
+q:[{q:"Почему пришлось поменять планы?",o:["Почти каждый день шёл дождь","Закрыли горы","Кто-то заболел"],a:"Почти каждый день шёл дождь"},{q:"Что они делали вместо походов?",o:["Ходили в музеи и замки","Сидели в отеле","Уехали домой"],a:"Ходили в музеи и замки"},{q:"Что случилось в последний день?",o:["Выглянуло солнце, и они поднялись на гору","Пошёл снег","Они опоздали на самолёт"],a:"Выглянуло солнце, и они поднялись на гору"}]},
+{l:"B1",title:"Learning a language as an adult",text:"Many people believe that only children can learn languages easily. It's true that children often develop better pronunciation, but adults have important advantages too. They can understand grammar rules, use learning strategies and connect new words to things they already know. The biggest challenge for adults is usually time, not ability. Experts suggest studying a little every day instead of a lot once a week, because regular practice helps the brain remember. It also helps to use the language in real situations, for example by watching series or talking to native speakers online.",
+q:[{q:"В чём дети обычно лучше взрослых?",o:["В произношении","В грамматике","В словарном запасе"],a:"В произношении"},{q:"Что обычно главная проблема для взрослых?",o:["Нехватка времени","Способности","Память"],a:"Нехватка времени"},{q:"Что советуют эксперты?",o:["Заниматься понемногу каждый день","Заниматься раз в неделю подолгу","Учить только грамматику"],a:"Заниматься понемногу каждый день"}]},
+{l:"B1",title:"Fast fashion",text:"Fast fashion means cheap clothes that are produced quickly to follow the latest trends. It allows people to buy new outfits often, but it has a serious cost. The fashion industry uses huge amounts of water and produces a lot of waste, because many clothes are worn only a few times before being thrown away. Some shoppers are now changing their habits. They buy second-hand clothes, repair what they have, or choose fewer items of better quality. Small changes like these can make a real difference.",
+q:[{q:"Что такое «быстрая мода»?",o:["Дешёвая одежда по последним трендам","Дорогие дизайнерские вещи","Спортивная одежда"],a:"Дешёвая одежда по последним трендам"},{q:"Какая проблема упомянута?",o:["Много воды и отходов","Плохие ткани","Высокие цены"],a:"Много воды и отходов"},{q:"Что начинают делать некоторые покупатели?",o:["Покупать вещи из вторых рук и чинить старые","Покупать ещё больше","Шить сами всё"],a:"Покупать вещи из вторых рук и чинить старые"}]},
+{l:"B2",title:"Why we procrastinate",text:"Procrastination is often seen as a sign of laziness, but psychologists argue that it is mainly an emotional problem. We tend to delay tasks that make us feel anxious, bored or insecure, and we choose something pleasant instead to escape those feelings for a while. Unfortunately, the relief is temporary, and the stress grows as the deadline approaches. Researchers suggest a few practical strategies: breaking large tasks into small steps, starting with just five minutes of work, and being kinder to ourselves when we fail. Interestingly, people who forgive themselves for procrastinating tend to procrastinate less in the future.",
+q:[{q:"Чем, по мнению психологов, в основном является прокрастинация?",o:["Эмоциональной проблемой","Ленью","Недостатком ума"],a:"Эмоциональной проблемой"},{q:"Какую стратегию предлагают исследователи?",o:["Разбивать задачи на маленькие шаги","Работать всю ночь","Ставить больше дедлайнов"],a:"Разбивать задачи на маленькие шаги"},{q:"Что известно о людях, которые прощают себя?",o:["Они прокрастинируют меньше","Они прокрастинируют больше","Они не замечают сроков"],a:"Они прокрастинируют меньше"}]},
+{l:"B2",title:"Cities without cars",text:"In recent years, several European cities have started to limit car traffic in their centres. Some have introduced charges for driving in certain zones, while others have turned whole streets into areas for pedestrians and cyclists. Supporters claim that the benefits are obvious: cleaner air, less noise and safer streets for children. Local businesses were initially worried about losing customers, but in many cases their sales actually increased, as people spent more time walking around. Critics, however, point out that such policies can be difficult for elderly people and for those who live in suburbs with poor public transport.",
+q:[{q:"Что делают некоторые европейские города?",o:["Ограничивают машины в центре","Строят новые дороги","Запрещают велосипеды"],a:"Ограничивают машины в центре"},{q:"Что случилось с продажами местных магазинов?",o:["Во многих случаях выросли","Резко упали","Не изменились"],a:"Во многих случаях выросли"},{q:"Кому такие меры могут мешать, по мнению критиков?",o:["Пожилым и жителям пригородов","Туристам","Детям"],a:"Пожилым и жителям пригородов"}]}
+);
+
 /* ===================== STATE ===================== */
 const KEY="yasny-eng-v1";
 function load(){try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):null}catch(e){return null}}
@@ -2143,13 +2215,13 @@ function chips(){try{renderTabbar((location.hash||"#today").slice(1)||"today")}c
 
 /* ===================== VIEWS ===================== */
 const V=$("#view");
-const ROUTES=["today","mistakes","cards","grammar","translate","listen","words","test","read","speak","practice","verbs","course","library","hello","learn","train","profile","stats","rules"];
+const ROUTES=["today","mistakes","cards","grammar","translate","listen","words","test","read","speak","practice","verbs","course","library","hello","learn","train","profile","stats","rules","path"];
 function route(){
   let r=(location.hash||"#today").slice(1);if(!ROUTES.includes(r))r="today";
   renderTabbar(r);setTimeout(checkAch,300);
   if(r!=="mistakes"&&MS&&MS.active&&!MS.cur)MS=null;
   try{speechSynthesis.cancel()}catch(e){}
-  ({today:viewToday,mistakes:viewMistakes,test:viewTest,read:viewRead,speak:viewSpeak,practice:viewPractice,course:viewCourse,library:viewLibrary,hello:viewHello,learn:viewLearn,train:viewTrain,profile:viewProfile,stats:viewStats,rules:viewRules,verbs:viewVerbs,cards:viewCards,grammar:viewGrammar,translate:viewTranslate,listen:viewListen,words:viewWords})[r]();
+  ({today:viewToday,mistakes:viewMistakes,test:viewTest,read:viewRead,speak:viewSpeak,practice:viewPractice,course:viewCourse,library:viewLibrary,hello:viewHello,learn:viewLearn,train:viewTrain,profile:viewProfile,stats:viewStats,rules:viewRules,path:viewPath,verbs:viewVerbs,cards:viewCards,grammar:viewGrammar,translate:viewTranslate,listen:viewListen,words:viewWords})[r]();
   chips();syncUI();window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
@@ -3937,7 +4009,7 @@ const TABS=[
 {id:"mistakes",t:"Ошибки",icon:'<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/><path d="M12 8v5M12 16v.5"/>',routes:["mistakes"]},
 {id:"profile",t:"Профиль",icon:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',routes:["profile","words","library","stats"]}
 ];
-const CRUMB={rules:"learn",course:"learn",cards:"learn",grammar:"learn",verbs:"learn",test:"learn",translate:"train",practice:"train",listen:"train",read:"train",speak:"train",words:"profile",library:"profile",stats:"profile"};
+const CRUMB={path:"learn",rules:"learn",course:"learn",cards:"learn",grammar:"learn",verbs:"learn",test:"learn",translate:"train",practice:"train",listen:"train",read:"train",speak:"train",words:"profile",library:"profile",stats:"profile"};
 function tabFor(r){return (TABS.find(t=>t.routes.includes(r))||TABS[0]).id}
 function renderTabbar(r){
   const bar=$("#tabbar");if(!bar)return;const cur=tabFor(r),md=dueMist().length;
@@ -4277,6 +4349,7 @@ function bindGemSettings(){
 
 /* ===================== ДИЗАЙН v2: иконки, карта курса, праздники ===================== */
 const IC={
+path:'<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h8"/>',
 course:'<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
 cards:'<rect x="3" y="7" width="13" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-3"/>',
 rrev:'<path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/>',
@@ -4298,7 +4371,7 @@ check:'<path d="M5 12.5 10 17 19 7"/>',
 star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>'
 };
 function ico(name,cls){return `<svg class="ico ${cls||""}" viewBox="0 0 24 24" aria-hidden="true">${IC[name]||""}</svg>`}
-const HUB={"#course":["course","c-blue"],"#cards":["cards","c-orange"],"#rrev":["rrev","c-violet"],"#rules":["rules","c-teal"],"#grammar":["grammar","c-violet"],"#verbs":["verbs","c-pink"],"#test":["test","c-green"],
+const HUB={"#path":["path","c-green"],"#course":["course","c-blue"],"#cards":["cards","c-orange"],"#rrev":["rrev","c-violet"],"#rules":["rules","c-teal"],"#grammar":["grammar","c-violet"],"#verbs":["verbs","c-pink"],"#test":["test","c-green"],
   "#translate":["translate","c-blue"],"#practice":["practice","c-pink"],"#read":["read","c-teal"],"#listen":["listen","c-orange"],"#speak":["speak","c-green"],"#stats":["stats","c-blue"],"#words":["words","c-orange"],"#library":["library","c-teal"],"#mistakes":["mistakes","c-pink"]};
 function tile(h,t,d,badge,prog,key){
   const [ic,col]=HUB[key||h]||["words","c-blue"];
@@ -4480,6 +4553,303 @@ function renderWL(){
     :`<div class="wi"><span class="muted">Ничего не найдено</span></div>`;
   $("#wl").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const id=b.dataset.del;S.custom=S.custom.filter(c=>c.id!==id);S.deleted=(S.deleted||[]).concat(id);delete S.cards[id];save();renderWL()});
 }
+
+/* ===================== ОЗВУЧКА ДИАЛОГОВ (разные голоса) ===================== */
+let SEQ=null;
+function voicesEn(){try{return speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang))}catch(e){return[]}}
+function stopSeq(){if(SEQ){SEQ.stop=true;clearTimeout(SEQ.tm);SEQ=null}try{speechSynthesis.cancel()}catch(e){}}
+// lines: [[спикер, текст]]; onLine(i) — подсветка; onDone()
+function speakSeq(lines,rate,onLine,onDone){
+  stopSeq();if(!("speechSynthesis" in window)){toast("Озвучка недоступна в этом браузере");return}
+  const vs=voicesEn(),pref=vs.filter(v=>v.lang.replace("_","-")===S.settings.voice);
+  const pool=(pref.length>1?pref:vs);
+  const voiceFor=sp=>{if(!pool.length)return null;return sp==="B"&&pool.length>1?pool[1]:pool[0]};
+  const pitch={A:0.92,B:1.22};
+  const me=SEQ={stop:false,i:0};
+  const step=()=>{
+    if(me.stop)return;
+    if(me.i>=lines.length){SEQ=null;onLine&&onLine(-1);onDone&&onDone();return}
+    const [sp,tx]=lines[me.i];onLine&&onLine(me.i);
+    let fired=false;const next=()=>{if(fired||me.stop)return;fired=true;clearTimeout(me.tm);me.i++;me.tm=setTimeout(step,380)};
+    try{
+      const u=new SpeechSynthesisUtterance(tx);u.lang=S.settings.voice;u.rate=rate*0.95;u.pitch=pitch[sp]||1;
+      const v=voiceFor(sp);if(v)u.voice=v;u.onend=next;u.onerror=next;
+      if(me.i===0)speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    }catch(e){}
+    // запасной таймер: в приложении на iPhone событие окончания не приходит
+    const est=(tx.split(/\s+/).length*0.42+0.7)/Math.max(0.4,rate);
+    const reliable=!window.__NATIVE_APP||!!window.__ttsDone;
+    me.tm=setTimeout(next,(reliable?est*2.2+2:est)*1000);
+  };
+  step();
+}
+
+/* ===================== ДИАЛОГИ НА СЛУХ ===================== */
+let DS=null;
+function dlgById(id){return DIALOGS.find(d=>d.id===id)}
+function dlgScore(id){return (S.dlg||{})[id]}
+function dlgList(){
+  const L=T();
+  return `<p class="sub">Живые разговоры: сначала просто послушай, потом ответь на вопросы. Текст спрятан — открой его, только если совсем не разобрал(а).</p>
+  <div class="lessons">${DIALOGS.slice().sort((a,b)=>(a.l===L?-1:0)-(b.l===L?-1:0)||li(a.l)-li(b.l)).map(d=>{const r=dlgScore(d.id);const cls=!r?"none":r.best===r.total?"good":"mid";
+    return `<button class="lesson" data-dlg="${d.id}"><span class="lvl">${d.l}</span><span><span class="t">${esc(d.title)}</span><br><span class="d">${d.l===L?"твой уровень · ":li(d.l)>li(L)?"посложнее · ":""}${d.lines.length} реплик</span></span><span class="score ${cls}">${r?r.best+" / "+r.total:"не слушал"}</span></button>`}).join("")}</div>`;
+}
+function openDialog(id){DS={id,show:false,tr:false,ans:{},cur:-1,plays:0};LS=LS||{w:pickListen(),res:null,n:0,ok:0};LS.mode="dlg";if(location.hash!=="#listen")location.hash="#listen";else renderListenHub();window.scrollTo(0,0)}
+function renderDialog(){
+  const d=dlgById(DS.id);if(!d){DS=null;renderListenHub();return}
+  const qs=d.q.map((q,qi)=>{const a=DS.ans[qi];return `<div class="rq"><div class="mq">${qi+1}. ${esc(q.q)}</div><div class="choices col">${q.o.map(o=>{let c="";if(a!==undefined){if(o===q.a)c=" right";else if(o===a)c=" wrong"}return `<button class="btn${c}" data-dq="${qi}" data-o="${esc(o)}" ${a!==undefined?"disabled":""}>${esc(o)}</button>`}).join("")}</div></div>`}).join("");
+  const done=Object.keys(DS.ans).length===d.q.length,right=d.q.filter((q,qi)=>DS.ans[qi]===q.a).length;
+  const nextD=DIALOGS.find(x=>x.id!==d.id&&!dlgScore(x.id)&&li(x.l)<=li(T())+1);
+  V.innerHTML=`<button class="btn ghost" id="dback" style="padding-left:0">← Все диалоги</button>
+  <div class="row" style="justify-content:space-between;margin:8px 0 12px"><h1 style="margin:0">${esc(d.title)}</h1><span class="pill new">${d.l}</span></div>
+  <div class="stack">
+    <div class="sheet stack">
+      <div class="dplay">${yasik(DS.cur>=0?"happy":"think",58,{anim:DS.cur>=0?"listen":"idle"})}
+        <div style="min-width:0;flex:1"><b>${DS.cur>=0?`Реплика ${DS.cur+1} из ${d.lines.length}`:DS.plays?"Послушать ещё раз?":"Послушай разговор"}</b>
+        <div class="small muted">${DS.cur>=0?`Говорит ${d.lines[DS.cur][0]==="A"?"первый":"второй"} собеседник`:"Два голоса — два собеседника. Можно слушать сколько угодно раз."}</div></div></div>
+      <div class="row">${DS.cur>=0?`<button class="btn primary" id="dstop">Стоп</button>`:`<button class="btn primary" id="dplay">${DS.plays?"Слушать ещё раз":"Слушать диалог"}</button><button class="btn" id="dslow">Медленно</button>`}
+        <button class="btn ghost" id="dshow">${DS.show?"Скрыть текст":"Показать текст"}</button>${DS.show?`<button class="btn ghost" id="dtr">${DS.tr?"Без перевода":"С переводом"}</button>`:""}</div>
+      ${DS.show?`<div class="dlines">${d.lines.map((x,i)=>`<div class="dline ${x[0]==="B"?"b":""} ${i===DS.cur?"cur":""}"><span class="dsp">${x[0]}</span><div style="min-width:0;flex:1"><div>${esc(x[1])}</div>${DS.tr?`<div class="small muted">${esc(x[2])}</div>`:""}</div>${sayBtn(x[1])}</div>`).join("")}</div>`:""}
+    </div>
+    <div class="sheet stack"><h2 style="margin:0">Вопросы</h2>${DS.plays||DS.show||Object.keys(DS.ans).length?qs:`<p class="small muted" style="margin:0">Сначала послушай диалог хотя бы раз — потом откроются вопросы.</p>`}
+    ${done?`<div class="verdict ${right===d.q.length?"ok":"warn"}">${right} из ${d.q.length} верно${right<d.q.length?" — ошибки вернутся в повторе":""}</div><div class="row">${nextD?`<button class="btn primary" id="dnext">Следующий диалог</button>`:""}<button class="btn" id="dlist">Ко всем диалогам</button></div>`:""}</div>
+  </div>`;
+  const on=(id,f)=>{const el=$("#"+id);if(el)el.onclick=f};
+  const play=rate=>{DS.plays++;speakSeq(d.lines.map(x=>[x[0],x[1]]),rate,i=>{if(!DS||DS.id!==d.id)return;DS.cur=i;renderDialog()},null)};
+  on("dplay",()=>play(1));on("dslow",()=>play(0.7));on("dstop",()=>{stopSeq();DS.cur=-1;renderDialog()});
+  on("dshow",()=>{DS.show=!DS.show;renderDialog()});on("dtr",()=>{DS.tr=!DS.tr;renderDialog()});
+  on("dback",()=>{stopSeq();DS=null;renderListenHub()});on("dlist",()=>{stopSeq();DS=null;renderListenHub()});
+  on("dnext",()=>{stopSeq();openDialog(nextD.id)});
+  V.querySelectorAll("[data-dq]").forEach(b=>b.onclick=()=>{
+    const qi=+b.dataset.dq,v=b.dataset.o,ok=v===d.q[qi].a;if(DS.ans[qi]!==undefined)return;DS.ans[qi]=v;
+    mistake("dlg",d.id+":"+qi,ok,v,{t:"listen",l:d.l});bump(ok,d.l);
+    if(Object.keys(DS.ans).length===d.q.length){const r=d.q.filter((q,i)=>DS.ans[i]===q.a).length;S.dlg=S.dlg||{};const p=S.dlg[d.id];S.dlg[d.id]={best:Math.max(r,p?p.best:0),total:d.q.length,date:dkey()};save();pathAfter()}
+    renderDialog()});
+}
+function renderListenHub(){
+  const mode=(LS&&LS.mode)||"dict";
+  if(mode==="dlg"&&DS){renderDialog();return}
+  if(mode==="dict"){renderListen();return}
+  V.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:6px"><h1>На слух</h1>${listenSeg()}</div>${dlgList()}`;
+  bindListenSeg();
+  V.querySelectorAll("[data-dlg]").forEach(b=>b.onclick=()=>openDialog(b.dataset.dlg));
+}
+function listenSeg(){const m=(LS&&LS.mode)||"dict";return `<div class="seg" role="group" aria-label="Режим"><button data-lm="dict" aria-pressed="${m==="dict"}">Диктант</button><button data-lm="dlg" aria-pressed="${m==="dlg"}">Диалоги</button></div>`}
+function bindListenSeg(){V.querySelectorAll("[data-lm]").forEach(b=>b.onclick=()=>{stopSeq();LS.mode=b.dataset.lm;DS=null;LS.res=null;renderListenHub()})}
+// встраиваем переключатель в диктант
+const _renderListen=renderListen;
+renderListen=function(){_renderListen();const h=V.querySelector("h1");if(h&&h.parentElement){const sp=h.parentElement.querySelector(".small.muted");const box=document.createElement("div");box.className="row";box.style.gap="8px";if(sp)box.appendChild(sp);box.insertAdjacentHTML("beforeend",listenSeg());h.parentElement.appendChild(box);bindListenSeg()}};
+viewListen=function(){if(!LS)LS={w:pickListen(),res:null,n:0,ok:0,played:false,mode:"dict"};renderListenHub()};
+// повтор ошибок по диалогам
+const _taskOf=taskOf;
+taskOf=function(m){
+  if(m.k==="dlg"){const [id,qi]=String(m.ref).split(":");const d=dlgById(id),q=d&&d.q[+qi];if(!q)return null;const all=d.lines.map(x=>x[1]).join(" ");
+    return{label:"Диалог · "+d.title,input:"choice",prompt:`<div class="row"><button class="btn primary" data-dlgplay="${d.id}">Слушать диалог</button><button class="btn" data-dlgplay="${d.id}" data-rate="0.7">Медленно</button></div>`,q:q.q,options:q.o,answers:[q.a],show:q.a,
+      why:null}}
+  if(m.k==="exam"){const [k,...rest]=String(m.ref).split("|");return _taskOf({k,ref:rest.join("|"),t:m.t})}
+  return _taskOf(m);
+};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-dlgplay]");if(!b)return;const d=dlgById(b.dataset.dlgplay);if(d)speakSeq(d.lines.map(x=>[x[0],x[1]]),+(b.dataset.rate||1))});
+window.addEventListener("hashchange",()=>{if(SEQ)stopSeq()});
+
+/* ===================== МОЙ ПУТЬ: порядок обучения ===================== */
+// Шаги каждого уровня идут по порядку: правило → закрепление → слушаем/читаем → контрольная.
+const PATH={
+  A0:[{k:"rule",r:"abc"},{k:"course",u:0},{k:"rule",r:"read1"},{k:"course",u:1},{k:"rule",r:"read2"},{k:"words",l:"A0",n:20},{k:"course",u:2},{k:"rule",r:"hello"},{k:"text",t:"My family"},{k:"text",t:"My cat"}],
+  A1:[{k:"course",u:3},{k:"rule",r:"be"},{k:"words",l:"A1",n:20},{k:"dlg",d:"cafe"},{k:"course",u:4},{k:"rule",r:"ps1"},{k:"text",t:"A day in my life"},{k:"rule",r:"there"},{k:"dlg",d:"station"},{k:"course",u:5},{k:"rule",r:"poss"},{k:"words",l:"A1",n:60},{k:"text",t:"My weekend"},{k:"text",t:"At the market"},{k:"exam",l:"A1"}],
+  A2:[{k:"rule",r:"prep"},{k:"rule",r:"irr"},{k:"words",l:"A2",n:25},{k:"text",t:"My first day"},{k:"rule",r:"quest"},{k:"dlg",d:"weekend"},{k:"rule",r:"pres"},{k:"rule",r:"count"},{k:"text",t:"A trip to London"},{k:"rule",r:"comp"},{k:"dlg",d:"doctor"},{k:"rule",r:"art"},{k:"words",l:"A2",n:70},{k:"rule",r:"past"},{k:"text",t:"A rainy holiday"},{k:"exam",l:"A2"}],
+  B1:[{k:"rule",r:"fut"},{k:"words",l:"B1",n:25},{k:"rule",r:"modal"},{k:"dlg",d:"jobcall"},{k:"rule",r:"ger"},{k:"text",t:"Working from home"},{k:"rule",r:"cond"},{k:"rule",r:"used"},{k:"dlg",d:"hotel"},{k:"text",t:"Learning a language as an adult"},{k:"rule",r:"rel"},{k:"words",l:"B1",n:70},{k:"text",t:"Fast fashion"},{k:"exam",l:"B1"}],
+  B2:[{k:"rule",r:"pperf"},{k:"words",l:"B2",n:25},{k:"rule",r:"passive"},{k:"dlg",d:"office"},{k:"text",t:"The myth of multitasking"},{k:"rule",r:"report"},{k:"rule",r:"cond3"},{k:"dlg",d:"booking"},{k:"text",t:"Why we procrastinate"},{k:"rule",r:"modperf"},{k:"words",l:"B2",n:70},{k:"text",t:"Cities without cars"},{k:"exam",l:"B2"}]
+};
+const PATH_INTRO={A0:"Буквы, чтение и первые фразы",A1:"Простые предложения о себе и своём дне",A2:"Прошлое, вопросы, артикли и сравнения",B1:"Будущее, условия и модальные глаголы",B2:"Сложные времена, пассив и косвенная речь"};
+function stepId(L,s){return L+"-"+s.k+"-"+(s.r||s.d||s.t||s.l+s.n||s.u)}
+function textKeyByTitle(t){const x=allTexts().find(z=>z.title===t);return x?x.key:null}
+function wordsAt(L){return allWords().filter(w=>(w.lvl||"A1")===L&&!w.custom)}
+function stepInfo(L,s){
+  const sk=(S.pathSkip||{})[stepId(L,s)];
+  let i;
+  if(s.k==="rule"){const l=LESSONS.find(x=>x.id===s.r);if(!l)return null;const r=S.lessons[s.r];
+    i={ic:"grammar",col:"c-violet",kind:"Правило",t:l.title,d:r?`Пройдено: ${r.best} из ${r.total}`:(S.readRules||{})[s.r]?"Прочитано — осталось упражнение":l.desc,done:!!r,
+      go:()=>{location.hash="#grammar";setTimeout(()=>{openLesson(s.r);window.scrollTo(0,0)},0)}}}
+  else if(s.k==="course"){const ns=[1,2,3,4,5].map(k=>s.u*5+k),dn=ns.filter(courseDone).length,u=COURSE_UNITS[s.u];
+    i={ic:"course",col:"c-blue",kind:`Курс · уроки ${ns[0]}–${ns[4]}`,t:u[0],d:dn?`${u[1]} · ${dn} из 5`:u[1],done:dn===5,prog:dn/5,
+      go:()=>{const n=ns.find(k=>!courseDone(k))||ns[0];location.hash="#course";setTimeout(()=>{openCourseLesson(n);window.scrollTo(0,0)},0)}}}
+  else if(s.k==="words"){const ws=wordsAt(s.l),st=ws.filter(w=>S.cards[w.id]).length,need=Math.min(s.n,ws.length);
+    i={ic:"cards",col:"c-orange",kind:"Слова",t:`Слова ${s.l}: ${need} в работе`,d:`Начато ${Math.min(st,need)} из ${need} · по 10 новых в день`,done:st>=need,prog:need?Math.min(1,st/need):1,
+      go:()=>{location.hash="#cards"}}}
+  else if(s.k==="dlg"){const d=dlgById(s.d);if(!d)return null;const r=dlgScore(s.d);
+    i={ic:"listen",col:"c-orange",kind:"Диалог на слух",t:d.title,d:r?`Понято: ${r.best} из ${r.total}`:`${d.lines.length} реплик и ${d.q.length} вопроса`,done:!!r,go:()=>openDialog(s.d)}}
+  else if(s.k==="text"){const key=textKeyByTitle(s.t);if(key==null)return null;const r=(S.read||{})[key];
+    i={ic:"read",col:"c-teal",kind:"Чтение",t:s.t,d:r?`Ответы: ${r.best} из ${r.total}`:"Текст и вопросы на понимание",done:!!r,go:()=>{RS={key,ans:{}};location.hash="#read"}}}
+  else if(s.k==="exam"){const r=(S.pathx||{})[s.l];
+    i={ic:"test",col:"c-green",kind:"Контрольная",t:`Контрольная ${s.l}`,d:r?(r.pass?`Сдано: ${r.best}%`:`Лучший результат ${r.best}% — нужно 80%`):"12 заданий по правилам уровня. Сдашь — перейдёшь дальше",done:!!(r&&r.pass),exam:true,go:()=>startExam(s.l)}}
+  if(!i)return null;
+  i.id=stepId(L,s);i.skipped=!i.done&&!!sk;i.fin=i.done||i.skipped;i.s=s;i.L=L;
+  return i;
+}
+function pathSteps(L){return(PATH[L]||[]).map(s=>stepInfo(L,s)).filter(Boolean)}
+function pathCurrent(){
+  const L=T();const st=pathSteps(L);const c=st.find(x=>!x.fin);
+  if(c)return c;
+  const nx=LEVELS[li(L)+1];if(nx&&L!=="A0")return null;
+  return null;
+}
+function pathProgress(L){const st=pathSteps(L);return{done:st.filter(x=>x.fin).length,total:st.length}}
+let PV=null;
+function viewPath(){
+  const L=T();PV=PV||{open:L};
+  const cur=pathCurrent();
+  const lv=LEVELS.map(x=>{
+    const st=pathSteps(x),p=pathProgress(x),isCur=x===L,past=li(x)<li(L),open=PV.open===x;
+    const firstOpen=st.findIndex(s=>!s.fin);
+    const items=open?`<ol class="pth">${st.map((s,i)=>{const now=isCur&&i===firstOpen;const later=isCur&&i>firstOpen&&!s.fin;
+      return `<li class="pst ${s.done?"done":s.skipped?"skip":now?"now":later?"later":""}">
+        <span class="pdot ${s.col}">${s.done?ico("check"):s.skipped?"–":ico(s.ic)}</span>
+        <div class="pbody"><span class="pk">${esc(s.kind)}${s.skipped?" · пропущено":""}</span>${later?`<button class="plink" data-pgo="${s.id}" title="Можно открыть заранее">${esc(s.t)}</button>`:`<b>${esc(s.t)}</b>`}<span class="pd">${esc(s.d)}</span>
+          ${s.prog!==undefined&&!s.done?`<span class="tbar"><i style="width:${Math.round(s.prog*100)}%"></i></span>`:""}
+          ${now?`<div class="row" style="margin-top:8px"><button class="btn primary small" data-pgo="${s.id}">${s.exam?"Начать контрольную":"Начать"}</button>${s.exam?"":`<button class="btn ghost small" data-pskip="${s.id}">Я это знаю</button>`}</div>`
+            :s.fin?`<div class="row" style="margin-top:6px"><button class="btn ghost small" data-pgo="${s.id}">${s.skipped?"Всё-таки пройти":"Повторить"}</button>${s.skipped?`<button class="btn ghost small" data-punskip="${s.id}">Вернуть в план</button>`:""}</div>`
+            :""}
+        </div></li>`}).join("")}</ol>`:"";
+    return `<section class="plvl ${isCur?"cur":""} ${past?"past":""}">
+      <button class="plhead" data-plv="${x}" aria-expanded="${open}"><span class="lvlbig">${x}</span><span style="min-width:0;flex:1;text-align:left"><b>${LVLNAME[x][0].toUpperCase()+LVLNAME[x].slice(1)}${isCur?" · ты здесь":""}</b><span class="small muted" style="display:block">${esc(PATH_INTRO[x])}</span><span class="tbar"><i style="width:${Math.round(p.done/Math.max(1,p.total)*100)}%"></i></span></span><span class="small muted">${p.done}/${p.total}</span></button>
+      ${items}</section>`}).join("");
+  V.innerHTML=`<h1>Мой путь</h1><p class="sub">Учим по порядку: сначала правило, потом слова и упражнения на него, затем слушаем и читаем, а в конце уровня — контрольная. Не нужно хвататься за всё сразу: просто делай следующий шаг.</p>
+  <div class="stack">
+  ${yasay(cur?"happy":"proud",cur?`Следующий шаг: <b>${esc(cur.t)}</b>. ${cur.exam?"Это контрольная — проверим, готов(а) ли ты к следующему уровню.":"Повторения карточек и ошибок я буду подмешивать сам."}`:L==="B2"&&pathProgress("B2").done===pathProgress("B2").total?"Ты прошёл(шла) весь путь до B2! Дальше — чтение, разговор с ИИ и повторение.":"Уровень пройден! Открой следующий уровень — или пройди тест, чтобы я точнее подстроился.",64)}
+  ${lv}
+  <p class="small muted">Уровень определяется тестом или контрольной. Если что-то уже знаешь — нажми «Я это знаю», шаг уйдёт из плана.</p>
+  </div>`;
+  V.querySelectorAll("[data-plv]").forEach(b=>b.onclick=()=>{PV.open=PV.open===b.dataset.plv?null:b.dataset.plv;viewPath()});
+  const find=id=>{for(const x of LEVELS){const s=pathSteps(x).find(z=>z.id===id);if(s)return s}return null};
+  V.querySelectorAll("[data-pgo]").forEach(b=>b.onclick=()=>{const s=find(b.dataset.pgo);if(s)s.go()});
+  V.querySelectorAll("[data-pskip]").forEach(b=>b.onclick=()=>{S.pathSkip=S.pathSkip||{};S.pathSkip[b.dataset.pskip]=dkey();save();viewPath()});
+  V.querySelectorAll("[data-punskip]").forEach(b=>b.onclick=()=>{S.pathSkip=S.pathSkip||{};delete S.pathSkip[b.dataset.punskip];save();viewPath()});
+}
+// Отметка после завершения шага: тост «следующий шаг»
+let PATH_LAST=null;
+function pathKey(){const c=pathCurrent();return T()+"|"+(c?c.id:"end")}
+function pathAfter(){try{const id=pathKey(),c=pathCurrent();if(PATH_LAST&&PATH_LAST!==id&&PATH_LAST.split("|")[0]===T()&&c)toast("Шаг пути пройден! Дальше: "+c.t);PATH_LAST=id}catch(e){}}
+setTimeout(()=>{try{PATH_LAST=pathKey()}catch(e){}},0);
+const _save=save;save=function(){_save.apply(this,arguments);if(PATH_LAST!==null)setTimeout(pathAfter,0)};
+
+/* ---------- Контрольная уровня ---------- */
+function startExam(L){
+  const ls=LESSONS.filter(l=>l.lvl===L&&l.ex&&l.ex.length);
+  let items=[];
+  ls.forEach(l=>{shuffle(l.ex.map((_,i)=>i)).slice(0,2).forEach(i=>items.push({k:"grammar",ref:l.id+":"+i,t:l.id,l:L}))});
+  items=shuffle(items).slice(0,10);
+  const sn=shuffle(SENTENCES.map((s,i)=>[s,i]).filter(([s])=>s.l===L)).slice(0,12-items.length);
+  sn.forEach(([s,i])=>items.push({k:"tr",ref:String(i),t:s.t||"tr",l:L}));
+  if(items.length<4){toast("Для этого уровня пока мало заданий");return}
+  const q=shuffle(items).map((x,i)=>({key:"x"+i,k:"exam",ref:x.k+"|"+x.ref,ek:x.k,eref:x.ref,t:x.t,l:x.l,s:0,n:0,exam:true}));
+  MS={active:true,quick:true,exam:L,queue:q,done:0,ok:0,cur:null,res:null};MS.cur=MS.queue.shift();
+  if(location.hash==="#mistakes")renderReview();else location.hash="#mistakes";
+}
+const _answerReview=answerReview;
+answerReview=function(v){
+  const m=MS&&MS.cur;if(!m||!m.exam)return _answerReview(v);
+  const t=taskOf(m);let ok=false,typo=false,best=t.show,cres=null;
+  if(!v)ok=false;else if(t.input==="choice")ok=v===t.answers[0];
+  else{const c=check(v,t.answers,t.tol!==false);cres=c;ok=c.status!=="bad";typo=c.status==="typo";best=c.best||t.show}
+  if(!ok)mistake(m.ek,m.eref,false,v,{t:m.t,l:m.l});
+  MS.done++;if(ok)MS.ok++;bump(ok,m.l);save();
+  MS.res={ok,typo,user:v,best,cres};renderReview();
+};
+const _renderReview=renderReview;
+renderReview=function(){
+  if(MS&&MS.exam&&!MS.cur){
+    MS.active=false;const L=MS.exam,pc=Math.round(MS.ok/Math.max(1,MS.done)*100),pass=pc>=80;
+    S.pathx=S.pathx||{};const p=S.pathx[L];S.pathx[L]={best:Math.max(pc,p?p.best:0),pass:pass||!!(p&&p.pass),date:dkey()};save();
+    const nx=LEVELS[li(L)+1];
+    V.innerHTML=resultHTML({title:"Контрольная "+L,right:MS.ok,total:MS.done,note:pass?(nx?`Сдано! Уровень ${L} пройден.`:"Сдано! Весь путь пройден."):`Нужно 80%, у тебя ${pc}%. Ошибки ушли в повтор — поработай с ними и попробуй снова завтра.`,buttons:`<a class="btn" href="#path">Мой путь</a><a class="btn primary" href="#today">На главную</a>`});
+    MS=null;
+    if(pass){if(nx&&T()===L)setLevel(nx,"path");else if(!nx)setTimeout(()=>celebrate({badge:"B2",title:"Путь пройден!",text:"Все шаги до уровня B2 позади. Дальше — больше чтения, разговоров и новых наборов слов.",stats:celebStats()}),400)}
+    return;
+  }
+  _renderReview();
+  if(MS&&MS.exam&&V){const h=V.querySelector("h1");if(h)h.textContent="Контрольная "+MS.exam;
+    const vd=V.querySelector(".verdict");if(vd&&MS.res){vd.innerHTML=MS.res.ok?"Верно"+(MS.res.typo?" <span>(с опечаткой)</span>":""):"Неверно <span>· добавлено в ошибки</span>"}
+    const ct=V.querySelector(".card-top");if(ct&&ct.lastElementChild&&ct.children.length>1)ct.lastElementChild.outerHTML=`<span>контрольная</span>`}
+};
+
+/* ---------- Главная следует пути ---------- */
+const _nextAction=nextAction;
+nextAction=function(){
+  const base=_nextAction();
+  if(["test","mist","rrev"].includes(base.k))return base;
+  const md=dueMist().length,dw=dueWords().length;
+  const c=pathCurrent();
+  // много повторений — сначала повторяем, потом новое
+  if(md+dw>=15&&base.k==="quick")return base;
+  if(c){
+    // слова: если на сегодня новые уже взяты — следующий шаг, а слова подтянутся завтра
+    if(c.s.k==="words"&&newLeft()<=0){const st=pathSteps(T()),n2=st.find(x=>!x.fin&&x.s.k!=="words");if(n2)return pathAction(n2,base)}
+    return pathAction(c,base);
+  }
+  return base;
+};
+function pathAction(c,base){
+  const p=pathProgress(c.L);
+  return{k:"path",t:c.kind+": "+c.t,d:`Шаг ${p.done+1} из ${p.total} на уровне ${c.L} · ${c.d}`,b:c.exam?"К контрольной":"Начать",go:c.go,alt:base};
+}
+// «Ещё на сегодня» не должно дублировать шаг пути
+const _viewToday=viewToday;
+viewToday=function(){
+  _viewToday();
+  try{
+    const hero=V.querySelector(".hero");
+    if(hero){const lab=hero.querySelector(".label");const na=nextAction();if(na.k==="path"&&lab)lab.textContent="Следующий шаг твоего пути";
+      hero.insertAdjacentHTML("beforeend",`<a class="herolink" href="#path">Весь путь ›</a>`);
+      if(na.k==="path"){V.querySelectorAll('.mcard[data-rule-open],.mcard[href="#course"]').forEach(x=>x.remove())}}
+    const wk=weeklyCard();if(wk){const anchor=V.querySelector(".daybox");if(anchor)anchor.insertAdjacentHTML("afterend",wk);bindWeekly()}
+  }catch(e){}
+};
+const _viewLearn=viewLearn;
+viewLearn=function(){
+  _viewLearn();
+  const g=V.querySelector(".tiles2");if(!g)return;
+  const c=pathCurrent(),p=pathProgress(T());
+  g.insertAdjacentHTML("afterbegin",tile("#path","Мой путь",c?`Следующий шаг: ${c.t}`:"Уровень пройден",`${p.done}/${p.total}`,{v:p.done/Math.max(1,p.total)}));
+};
+
+/* ===================== ИТОГИ НЕДЕЛИ ОТ ЯСИКА ===================== */
+function weekStart(t=Date.now()){const d=new Date(t);d.setHours(0,0,0,0);const wd=(d.getDay()+6)%7;return d.getTime()-wd*DAY}
+function weekStats(from){
+  const to=from+7*DAY,keys=[];for(let t=from;t<to;t+=DAY)keys.push(dkey(t+3600e3*3));
+  let n=0,ok=0,act=0;keys.forEach(k=>{const d=S.days[k];if(d&&d.n){n+=d.n;ok+=d.ok;act++}});
+  const kset=new Set(keys);
+  const words=Object.values(S.cards).filter(c=>kset.has(c.added)).length;
+  const lessons=Object.values(S.lessons||{}).filter(x=>kset.has(x.last)).length+Object.values(S.course||{}).filter(x=>x&&kset.has(x.date)).length;
+  const fixed=Object.values(S.mist||{}).filter(m=>m.fixed&&m.fixed>=from&&m.fixed<to).length;
+  return{n,ok,act,words,lessons,fixed,acc:n?Math.round(ok/n*100):0};
+}
+function weakTopic(){const g={};Object.values(S.mist||{}).filter(m=>!m.done).forEach(m=>{const t=m.t||m.k;g[t]=(g[t]||0)+1});const e=Object.entries(g).sort((a,b)=>b[1]-a[1])[0];return e&&e[1]>=2?e[0]:null}
+function weeklyCard(){
+  const ws=weekStart(),prevFrom=ws-7*DAY;
+  if((S.weeklySeen||0)>=ws)return"";
+  const a=weekStats(prevFrom),b=weekStats(prevFrom-7*DAY);
+  if(!a.n)return"";
+  const nm=uname(),diff=a.n-b.n;
+  const cmp=b.n?(diff>0?`На ${diff} ${plural(diff,["ответ","ответа","ответов"])} больше, чем неделей раньше — растём!`:diff<0?`Чуть меньше, чем неделей раньше (${b.n}). Ничего — главное не бросать.`:"Ровно как неделей раньше — стабильность!"):"Это твоя первая полная неделя — отличное начало!";
+  const wt=weakTopic();const c=pathCurrent();
+  const mood=a.act>=5?"proud":a.act>=3?"happy":"think";
+  const head=a.act>=5?`${nm?nm+", ты":"Ты"} занимался(ась) ${a.act} ${plural(a.act,["день","дня","дней"])} из 7 — это очень круто!`:a.act>=3?`${a.act} ${plural(a.act,["день","дня","дней"])} занятий на прошлой неделе — хороший ритм.`:`На прошлой неделе было ${a.act} ${plural(a.act,["день","дня","дней"])} занятий. Давай на этой попробуем хотя бы 4 — по 10 минут.`;
+  return `<section class="sheet weekly" id="weekly">
+    <div class="row" style="justify-content:space-between"><div class="label">Итоги недели</div><button class="btn ghost small" id="wkclose" aria-label="Скрыть итоги">Понятно</button></div>
+    ${yasay(mood,`${esc(head)} ${esc(cmp)}`,58)}
+    <div class="rstats wk">
+      <div><b>${a.n}</b><span>${plural(a.n,["ответ","ответа","ответов"])}</span></div>
+      <div><b>${a.acc}%</b><span>точность${b.n?` <em class="${a.acc>=b.acc?"up":"down"}">${a.acc>=b.acc?"▲":"▼"}${Math.abs(a.acc-b.acc)}</em>`:""}</span></div>
+      <div><b>${a.words}</b><span>новых слов</span></div>
+      <div><b>${a.lessons}</b><span>${plural(a.lessons,["урок","урока","уроков"])}</span></div>
+      <div><b>${a.fixed}</b><span>${plural(a.fixed,["ошибка исправлена","ошибки исправлены","ошибок исправлено"])}</span></div>
+    </div>
+    ${wt||c?`<div class="small" style="margin-top:6px"><b>План на эту неделю:</b> ${c?`дойти до шага «${esc(c.t)}»`:"повторять и читать"}${wt?`; подтянуть тему «${esc(topicName(wt))}» — там больше всего ошибок`:""}.</div>`:""}
+  </section>`;
+}
+function bindWeekly(){const b=$("#wkclose");if(b)b.onclick=()=>{S.weeklySeen=weekStart();save();const w=$("#weekly");if(w)w.remove()}}
 
 autoPacks();applyPacks();migrateRrev();applyFreeze();
 new MutationObserver(()=>queueMicrotask(()=>{mascotize();budCheck()})).observe(V,{childList:true,subtree:true});

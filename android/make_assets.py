@@ -7,15 +7,16 @@ packs=sys.argv[4] if len(sys.argv)>4 else ""
 bridge={
 "android":'''
   if(!window.AndroidTTS)return;
-  var speak=function(u){try{AndroidTTS.speak(u.text,u.rate||1,u.lang||"en-US")}catch(e){}};
-  var stop=function(){try{AndroidTTS.stop()}catch(e){}};
+  var speak=function(u){try{window.__ttsCur=u;if(u.pitch&&u.pitch!==1&&AndroidTTS.speakP)AndroidTTS.speakP(u.text,u.rate||1,u.lang||"en-US",u.pitch);else AndroidTTS.speak(u.text,u.rate||1,u.lang||"en-US")}catch(e){}};
+  window.__ttsDone=function(){var u=window.__ttsCur;window.__ttsCur=null;if(u&&u.onend)try{u.onend()}catch(e){}};
+  var stop=function(){window.__ttsCur=null;try{AndroidTTS.stop()}catch(e){}};
   var hasMic=false;try{hasMic=!!AndroidTTS.hasSpeech()}catch(e){}
   window.NativeApp={platform:"android",
     speech:hasMic?{start:function(l){AndroidTTS.startListening(l||"en-US")},stop:function(){AndroidTTS.stopListening()}}:null,
     reminder:{set:function(h,m,on){AndroidTTS.setReminder(h|0,m|0,!!on)}}};''',
 "ios":'''
   var h=window.webkit&&window.webkit.messageHandlers;if(!h||!h.tts)return;
-  var speak=function(u){try{h.tts.postMessage({text:u.text,rate:u.rate||1,lang:u.lang||"en-US"})}catch(e){}};
+  var speak=function(u){try{h.tts.postMessage({text:u.text,rate:u.rate||1,lang:u.lang||"en-US",pitch:u.pitch||1})}catch(e){}};
   var stop=function(){try{h.tts.postMessage({cmd:"stop"})}catch(e){}};
   window.NativeApp={platform:"ios",
     speech:h.speech?{start:function(l){h.speech.postMessage({cmd:"start",lang:l||"en-US"})},stop:function(){h.speech.postMessage({cmd:"stop"})}}:null,
@@ -29,7 +30,7 @@ head='''<!doctype html><html lang="ru"><head><meta charset="utf-8">
 window.__NATIVE_APP=true;window.__PACKS_URL='''+json.dumps(packs)+''';
 window.__nativeSpeech=function(ev){var f=window.NativeApp&&window.NativeApp.onSpeech;if(f)f(ev)};
 (function(){'''+bridge+'''
-  function U(t){this.text=String(t||"");this.lang="en-US";this.rate=1;this.voice=null}
+  function U(t){this.text=String(t||"");this.lang="en-US";this.rate=1;this.pitch=1;this.voice=null;this.onend=null}
   var synth={speak:speak,cancel:stop,getVoices:function(){return[]},onvoiceschanged:null,speaking:false};
   try{Object.defineProperty(window,"speechSynthesis",{value:synth,configurable:true,writable:true})}catch(e){window.speechSynthesis=synth}
   try{Object.defineProperty(window,"SpeechSynthesisUtterance",{value:U,configurable:true,writable:true})}catch(e){window.SpeechSynthesisUtterance=U}

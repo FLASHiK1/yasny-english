@@ -92,7 +92,7 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
         case "tts":
             guard let body = message.body as? [String: Any] else { return }
             if (body["cmd"] as? String) == "stop" { synth.stopSpeaking(at: .immediate); return }
-            speak(text: body["text"] as? String ?? "", rate: body["rate"] as? Double ?? 1, lang: body["lang"] as? String ?? "en-US")
+            speak(text: body["text"] as? String ?? "", rate: body["rate"] as? Double ?? 1, lang: body["lang"] as? String ?? "en-US", pitch: body["pitch"] as? Double ?? 1)
         case "speech":
             guard let body = message.body as? [String: Any] else { return }
             if (body["cmd"] as? String) == "start" { startListening(lang: body["lang"] as? String ?? "en-US") }
@@ -111,12 +111,13 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
 
     // MARK: - Озвучка
 
-    private func speak(text: String, rate: Double, lang: String) {
+    private func speak(text: String, rate: Double, lang: String, pitch: Double = 1) {
         synth.stopSpeaking(at: .immediate)
         let u = AVSpeechUtterance(string: text)
         u.voice = AVSpeechSynthesisVoice(language: lang) ?? AVSpeechSynthesisVoice(language: "en-US")
         let r = AVSpeechUtteranceDefaultSpeechRate * Float(rate)
         u.rate = min(max(r, AVSpeechUtteranceMinimumSpeechRate), AVSpeechUtteranceMaximumSpeechRate)
+        u.pitchMultiplier = Float(min(max(pitch, 0.5), 2.0))
         synth.speak(u)
     }
 

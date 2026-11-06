@@ -2367,13 +2367,13 @@ function chips(){try{renderTabbar((location.hash||"#today").slice(1)||"today")}c
 
 /* ===================== VIEWS ===================== */
 const V=$("#view");
-const ROUTES=["today","mistakes","cards","grammar","translate","listen","words","test","read","speak","practice","verbs","course","library","hello","learn","train","profile","stats","rules","path","talk","settings","ach","duel"];
+const ROUTES=["today","mistakes","cards","grammar","translate","listen","words","test","read","speak","practice","verbs","course","library","hello","learn","train","profile","stats","rules","path","talk","settings","ach","duel","sit","fix","order","sprint"];
 function route(){
   let r=(location.hash||"#today").slice(1);if(!ROUTES.includes(r))r="today";
   renderTabbar(r);setTimeout(checkAch,300);
   if(r!=="mistakes"&&MS&&MS.active&&!MS.cur)MS=null;
   try{speechSynthesis.cancel()}catch(e){}
-  ({today:viewToday,mistakes:viewMistakes,test:viewTest,read:viewRead,speak:viewSpeak,practice:viewPractice,course:viewCourse,library:viewLibrary,hello:viewHello,learn:viewLearn,train:viewTrain,profile:viewProfile,stats:viewStats,rules:viewRules,path:viewPath,talk:viewTalk,settings:viewSettings,ach:viewAch,duel:viewDuel,verbs:viewVerbs,cards:viewCards,grammar:viewGrammar,translate:viewTranslate,listen:viewListen,words:viewWords})[r]();
+  ({today:viewToday,mistakes:viewMistakes,test:viewTest,read:viewRead,speak:viewSpeak,practice:viewPractice,course:viewCourse,library:viewLibrary,hello:viewHello,learn:viewLearn,train:viewTrain,profile:viewProfile,stats:viewStats,rules:viewRules,path:viewPath,talk:viewTalk,settings:viewSettings,ach:viewAch,duel:viewDuel,sit:viewSit,fix:viewFix,order:viewOrder,sprint:viewSprint,verbs:viewVerbs,cards:viewCards,grammar:viewGrammar,translate:viewTranslate,listen:viewListen,words:viewWords})[r]();
   chips();syncUI();window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
@@ -4158,11 +4158,11 @@ function resultHTML(o){
 const TABS=[
 {id:"today",t:"Сегодня",icon:'<path d="M4 10.5 12 4l8 6.5V20H15v-6H9v6H4z"/>',routes:["today"]},
 {id:"learn",t:"Учить",icon:'<path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v15H7.5A2.5 2.5 0 0 0 5 20.5zM5 20.5A2.5 2.5 0 0 1 7.5 18H19v3H7.5"/>',routes:["learn","course","cards","grammar","verbs","test","rules","path"]},
-{id:"train",t:"Практика",icon:'<path d="M4 5h16v11H10l-4 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/>',routes:["train","translate","practice","listen","read","speak","talk"]},
+{id:"train",t:"Практика",icon:'<path d="M4 5h16v11H10l-4 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/>',routes:["train","translate","practice","listen","read","speak","talk","sit","fix","order","sprint"]},
 {id:"mistakes",t:"Повтор",icon:'<path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/>',routes:["mistakes"]},
 {id:"profile",t:"Профиль",icon:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',routes:["profile","words","library","stats","settings","ach","duel"]}
 ];
-const CRUMB={settings:"profile",ach:"profile",duel:"profile",path:"learn",talk:"train",rules:"learn",course:"learn",cards:"learn",grammar:"learn",verbs:"learn",test:"learn",translate:"train",practice:"train",listen:"train",read:"train",speak:"train",words:"profile",library:"profile",stats:"profile"};
+const CRUMB={settings:"profile",ach:"profile",duel:"profile",sit:"train",fix:"train",order:"train",sprint:"train",path:"learn",talk:"train",rules:"learn",course:"learn",cards:"learn",grammar:"learn",verbs:"learn",test:"learn",translate:"train",practice:"train",listen:"train",read:"train",speak:"train",words:"profile",library:"profile",stats:"profile"};
 function tabFor(r){return (TABS.find(t=>t.routes.includes(r))||TABS[0]).id}
 function renderTabbar(r){if(r!=="test")document.body.classList.remove("focus");
   const bar=$("#tabbar");if(!bar)return;const cur=tabFor(r),md=dueMist().length;
@@ -5361,6 +5361,330 @@ viewSettings=function(){
   if(vs.length){const sv=$("#svoice");if(sv){const lab=V.querySelector('label[for="svoice"]');sv.remove();if(lab)lab.remove()}}
 };
 try{speechSynthesis.addEventListener&&speechSynthesis.addEventListener("voiceschanged",()=>{if((location.hash||"").slice(1)==="settings")viewSettings()})}catch(e){}
+
+/* ===================== ПРАКТИКА: ситуации, найди ошибку, собери диалог, спринт ===================== */
+// Ситуации: собеседник говорит — выбери, как ответить. В o первый вариант верный (перемешивается при показе).
+const SITS=[
+{id:"party",l:"A1",t:"Знакомство на вечеринке",d:"Представиться и поддержать разговор",turns:[
+ {n:"Hi! I'm Kate. What's your name?",ru:"Привет! Я Кейт. Как тебя зовут?",o:["Hi, Kate! I'm Anna. Nice to meet you.","Hi, Kate! My name Anna.","I'm fine, thank you."],why:"Представляемся: I'm Anna или My name is Anna. «I'm fine» — ответ на «How are you?»."},
+ {n:"Where are you from?",ru:"Откуда ты?",o:["I'm from Russia. And you?","I from Russia.","I'm going to Russia."],why:"Нужен глагол am: I'm from…"},
+ {n:"Oh, cool! What do you do?",ru:"О, здорово! Чем ты занимаешься?",o:["I'm a designer. I work from home.","I'm doing my homework.","I do a designer."],why:"What do you do? — вопрос о профессии. Отвечаем: I'm a + профессия."},
+ {n:"Do you like it?",ru:"Тебе нравится?",o:["Yes, I do. It's really interesting.","Yes, I like.","Yes, I am."],why:"На вопрос с Do отвечают Yes, I do. Просто «I like» без дополнения не говорят."},
+ {n:"Great! Would you like something to drink?",ru:"Отлично! Хочешь что-нибудь выпить?",o:["Yes, please. Some orange juice.","Yes, I'd like.","No, thank you, I don't."],why:"Would you like…? — вежливое предложение. Ответ: Yes, please или No, thank you."}]},
+{id:"cafe",l:"A1",t:"В кафе",d:"Заказать кофе с собой и заплатить",turns:[
+ {n:"Hi there! What can I get you?",ru:"Здравствуйте! Что вам принести?",o:["Can I have a latte, please?","Give me latte.","I can a latte."],why:"Вежливая просьба: Can I have…, please? «Give me» звучит грубо."},
+ {n:"Sure. Eat in or take away?",ru:"Конечно. Здесь или с собой?",o:["Take away, please.","Eat, please.","I take away it."],why:"Take away — с собой, eat in — здесь."},
+ {n:"Anything else?",ru:"Что-нибудь ещё?",o:["Yes, a croissant, please.","Yes, croissant one more.","Anything, please."],why:"Коротко и вежливо: a croissant, please."},
+ {n:"That's five pounds twenty.",ru:"С вас пять фунтов двадцать.",o:["Can I pay by card?","Can I pay with card money?","How much is it cost?"],why:"Платить картой — pay by card."},
+ {n:"Here's your latte. Have a nice day!",ru:"Вот ваш латте. Хорошего дня!",o:["Thanks, you too!","Thanks, me too!","Yes, I have."],why:"На пожелание отвечают: You too! — «И вам тоже!»."}]},
+{id:"way",l:"A1",t:"Спросить дорогу",d:"Найти музей в незнакомом городе",turns:[
+ {n:"Hi! Are you OK? You look lost.",ru:"Привет! Всё в порядке? Ты, кажется, заблудился(ась).",o:["Yes, I'm looking for the museum.","Yes, I look the museum.","Yes, I'm lost the museum."],why:"Искать — look for: I'm looking for…"},
+ {n:"The history museum? It's not far.",ru:"Исторический музей? Это недалеко.",o:["Great! How do I get there?","Great! How I get there?","Great! Where is go?"],why:"В вопросе нужен do: How do I get there?"},
+ {n:"Go straight on and turn left at the traffic lights.",ru:"Идите прямо и на светофоре поверните налево.",o:["So, left at the traffic lights?","So, right at the bank?","So, go back and turn right?"],why:"Turn left — налево, traffic lights — светофор. Переспросить — хорошая привычка."},
+ {n:"Yes. It's next to the big park.",ru:"Да. Он рядом с большим парком.",o:["Next to the park. Thank you so much!","Next the park. Thank you.","Thank you, you're welcome!"],why:"Рядом с — next to. You're welcome говорят в ответ на спасибо."},
+ {n:"You're welcome. Enjoy the museum!",ru:"Пожалуйста. Приятного посещения!",o:["Thanks! Bye!","Thanks, I enjoy!","Yes, I enjoy it every day."],why:"Хватит простого Thanks! Bye! «I enjoy» без дополнения не говорят."}]},
+{id:"clothes",l:"A1",t:"Магазин одежды",d:"Примерить куртку и узнать цену",turns:[
+ {n:"Hello! Can I help you?",ru:"Здравствуйте! Вам помочь?",o:["Yes, I'm looking for a jacket.","Yes, I search jacket.","No, I can help you."],why:"Ищу — I'm looking for…"},
+ {n:"What size are you?",ru:"Какой у вас размер?",o:["Medium, I think.","I'm 25 years old.","I'm size of medium."],why:"Размеры: small, medium, large."},
+ {n:"What about this blue one?",ru:"Как насчёт этой синей?",o:["It's nice. Can I try it on?","It's nice. Can I try on it?","It's nice. Can I wear it on?"],why:"Примерить — try on, а местоимение встаёт в середину: try it on."},
+ {n:"How is it?",ru:"Ну как?",o:["It's a bit small. Do you have a bigger one?","It's a bit small. Do you have more big?","It's small a bit. Have you bigger?"],why:"Сравнение: big → bigger. Спрашиваем: Do you have…?"},
+ {n:"Here you are. This one is large.",ru:"Вот. Это большой размер.",o:["Perfect! How much is it?","Perfect! How many is it?","Perfect! How much it costs?"],why:"Цена: How much is it? How many — для количества."}]},
+{id:"hotel",l:"A2",t:"В отеле",d:"Заселиться и узнать про завтрак",turns:[
+ {n:"Good evening! How can I help you?",ru:"Добрый вечер! Чем могу помочь?",o:["Hi, I have a reservation. My name is Anna Smirnova.","Hi, I have a reserve on Anna Smirnova.","Hi, I booked me a room."],why:"Бронь — reservation или booking."},
+ {n:"Let me check… Yes, a double room for three nights.",ru:"Сейчас посмотрю… Да, двухместный номер на три ночи.",o:["That's right. Is breakfast included?","That's right. Is breakfast include?","That's right. Breakfast is in?"],why:"«Включён» — is included, нужна форма на -ed."},
+ {n:"Yes, breakfast is from seven to ten.",ru:"Да, завтрак с семи до десяти.",o:["Great. What's the Wi-Fi password?","Great. Which is password of Wi-Fi?","Great. Give Wi-Fi."],why:"Пароль от Wi-Fi — the Wi-Fi password."},
+ {n:"It's on your key card. Your room is on the fourth floor.",ru:"Он на вашей карте-ключе. Номер на четвёртом этаже.",o:["Thank you. Where's the lift?","Thank you. Where the lift is?","Thank you. Lift is where?"],why:"В вопросе is стоит перед подлежащим: Where's the lift?"},
+ {n:"Just over there, on the right. Enjoy your stay!",ru:"Вон там, справа. Хорошего отдыха!",o:["Thank you very much!","Thank you, enjoy too!","Yes, I'm staying."],why:"На пожелание — просто поблагодарить."}]},
+{id:"airport",l:"A2",t:"В аэропорту",d:"Регистрация на рейс и выбор места",turns:[
+ {n:"Good morning. Can I see your passport, please?",ru:"Доброе утро. Можно ваш паспорт?",o:["Sure, here you are.","Sure, here you go it.","Yes, you can see."],why:"Here you are — «Вот, пожалуйста», когда что-то передаёшь."},
+ {n:"Are you checking in any bags?",ru:"Вы сдаёте багаж?",o:["Just one suitcase.","Only one suitcases.","I check one bag in yesterday."],why:"One suitcase — единственное число."},
+ {n:"Did you pack your bag yourself?",ru:"Вы сами собирали сумку?",o:["Yes, I did.","Yes, I packed.","Yes, I do."],why:"На вопрос с Did отвечают Yes, I did."},
+ {n:"Would you like a window or an aisle seat?",ru:"Место у окна или у прохода?",o:["A window seat, please.","In the window, please.","A seat window, please."],why:"Window seat — у окна, aisle seat — у прохода."},
+ {n:"Here's your boarding pass. Boarding starts at ten forty, gate twelve.",ru:"Вот ваш посадочный. Посадка в 10:40, выход 12.",o:["Thanks! Which way is gate twelve?","Thanks! Where is the gate twelve way?","Thanks! When is gate twelve?"],why:"Which way is…? — «В какую сторону…?»"}]},
+{id:"doctor",l:"A2",t:"У врача",d:"Рассказать, что болит, и понять назначение",turns:[
+ {n:"Hello, come in. What seems to be the problem?",ru:"Здравствуйте, проходите. На что жалуетесь?",o:["I have a terrible headache.","I am headache.","My head is ill."],why:"Болезни — с have: I have a headache, a cold, a sore throat."},
+ {n:"How long have you had it?",ru:"Как давно это у вас?",o:["For three days.","Since three days.","Three days later."],why:"С отрезком времени — for: for three days. Since — с момента: since Monday."},
+ {n:"Do you have a temperature?",ru:"У вас есть температура?",o:["Yes, a little. About thirty-seven and a half.","Yes, I am temperature.","Yes, I have a little heat."],why:"Жар по-английски — a temperature."},
+ {n:"OK. Take these tablets twice a day after meals.",ru:"Хорошо. Принимайте эти таблетки дважды в день после еды.",o:["Twice a day after meals. Got it.","Twice a day before meals. Got it.","Once a day after meals. Got it."],why:"Twice a day — два раза в день, after meals — после еды."},
+ {n:"And drink lots of water. You'll feel better soon.",ru:"И пейте много воды. Скоро станет лучше.",o:["Thank you, doctor.","Thank you, I feel better soon.","Thank you, I'm drinking."],why:"Просто поблагодарить врача."}]},
+{id:"plans",l:"A2",t:"Договориться о встрече",d:"Позвать друга в кино",turns:[
+ {n:"Hey! Are you free on Saturday?",ru:"Привет! Ты свободна в субботу?",o:["I think so. Why?","I think yes. Why?","I'm free on Saturday yesterday."],why:"«Думаю, да» — I think so, а не I think yes."},
+ {n:"There's a new film at the cinema. Do you want to go?",ru:"В кино новый фильм. Хочешь сходить?",o:["Sounds great! What time?","Sounds great! Which hour?","It sounds greatly!"],why:"Sounds great! — «Звучит здорово!». Время — What time?"},
+ {n:"How about seven o'clock?",ru:"Как насчёт семи?",o:["Seven is perfect. Where shall we meet?","Seven is perfect. Where we meet?","Seven is perfect. Where do meet?"],why:"Shall we…? — предложить что-то сделать вместе."},
+ {n:"Let's meet outside the cinema.",ru:"Давай встретимся у кинотеатра.",o:["OK, see you there!","OK, look you there!","OK, see you on there!"],why:"See you there! — «Увидимся там!»"},
+ {n:"Don't be late!",ru:"Не опаздывай!",o:["I won't, I promise!","I don't, I promise!","I'm not late, I promise!"],why:"Обещание на будущее — won't (will not)."}]},
+{id:"restaurant",l:"A2",t:"В ресторане",d:"Сделать заказ и попросить счёт",turns:[
+ {n:"Are you ready to order?",ru:"Готовы сделать заказ?",o:["Not yet. Could we have a few more minutes?","Not yet. Can we have few minutes more?","Yet not. Wait."],why:"Вежливо попросить время: Could we have a few more minutes?"},
+ {n:"Of course. So, what would you like?",ru:"Конечно. Итак, что желаете?",o:["I'd like the chicken salad, please.","I like the chicken salad, please.","I would chicken salad."],why:"Для заказа — I'd like («я бы хотел(а)»). I like — «мне нравится»."},
+ {n:"And to drink?",ru:"А пить?",o:["Just water, please.","Only water, please you.","Water just."],why:"Просто — just: just water, please."},
+ {n:"How was everything?",ru:"Как вам всё?",o:["It was delicious, thank you!","It is delicious yesterday.","It was deliciously!"],why:"Прошедшее время — was. Delicious — прилагательное."},
+ {n:"Would you like anything else?",ru:"Что-нибудь ещё?",o:["No, thanks. Could we have the bill, please?","No, thanks. Give us a check.","No, thanks. Can we have the account?"],why:"Счёт в ресторане — the bill (в Америке — the check). Account — банковский счёт."}]},
+{id:"taxi",l:"A2",t:"Такси",d:"Доехать до аэропорта вовремя",turns:[
+ {n:"Hi! Where to?",ru:"Здравствуйте! Куда едем?",o:["To the airport, please.","In the airport, please.","At the airport, please."],why:"Направление — to: to the airport."},
+ {n:"Which terminal?",ru:"Какой терминал?",o:["Terminal two, please.","Second the terminal.","Terminal of two."],why:"Терминал два — terminal two."},
+ {n:"Are you in a hurry?",ru:"Вы торопитесь?",o:["A bit. My flight is at six.","A bit. My flight in six.","A bit. I hurry."],why:"Время — at: at six. И не забываем is."},
+ {n:"Don't worry, we'll be there in twenty minutes.",ru:"Не волнуйтесь, будем там через двадцать минут.",o:["In twenty minutes? Great!","After twenty minutes? Great!","Twenty minutes ago? Great!"],why:"«Через 20 минут» — in twenty minutes, а не after."},
+ {n:"Here we are. That's thirty-two pounds.",ru:"Приехали. С вас тридцать два фунта.",o:["Here you are. Keep the change.","Here you are. Hold the change.","Here you are. Save the change."],why:"Keep the change — «Сдачи не надо»."}]},
+{id:"work",l:"B1",t:"Первый день на работе",d:"Познакомиться с командой",turns:[
+ {n:"Welcome to the team! Have you worked in marketing before?",ru:"Добро пожаловать в команду! Вы раньше работали в маркетинге?",o:["Yes, I've worked in marketing for three years.","Yes, I work in marketing since three years.","Yes, I have worked in marketing three years ago."],why:"Present Perfect + for: I've worked… for three years. С ago — только Past Simple."},
+ {n:"Great. Let me show you around.",ru:"Отлично. Давайте я вам всё покажу.",o:["Thanks, that would be great.","Thanks, that would be greatly.","Thanks, show me around me."],why:"That would be great — «Было бы здорово»."},
+ {n:"This is your desk. Do you need anything?",ru:"Вот ваш стол. Вам что-нибудь нужно?",o:["Could you tell me where the kitchen is?","Could you tell me where is the kitchen?","Can you say me where the kitchen is?"],why:"В косвенном вопросе обычный порядок слов: where the kitchen is. И tell me, а не say me."},
+ {n:"Sure, it's at the end of the corridor. Lunch is usually at one.",ru:"Конечно, в конце коридора. Обед обычно в час.",o:["Got it. Thanks for your help!","Got it. Thanks for your helping!","Got it. Thank for help!"],why:"Thanks for your help — «Спасибо за помощь»."},
+ {n:"If you have any questions, just ask.",ru:"Если будут вопросы — спрашивайте.",o:["I will, thank you!","I do, thank you!","I am, thank you!"],why:"Обещание на будущее — I will."}]},
+{id:"return",l:"B1",t:"Вернуть покупку",d:"Сдать сломанные наушники",turns:[
+ {n:"Hi, how can I help?",ru:"Здравствуйте, чем помочь?",o:["I bought these headphones last week, but they don't work.","I have bought these headphones last week, but they don't work.","I buy these headphones last week, but they don't working."],why:"С last week — Past Simple: I bought."},
+ {n:"Oh, I'm sorry to hear that. Do you have the receipt?",ru:"Ой, жаль. Чек у вас есть?",o:["Yes, here it is.","Yes, here is it.","Yes, here are it."],why:"Here it is — местоимение перед глаголом."},
+ {n:"Would you like a refund or an exchange?",ru:"Вернуть деньги или обменять?",o:["A refund, please.","A refunding, please.","Money back give, please."],why:"Refund — возврат денег, exchange — обмен."},
+ {n:"No problem. The money will be back on your card in three to five days.",ru:"Без проблем. Деньги вернутся на карту через три–пять дней.",o:["That's fine. Thanks for your help.","That's fine. Thanks for help me.","That's fine. Thanks you for helping."],why:"Thanks for your help — «Спасибо за помощь»."},
+ {n:"Is there anything else I can do for you?",ru:"Могу ещё чем-то помочь?",o:["No, that's all. Have a nice day!","No, that's everything all.","No, I don't need nothing."],why:"No, that's all — «Нет, это всё». И в английском одно отрицание."}]}
+];
+// Найди ошибку: [предложение, ошибка (как в тексте), исправление ("" — убрать), [два неверных варианта], объяснение, уровень]
+const FIXES=[
+["She go to school every day.","go","goes",["going","gone"],"С he/she/it в настоящем времени добавляем -s: she goes.","A1"],
+["I am agree with you.","am","",["do","have"],"Agree — уже глагол, am не нужен: I agree.","A1"],
+["He have a big dog.","have","has",["haves","is"],"С he/she/it — has.","A1"],
+["My sister is doctor.","doctor","a doctor",["the doctors","doctors"],"Перед профессией нужен артикль a: she's a doctor.","A1"],
+["I don't like coffee, but I likes tea.","likes","like",["liking","liked"],"С I — like без -s.","A1"],
+["There is two cats in the garden.","is","are",["be","am"],"Two cats — много, поэтому there are.","A1"],
+["Do she speak English?","Do","Does",["Is","Are"],"С she вопрос строится с Does.","A1"],
+["I can to swim.","to","",["for","at"],"После can глагол идёт без to: I can swim.","A1"],
+["We was at home yesterday.","was","were",["is","are"],"С we — were.","A1"],
+["I have two childs.","childs","children",["childrens","child"],"Child → children — особое множественное число.","A1"],
+["She doesn't likes pizza.","likes","like",["liking","liked"],"После doesn't — глагол без -s: she doesn't like.","A1"],
+["My birthday is in May 5.","in","on",["at","by"],"С датами — on: on May 5. In — с месяцами: in May.","A1"],
+["See you at Monday!","at","on",["in","by"],"С днями недели — on: on Monday.","A1"],
+["The film starts on 7 o'clock.","on","at",["in","by"],"Со временем — at: at 7 o'clock.","A1"],
+["I am live in Moscow.","am","",["do","have"],"Live — уже глагол, am не нужен.","A1"],
+["They is my friends.","is","are",["am","be"],"С they — are.","A1"],
+["How much apples do you need?","much","many",["lot","more of"],"Яблоки можно посчитать — how many. How much — для неисчисляемого: how much water.","A1"],
+["He is listening music.","listening","listening to",["listen","listens"],"Слушать что-то — listen to.","A1"],
+["I want go home.","go","to go",["going","goes"],"После want нужен to: I want to go.","A1"],
+["Look! It rains.","rains","is raining",["rain","rained"],"То, что происходит прямо сейчас, — Present Continuous: it is raining.","A1"],
+["My friends lives in London.","lives","live",["living","is live"],"My friends — они, поэтому live без -s.","A1"],
+["What time you get up?","you","do you",["are you","does you"],"Вопрос в Present Simple: What time do you get up?","A1"],
+["The children is playing in the park.","is","are",["am","be"],"Children — множественное число: are.","A1"],
+["I go to the cinema yesterday.","go","went",["goed","gone"],"Yesterday — прошлое: go → went.","A1"],
+["Did you saw the new film?","saw","see",["seen","sees"],"После did — начальная форма: Did you see…?","A2"],
+["I didn't went to work.","went","go",["gone","goes"],"После didn't — начальная форма: I didn't go.","A2"],
+["This is my brother's car. It's colour is red.","It's","Its",["Is","It"],"It's = it is. Принадлежность — its без апострофа.","A2"],
+["She is tall than her brother.","tall","taller",["tallest","more tall"],"Сравнение коротких прилагательных: tall → taller than.","A2"],
+["She has visited Paris last year.","has visited","visited",["was visit","has visit"],"С last year — Past Simple: visited. Present Perfect не сочетается с точным прошлым временем.","A2"],
+["I have lived here since five years.","since","for",["from","during"],"С отрезком времени — for: for five years. Since — с момента: since 2019.","A2"],
+["I've already finish my homework.","finish","finished",["finishing","finishes"],"Present Perfect: have + третья форма: I've finished.","A2"],
+["Have you ever been in London?","in","to",["at","on"],"Have you ever been to…? — «Ты когда-нибудь был(а) в…?»","A2"],
+["It's the most good restaurant in town.","most good","best",["goodest","better"],"Good → better → the best.","A2"],
+["This box is more heavy than that one.","more heavy","heavier",["heavyer","most heavy"],"Короткие прилагательные: heavy → heavier.","A2"],
+["I will to call you tomorrow.","to","",["for","at"],"После will — глагол без to: I will call.","A2"],
+["You must to wear a helmet.","to","",["for","be"],"После must — без to: you must wear.","A2"],
+["I'm boring. Let's do something!","boring","bored",["bore","bores"],"Bored — «мне скучно». Boring — «скучный, нагоняющий скуку».","A2"],
+["The film was very interested.","interested","interesting",["interest","interests"],"Фильм интересный — interesting. Interested — «заинтересованный» (о человеке).","A2"],
+["I enjoy to read books.","to read","reading",["read","reads"],"После enjoy — форма на -ing: I enjoy reading.","A2"],
+["She said me that she was tired.","said","told",["talked","spoke"],"Сказать кому-то — tell: she told me. Say — без «кому»: she said that…","A2"],
+["When I was child, I lived in Kazan.","child","a child",["the children","childs"],"Перед существительным в единственном числе нужен артикль: when I was a child.","A2"],
+["I have seen him yesterday.","have seen","saw",["see","have saw"],"Yesterday — Past Simple: I saw him yesterday.","A2"],
+["There are much people here.","much","many",["lot","much of"],"People — исчисляемое: many people или a lot of people.","A2"],
+["I didn't have no time.","no","any",["some","none"],"В английском одно отрицание: I didn't have any time.","A2"],
+["Everybody know this song.","know","knows",["knowing","known"],"Everybody — как he/she: everybody knows.","A2"],
+["It depends of the weather.","of","on",["from","in"],"Depend on — зависеть от.","A2"],
+["I'm interested on history.","on","in",["of","at"],"Interested in — интересоваться чем-то.","A2"],
+["We arrived to London at night.","to","in",["at","on"],"Arrive in + город или страна, arrive at + здание. Arrive to — ошибка.","A2"],
+["If it will rain, we'll stay at home.","will rain","rains",["rain","rained"],"После if о будущем — настоящее время: if it rains…","B1"],
+["I'm looking forward to see you.","see","seeing",["seen","saw"],"После look forward to — форма на -ing: to seeing you.","B1"],
+["He suggested to go to the beach.","to go","going",["go","went"],"Suggest + -ing: he suggested going.","B1"],
+["How long are you living here?","are you living","have you lived",["do you live","did you live"],"«Как давно» до сих пор — Present Perfect: How long have you lived here?","B1"],
+["The news are good.","are","is",["be","were"],"News — единственное число: the news is good.","B1"],
+["I'm used to get up early.","get","getting",["got","gets"],"Be used to + -ing: I'm used to getting up early.","B1"],
+["She asked me where do I live.","do I live","I lived",["I live do","did I live"],"В косвенном вопросе нет do и обычный порядок слов: where I lived.","B1"],
+["I wish I have more time.","have","had",["has","having"],"I wish + прошедшая форма: I wish I had more time.","B1"],
+["He's the man who's car was stolen.","who's","whose",["who","which"],"«Чей» — whose. Who's = who is.","B1"],
+["Let's discuss about it tomorrow.","about","",["on","of"],"Discuss — без about: let's discuss it.","B1"],
+["Call me when you will arrive.","will arrive","arrive",["arrived","arriving"],"После when о будущем — настоящее время: when you arrive.","B1"],
+["He works as a teacher since 2015.","works","has worked",["is working","worked"],"С since до сих пор — Present Perfect: he has worked.","B1"]
+];
+const lvlOk=l=>li(l)<=Math.max(1,li(T())+1);
+function practiceLog(kind,ok){S.prac=S.prac||{};const p=S.prac[kind]=S.prac[kind]||{n:0,ok:0};p.n++;if(ok)p.ok++}
+
+/* ---------- Ситуации ---------- */
+let SI=null;
+function viewSit(){
+  if(SI&&SI.s){renderSit();return}
+  const done=S.sit||{};
+  V.innerHTML=`<h1>Ситуации</h1><p class="sub">Собеседник говорит — выбери, как ответить. Как настоящий разговор, только без стеснения.</p>
+  <div class="stack">${LEVELS.filter(L=>SITS.some(s=>s.l===L)).map(L=>`<section><h2>${L} · ${LVLNAME[L]}</h2><div class="tiles2">${SITS.filter(s=>s.l===L).map(s=>{const d=done[s.id];
+    return `<button class="tile2 c-teal sitpick" data-sit="${s.id}"><span class="tico">${ico("sit")}</span><span class="tbody"><b>${esc(s.t)}</b><span>${esc(s.d)}${d?` · лучший результат ${d.best}/${s.turns.length}`:""}</span></span>${d&&d.best===s.turns.length?`<em>${ico("check")}</em>`:`<i class="tchev">›</i>`}</button>`}).join("")}</div></section>`).join("")}</div>`;
+  V.querySelectorAll("[data-sit]").forEach(b=>b.onclick=()=>{const s=SITS.find(x=>x.id===b.dataset.sit);SI={s,i:0,log:[],res:null,ok:0,o:shuffle(s.turns[0].o.slice())};renderSit();window.scrollTo(0,0);setTimeout(()=>speak(s.turns[0].n),250)});
+}
+function renderSit(){
+  const s=SI.s,t=s.turns[SI.i],r=SI.res,end=SI.i>=s.turns.length;
+  if(end){
+    const prev=(S.sit||{})[s.id];S.sit=S.sit||{};S.sit[s.id]={best:Math.max(SI.ok,prev?prev.best:0),date:dkey()};save();
+    V.innerHTML=resultHTML({title:s.t,right:SI.ok,total:s.turns.length,note:"",buttons:`<button class="btn primary" id="sitagain">Ещё раз</button><button class="btn ghost" id="sitlist">Все ситуации</button>`});
+    $("#sitagain").onclick=()=>{SI={s,i:0,log:[],res:null,ok:0,o:shuffle(s.turns[0].o.slice())};renderSit();setTimeout(()=>speak(s.turns[0].n),250)};
+    $("#sitlist").onclick=()=>{SI=null;viewSit()};return;
+  }
+  const bub=(who,en,ru,cls)=>`<div class="dl ${who==="A"?"a":"b"} ${cls||""}"><span class="who">${who==="A"?"A":"Я"}</span><div style="min-width:0"><div class="answer" style="gap:6px"><span>${esc(en)}</span>${sayBtn(en)}</div>${ru?`<div class="small muted">${esc(ru)}</div>`:""}</div></div>`;
+  V.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:6px"><h1 style="margin:0">${esc(s.t)}</h1><span class="small muted">${SI.i+1} из ${s.turns.length}</span></div>
+  <div class="meter" style="margin-bottom:12px"><i style="width:${SI.i/s.turns.length*100}%"></i></div>
+  <div class="card"><div class="dlg">${SI.log.map(x=>bub("A",x.n)+bub("B",x.a,"",x.ok?"":"sitfix")).join("")}${bub("A",t.n,SI.showRu||r?t.ru:"")}</div>
+  ${r?"":`<div class="row"><button class="btn ghost small" id="sitru">${SI.showRu?"Скрыть перевод":"Перевод"}</button></div>`}
+  <div class="label" style="margin-top:4px">Твой ответ</div>
+  <div class="choices col">${SI.o.map(o=>{let c="";if(r){if(o===t.o[0])c=" right";else if(o===r.user)c=" wrong"}return `<button class="btn${c}" data-o="${esc(o)}" ${r?"disabled":""}>${esc(o)}</button>`}).join("")}</div>
+  ${r?`<div class="verdict ${r.ok?"ok":"bad"}">${r.ok?"Отлично сказано!":"Лучше сказать так: "+esc(t.o[0])}</div><p class="small" style="margin:0">${esc(t.why)}</p><div class="row"><button class="btn primary" id="sitnext">${SI.i+1<s.turns.length?"Дальше":"Итог"}</button></div>`:""}</div>`;
+  const ru=$("#sitru");if(ru)ru.onclick=()=>{SI.showRu=!SI.showRu;renderSit()};
+  V.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{if(SI.res)return;const ok=b.dataset.o===t.o[0];SI.res={ok,user:b.dataset.o};if(ok)SI.ok++;practiceLog("sit",ok);mistake("sit",s.id+":"+SI.i,ok,b.dataset.o,{t:"sit",l:s.l});bump(ok,s.l);renderSit();speak(t.o[0])});
+  const nx=$("#sitnext");if(nx){nx.focus();nx.onclick=()=>{SI.log.push({n:t.n,a:t.o[0],ok:SI.res.ok});SI.i++;SI.res=null;SI.showRu=false;if(SI.i<s.turns.length){SI.o=shuffle(s.turns[SI.i].o.slice());renderSit();setTimeout(()=>speak(s.turns[SI.i].n),200)}else renderSit()}}
+}
+
+/* ---------- Найди ошибку ---------- */
+let FX=null;
+function fixPick(){const pool=FIXES.filter(f=>lvlOk(f[5]));const seen=(S.fixSeen||[]);const fresh=pool.filter(f=>!seen.includes(f[0]));return shuffle((fresh.length>=3?fresh:pool).slice())[0]}
+function fixIdx(f){const m=new RegExp("(^|[^A-Za-z'])"+f[1]+"(?![A-Za-z])").exec(f[0]);return m?m.index+m[1].length:f[0].indexOf(f[1])}
+function fixChunks(f){const s=f[0],i=fixIdx(f),pre=s.slice(0,i).trim(),post=s.slice(i+f[1].length).trim();
+  const tk=x=>x?x.split(/\s+/):[];return tk(pre).map(w=>({w,bad:false})).concat([{w:f[1]+(post&&/^[.,!?]/.test(post)?post.match(/^[.,!?]+/)[0]:""),bad:true}]).concat(tk(post.replace(/^[.,!?]+\s*/,"")).map(w=>({w,bad:false})))}
+function fixed(f){const i=fixIdx(f),s=(f[0].slice(0,i)+f[2]+f[0].slice(i+f[1].length)).replace(/\s{2,}/g," ").replace(/\s([.,!?])/g,"$1");return s.charAt(0).toUpperCase()+s.slice(1)}
+function viewFix(){if(!FX)FX={f:fixPick(),stage:"tap",n:0,ok:0};renderFix()}
+function renderFix(){
+  const f=FX.f,ch=fixChunks(f);
+  let body="";
+  if(FX.stage==="tap")body=`<div class="label">Нажми на слово с ошибкой</div><div class="fixline">${ch.map((c,i)=>`<button class="tile" data-ci="${i}">${esc(c.w)}</button>`).join("")}</div>`;
+  else if(FX.stage==="fix")body=`<div class="label">Верно, ошибка здесь! Как исправить?</div><div class="fixline">${ch.map(c=>`<span class="fixw ${c.bad?"bad":""}">${esc(c.w)}</span>`).join(" ")}</div>
+    <div class="choices col">${FX.o.map(o=>`<button class="btn" data-fx="${esc(o)}">${o?esc(o):`убрать «${esc(f[1])}»`}</button>`).join("")}</div>`;
+  else{const good=fixed(f);
+    body=`<div class="verdict ${FX.res?"ok":"bad"}">${FX.res?"Исправлено!":FX.miss?"Ошибка была в другом месте":"Не то исправление"}</div>
+    <div class="fixline">${ch.map(c=>`<span class="fixw ${c.bad?"bad":""}">${esc(c.w)}</span>`).join(" ")}</div>
+    <div class="example"><span class="row" style="gap:8px;flex-wrap:nowrap"><span><b>${esc(good)}</b></span>${sayBtn(good)}</span></div>
+    <p class="small" style="margin:0">${esc(f[4])}</p><div class="row"><button class="btn primary" id="fxnext">Следующее</button></div>`}
+  V.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:6px"><h1 style="margin:0">Найди ошибку</h1><span class="small muted">${FX.n?`Верно: ${FX.ok} из ${FX.n}`:f[5]}</span></div>
+  <p class="sub">В каждом предложении ровно одна ошибка — найди её и исправь.</p><div class="card">${body}</div>`;
+  const done=(ok,user)=>{FX.n++;if(ok)FX.ok++;S.fixSeen=(S.fixSeen||[]).concat(f[0]).slice(-40);practiceLog("fix",ok);mistake("fix",FIXES.indexOf(f),ok,user||"",{t:"fix",l:f[5]});bump(ok,f[5]);FX.stage="done";FX.res=ok;renderFix()};
+  V.querySelectorAll("[data-ci]").forEach(b=>b.onclick=()=>{const c=ch[+b.dataset.ci];if(c.bad){FX.stage="fix";FX.o=shuffle([f[2]].concat(f[3]));renderFix()}else{FX.miss=true;done(false,c.w)}});
+  V.querySelectorAll("[data-fx]").forEach(b=>b.onclick=()=>{FX.miss=false;done(b.dataset.fx===f[2],b.dataset.fx)});
+  const nx=$("#fxnext");if(nx){nx.focus();nx.onclick=()=>{FX.f=fixPick();FX.stage="tap";FX.miss=false;renderFix()}}
+}
+
+/* ---------- Собери диалог ---------- */
+let OD=null;
+function orderPool(){
+  const ds=DIALOGS.filter(d=>lvlOk(d.l)).map(d=>({t:d.title,l:d.l,lines:d.lines}));
+  COURSE.forEach(L=>{if(courseDone(L.n)||li(T())<=1)ds.push({t:"Урок "+L.n+": "+L.t,l:"A1",lines:L.d})});
+  return ds.filter(d=>d.lines.length>=4);
+}
+function orderPick(){const p=orderPool(),seen=S.orderSeen||[];const fresh=p.filter(d=>!seen.includes(d.t));const d=shuffle((fresh.length?fresh:p).slice())[0];
+  const lines=d.lines.slice(0,6);
+  let mix;do{mix=shuffle(lines.map((x,i)=>i))}while(lines.length>1&&mix.every((x,i)=>x===i));
+  return{d,lines,mix,pick:[],res:null}}
+function viewOrder(){if(!OD)OD=Object.assign(orderPick(),{n:0,ok:0});renderOrder()}
+function renderOrder(){
+  const {d,lines,mix,pick,res}=OD,line=i=>lines[i];
+  const placed=pick.map((i,k)=>{const L=line(i);const c=res?(i===k?"right":"wrong"):"";return `<div class="dl ${L[0]==="A"?"a":"b"} ordl ${c}" ${res?"":`data-un="${k}"`}><span class="who">${L[0]}</span><div style="min-width:0"><div class="answer" style="gap:6px"><span>${esc(L[1])}</span>${res?sayBtn(L[1]):""}</div>${res?`<div class="small muted">${esc(L[2])}</div>`:""}</div></div>`}).join("");
+  const left=mix.filter(i=>!pick.includes(i));
+  V.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:6px"><h1 style="margin:0">Собери диалог</h1><span class="small muted">${OD.n?`Верно: ${OD.ok} из ${OD.n}`:d.l}</span></div>
+  <p class="sub">${esc(d.t)}. Нажимай на реплики по порядку — от первой до последней.</p>
+  <div class="card"><div class="dlg">${placed||'<p class="small muted" style="margin:0">Какая реплика первая?</p>'}</div>
+  ${res?`<div class="verdict ${res.ok?"ok":"bad"}">${res.ok?"Всё по порядку!":"Порядок другой — вот как правильно"}</div>${res.ok?"":`<div class="dlg">${lines.map(L=>`<div class="dl ${L[0]==="A"?"a":"b"}"><span class="who">${L[0]}</span><div><span>${esc(L[1])}</span></div></div>`).join("")}</div>`}
+    <div class="row"><button class="btn" data-say="${esc(lines.map(x=>x[1]).join(" "))}">Послушать диалог</button><button class="btn primary" id="odnext">Следующий</button></div>`
+  :`<div class="choices col">${left.map(i=>`<button class="btn ordpick" data-pk="${i}">${esc(line(i)[1])}</button>`).join("")}</div>
+    ${pick.length===lines.length?`<div class="row"><button class="btn primary" id="odchk">Проверить</button><button class="btn ghost" id="odreset">Заново</button></div>`:pick.length?`<p class="small muted" style="margin:0">Нажми на реплику вверху, чтобы убрать её.</p>`:""}`}</div>`;
+  V.querySelectorAll("[data-pk]").forEach(b=>b.onclick=()=>{OD.pick.push(+b.dataset.pk);renderOrder()});
+  V.querySelectorAll("[data-un]").forEach(b=>b.onclick=()=>{OD.pick.splice(+b.dataset.un,1);renderOrder()});
+  const ck=$("#odchk");if(ck){ck.focus();ck.onclick=()=>{const ok=OD.pick.every((x,k)=>x===k);OD.res={ok};OD.n++;if(ok)OD.ok++;S.orderSeen=(S.orderSeen||[]).concat(d.t).slice(-12);practiceLog("order",ok);bump(ok,d.l);renderOrder()}}
+  const rs=$("#odreset");if(rs)rs.onclick=()=>{OD.pick=[];renderOrder()};
+  const nx=$("#odnext");if(nx)nx.onclick=()=>{Object.assign(OD,orderPick());renderOrder();window.scrollTo(0,0)};
+}
+
+/* ---------- Спринт: 60 секунд, верно или нет ---------- */
+let SP=null;
+function sprintWords(){const L=li(T());let ws=allWords().filter(w=>!w.custom&&li(w.lvl)<=L&&w.ru&&w.ru.length<40);const st=ws.filter(w=>S.cards[w.id]);if(st.length>=30)ws=st;return ws}
+function sprintNext(){const ws=SP.ws,w=ws[Math.floor(Math.random()*ws.length)];let ru=w.ru,truth=Math.random()<.5;
+  if(!truth){const tk=x=>x.toLowerCase().split(/[\s,;()\/.!?«»—-]+/).filter(t=>t.length>2),mine=new Set(tk(w.ru));const o=ws.filter(x=>x.id!==w.id&&x.en!==w.en&&!tk(x.ru).some(t=>mine.has(t)));if(o.length)ru=o[Math.floor(Math.random()*o.length)].ru;else truth=true}
+  SP.cur={w,ru,truth}}
+function viewSprint(){
+  clearInterval(SP&&SP.tm);
+  const best=(S.sprint||{}).best||0;
+  if(!SP||SP.state!=="run"&&SP.state!=="end"){
+    V.innerHTML=`<h1>Спринт</h1><p class="sub">60 секунд: верный перевод или нет? Отвечай как можно быстрее. Каждый верный ответ — очко в соревновании.</p>
+    <div class="card" style="text-align:center">${yasay("happy",best?`Твой рекорд — <b>${best}</b>. Побьёшь?`:"Готов(а)? Время пойдёт сразу!",64)}
+    <div class="row" style="justify-content:center"><button class="btn primary big" id="spgo">Старт</button></div>
+    <p class="small muted" style="margin:0">На клавиатуре: ← неверно, → верно</p></div>`;
+    $("#spgo").onclick=()=>{SP={state:"run",ws:sprintWords(),t0:Date.now(),n:0,ok:0,combo:0,best:0,miss:[]};sprintNext();renderSprint()};
+    return;
+  }
+  renderSprint();
+}
+function renderSprint(){
+  clearInterval(SP.tm);
+  if(SP.state==="end"){
+    const rec=SP.ok>((S.sprint||{}).best||0)&&!SP.saved;
+    if(!SP.saved){SP.saved=true;SP.rec=rec;S.sprint=S.sprint||{best:0,n:0};S.sprint.n++;if(rec)S.sprint.best=SP.ok;save()}
+    V.innerHTML=`<h1>Спринт</h1><div class="card" style="text-align:center">${yasay(SP.rec?"proud":SP.ok>=10?"happy":"think",SP.rec?`Новый рекорд — <b>${SP.ok}</b>!`:`Результат: <b>${SP.ok}</b>. Рекорд — ${S.sprint.best}.`,72)}
+    <div class="rstats"><div><b>${SP.ok}</b><span>верно</span></div><div><b>${SP.n}</b><span>всего</span></div><div><b>${SP.best}</b><span>лучшая серия</span></div></div>
+    ${SP.miss.length?`<div style="text-align:left"><div class="label" style="margin-bottom:6px">Где ошибся(лась)</div>${SP.miss.slice(0,6).map(m=>`<div class="small"><b>${esc(m.en)}</b> — ${esc(m.ru)}</div>`).join("")}</div>`:""}
+    <div class="row" style="justify-content:center"><button class="btn primary" id="spagain">Ещё раз</button><a class="btn ghost" href="#train">К практике</a></div></div>`;
+    $("#spagain").onclick=()=>{SP={state:"run",ws:sprintWords(),t0:Date.now(),n:0,ok:0,combo:0,best:0,miss:[]};sprintNext();renderSprint()};
+    return;
+  }
+  const left=()=>Math.max(0,60-Math.floor((Date.now()-SP.t0)/1000));
+  const c=SP.cur;
+  V.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:6px"><h1 style="margin:0">Спринт</h1><span class="sptime" id="sptime">${left()}</span></div>
+  <div class="meter sptbar"><i id="spbar" style="width:${left()/60*100}%"></i></div>
+  <div class="card spcard ${SP.flash||""}" style="text-align:center">
+    <div class="small muted">Верно: ${SP.ok}${SP.combo>=3?` · серия ${SP.combo}`:""}</div>
+    <div class="prompt" style="margin:8px 0 2px">${esc(c.w.en)}</div><div class="spru">${esc(c.ru)}</div>
+    <div class="row sprow"><button class="btn big spno" id="spno">Неверно</button><button class="btn big primary spyes" id="spyes">Верно</button></div></div>`;
+  SP.flash="";
+  const ans=v=>{if(SP.state!=="run")return;const ok=v===c.truth;SP.n++;if(ok){SP.ok++;SP.combo++;SP.best=Math.max(SP.best,SP.combo)}else{SP.combo=0;SP.miss.push({en:c.w.en,ru:c.w.ru})}
+    SP.flash=ok?"fok":"fbad";practiceLog("sprint",ok);bump(ok,null);sprintNext();if(left()<=0){SP.state="end"}renderSprint()};
+  $("#spno").onclick=()=>ans(false);$("#spyes").onclick=()=>ans(true);
+  document.onkeydown=e=>{if((location.hash||"").slice(1)!=="sprint"||!SP||SP.state!=="run"){document.onkeydown=null;return}if(e.key==="ArrowLeft"){e.preventDefault();ans(false)}else if(e.key==="ArrowRight"){e.preventDefault();ans(true)}};
+  SP.tm=setInterval(()=>{if((location.hash||"").slice(1)!=="sprint"){clearInterval(SP.tm);SP.state="idle";return}
+    const l=left(),t=$("#sptime"),b=$("#spbar");if(t)t.textContent=l;if(b)b.style.width=(l/60*100)+"%";if(l<=0){SP.state="end";renderSprint()}},250);
+}
+
+/* ---------- подключение ---------- */
+Object.assign(IC,{
+  sit:'<path d="M4 5h11v8H8l-4 3z"/><path d="M15 9h5v8l-3-2h-6v-2"/>',
+  fix:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/>',
+  order:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 5l1-1v4M3.5 11h2l-2 2.5h2M3.5 17h2v3h-2"/>',
+  sprint:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>'
+});
+Object.assign(HUB,{"#sit":["sit","c-teal"],"#fix":["fix","c-pink"],"#order":["order","c-violet"],"#sprint":["sprint","c-orange"]});
+const _viewTrainP=viewTrain;
+viewTrain=function(){
+  _viewTrainP();
+  const g=V.querySelector(".tiles2");if(!g)return;
+  const p=S.prac||{},sb=(S.sprint||{}).best||0,sd=Object.keys(S.sit||{}).length;
+  g.insertAdjacentHTML("afterbegin",
+    tile("#sit","Ситуации",`Кафе, отель, врач, работа · пройдено ${sd} из ${SITS.length}`,"",{v:sd/SITS.length})+
+    tile("#fix","Найди ошибку",`Одна ошибка в каждом предложении${p.fix?` · верно ${p.fix.ok} из ${p.fix.n}`:""}`)+
+    tile("#order","Собери диалог","Расставь реплики по порядку и послушай")+
+    tile("#sprint","Спринт",`60 секунд: верно или нет?${sb?` · рекорд ${sb}`:""}`));
+};
+(function(){const css=document.createElement("style");css.textContent=`
+  .fixline{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:19px;margin:6px 0 12px}
+  .fixw{padding:2px 2px}.fixw.bad{background:var(--bad-soft);color:var(--bad);border-radius:6px;padding:2px 6px;text-decoration:line-through}
+  .dl.sitfix .answer span{color:var(--ok)}
+  .ordl{cursor:pointer;border-radius:12px;padding:4px}.ordl.right{background:var(--ok-soft)}.ordl.wrong{background:var(--bad-soft)}
+  .ordpick{text-align:left;justify-content:flex-start;white-space:normal}
+  .sptime{font:700 28px/1 var(--f-mono,monospace);min-width:2ch;text-align:right}
+  .sptbar{margin-bottom:12px}.spru{font-size:clamp(19px,4vw,24px);color:var(--ink);margin-bottom:16px}
+  .sprow{justify-content:center;gap:12px}.sprow .btn{flex:1;max-width:220px}
+  .spcard.fok{animation:spok .35s}.spcard.fbad{animation:spbad .35s}
+  @keyframes spok{0%{box-shadow:0 0 0 3px var(--ok)}100%{box-shadow:none}}
+  @keyframes spbad{0%{box-shadow:0 0 0 3px var(--bad)}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}100%{box-shadow:none;transform:none}}
+  .sitpick{text-align:left;width:100%;font:inherit;cursor:pointer}`;document.head.appendChild(css)})();
+
+const fixOpt=(f,o)=>o?o:`убрать «${f[1]}»`;
+Object.assign(TOPIC_EXTRA,{sit:"Ситуации",fix:"Найди ошибку"});
+const _taskOfP=taskOf;
+taskOf=function(m){
+  if(m.k==="sit"){const [id,ix]=m.ref.split(":");const s=SITS.find(x=>x.id===id),t=s&&s.turns[+ix];if(!t)return null;
+    return{label:"Ситуация · "+s.t,input:"choice",prompt:`<div class="answer" style="gap:6px"><span class="q" style="margin:0">${esc(t.n)}</span>${sayBtn(t.n)}</div><div class="small muted">${esc(t.ru)}</div><div class="label" style="margin-top:8px">Как ответить?</div>`,q:"",options:shuffle(t.o.slice()),answers:[t.o[0]],why:t.why,show:t.o[0],autoSay:t.n}}
+  if(m.k==="fix"){const f=FIXES[+m.ref];if(!f)return null;const i=fixIdx(f);
+    return{label:"Найди ошибку · "+f[5],input:"choice",prompt:`<div class="label">Как исправить выделенное?</div><div class="q" style="font-size:18px">${esc(f[0].slice(0,i))}<mark class="errmark">${esc(f[1])}</mark>${esc(f[0].slice(i+f[1].length))}</div>`,q:"",options:shuffle([f[2]].concat(f[3])).map(o=>fixOpt(f,o)),answers:[fixOpt(f,f[2])],why:f[4]+" Верно: "+fixed(f),show:fixOpt(f,f[2])}}
+  return _taskOfP(m);
+};
+const _promptTextP=promptText;
+promptText=function(m){if(m.k==="sit"){const [id,ix]=m.ref.split(":");const s=SITS.find(x=>x.id===id);return s?s.turns[+ix].n:""}if(m.k==="fix"){const f=FIXES[+m.ref];return f?f[0]:""}return _promptTextP(m)};
 
 /* ===================== FIREBASE: перенос по коду, вход через Telegram, соревнование ===================== */
 // Firestore через REST, без SDK. Работает в приложении на телефоне и в Telegram-версии

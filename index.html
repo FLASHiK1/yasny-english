@@ -6340,6 +6340,109 @@ viewToday=function(){
   .cgsay{font-size:17px;font-weight:600;color:var(--accent)}
   .clabel span{max-width:190px}`;document.head.appendChild(css)})();
 
+/* ===================== РАЗГОВОРНЫЙ АНГЛИЙСКИЙ ===================== */
+// 1) Разговорные написания (gonna, wanna, u, thx, dont…) засчитываются как верные.
+// 2) Опечатка — не ошибка; тренировка написания только если слово путается регулярно (3 раза за 30 дней).
+// 3) Подсказки «Как говорят в жизни» и фраза дня по-простому.
+const CASUAL_MAP={gonna:["going to"],wanna:["want to"],gotta:["have got to","have to","got to"],u:["you"],ur:["your","you are"],r:["are"],ya:["you"],
+  thx:["thanks","thank you"],thanx:["thanks","thank you"],thnx:["thanks","thank you"],ty:["thank you"],pls:["please"],plz:["please"],
+  cos:["because"],cuz:["because"],coz:["because"],bc:["because"],dunno:["don't know"],kinda:["kind of"],sorta:["sort of"],lemme:["let me"],gimme:["give me"],
+  yeah:["yes"],yep:["yes"],yup:["yes"],nope:["no"],im:["i'm"],dont:["don't"],cant:["can't"],wont:["won't"],didnt:["didn't"],doesnt:["doesn't"],isnt:["isn't"],
+  arent:["aren't"],wasnt:["wasn't"],werent:["weren't"],havent:["haven't"],hasnt:["hasn't"],ive:["i've"],youre:["you're"],thats:["that's"],whats:["what's"],
+  theyre:["they're"],shouldnt:["shouldn't"],couldnt:["couldn't"],wouldnt:["wouldn't"]};
+const CASUAL_NOTE={gonna:"gonna = going to",wanna:"wanna = want to",gotta:"gotta = have got to",u:"u = you",ur:"ur = your / you're",r:"r = are",ya:"ya = you",thx:"thx = thanks",thanx:"thanx = thanks",thnx:"thnx = thanks",ty:"ty = thank you",pls:"pls = please",plz:"plz = please",cos:"cos = because",cuz:"cuz = because",coz:"coz = because",bc:"bc = because",dunno:"dunno = don't know",kinda:"kinda = kind of",sorta:"sorta = sort of",lemme:"lemme = let me",gimme:"gimme = give me",yeah:"yeah = yes",yep:"yep = yes",yup:"yup = yes",nope:"nope = no"};
+function casualCands(user){
+  const toks=String(user).split(/(\s+)/);let cands=[{s:"",used:[]}];
+  for(const t of toks){const m=t.match(/^([A-Za-z]+)([.,!?;:]*)$/);const k=m&&m[1].toLowerCase();
+    const alts=k&&CASUAL_MAP[k]?CASUAL_MAP[k]:null;
+    if(!alts){cands.forEach(c=>c.s+=t);continue}
+    const next=[];for(const c of cands){next.push({s:c.s+t,used:c.used});for(const a of alts)next.push({s:c.s+a+m[2],used:c.used.concat(k)})}
+    cands=next.slice(0,24)}
+  return cands.filter(c=>c.used.length);
+}
+let LAST_CASUAL=null;
+check=function(user,variants,tol=true){
+  const run=u=>{let best=null;for(const v of variants){const c=classifyAnswer(u,v);c.best=v;const rank=c.status==="ok"?0:c.status==="typo"?1:2;
+    if(!best||rank<best.rank||(rank===best.rank&&c.cost<best.cost)){best=c;best.rank=rank}}return best};
+  let best=run(user);LAST_CASUAL=null;
+  if(best&&best.rank>0){for(const c of casualCands(user)){const b=run(c.s);if(b&&b.rank<best.rank){best=b;best.casual=c.used;if(b.rank===0)break}}}
+  if(!best)return{status:"bad",best:variants[0],issues:[]};
+  if(best.status==="typo"&&!tol)best.status="bad";
+  if(best.status==="typo")recordTypos(best);
+  if(best.casual&&best.status!=="bad"){const notes=[...new Set(best.casual)].map(k=>CASUAL_NOTE[k]).filter(Boolean);
+    LAST_CASUAL=notes;if(notes.length)setTimeout(()=>toast(`Засчитано! ${notes.join(", ")} — так говорят и пишут в переписке`),300)}
+  return best;
+};
+recordTypos=function(r){
+  if(!r||r.status!=="typo")return;
+  const d=dkey();S.typos=S.typos||{};S.typos[d]=(S.typos[d]||0)+r.issues.length;
+  const ks=Object.keys(S.typos).sort();while(ks.length>30)delete S.typos[ks.shift()];
+  S.spellLog=S.spellLog||{};const now=Date.now(),month=30*DAY;
+  r.issues.forEach(i=>{const w=i.t;const a=(S.spellLog[w]||[]).filter(t=>now-t<month);a.push(now);S.spellLog[w]=a.slice(-5);
+    if(a.length>=3)mistake("spell",w,false,i.u,{t:"spell",l:T()})});
+  for(const w in S.spellLog)if(!S.spellLog[w].some(t=>now-t<month))delete S.spellLog[w];
+};
+issueExplain=(function(prev){return function(r){
+  if(r&&r.status==="typo"){const w=r.issues.map(i=>"«"+i.t+"»").join(", ");return `Смысл и грамматика верные — только опечатка в ${r.issues.length>1?"словах":"слове"} ${w}. Это не ошибка, засчитано. Потренируем слово, только если оно будет путаться регулярно.`}
+  return prev(r)}})(issueExplain);
+
+/* ---------- Как говорят в жизни ---------- */
+const LIFE=[
+ [/\bthank you( very much| so much)?\b/i,"Cheers! / Thanks a lot!","В Британии «Cheers!» — это и «спасибо», и «пока»."],
+ [/\byou're welcome\b/i,"No worries! / No problem!","«No worries» звучит очень по-дружески."],
+ [/\bi don't know\b/i,"No idea. / Dunno.","«Dunno» — только среди своих и в переписке."],
+ [/\bgoing to\b/i,"gonna","В речи going to часто звучит как gonna: «I'm gonna call you»."],
+ [/\bwant to\b/i,"wanna","«Wanna grab a coffee?» — «Хочешь выпить кофе?»"],
+ [/\bhave (got )?to go\b/i,"Gotta go!","«Gotta go!» — «Мне пора!» в переписке."],
+ [/\bhow are you\b/i,"How's it going? / You alright?","«You alright?» в Британии — просто «Привет, как ты?»"],
+ [/\bgoodbye\b/i,"Bye! / See ya! / Take care!","«Goodbye» звучит довольно официально."],
+ [/\bsee you (later|soon|tomorrow)\b/i,"See ya! / Catch you later!","«Catch you later» — «увидимся» по-дружески."],
+ [/\bdo you want to\b/i,"Fancy…? / Wanna…?","По-британски: «Fancy a coffee?» — «Не хочешь кофе?»"],
+ [/\bsounds great\b/i,"Sounds good! / Cool!","«Cool!» подходит почти к любому плану."],
+ [/\bno problem\b/i,"No worries! / Sure thing!","«Sure thing!» — «Без проблем, конечно!»"],
+ [/\bi'm (very )?tired\b/i,"I'm knackered! / I'm exhausted.","«Knackered» — британское «вымотан(а)»."],
+ [/\bvery good\b|\bexcellent\b/i,"Awesome! / Brilliant!","Британцы обожают «Brilliant!», американцы — «Awesome!»"],
+ [/\bfriend\b/i,"mate / buddy","«Mate» — британское «приятель», «buddy» — американское."],
+ [/\bi'm sorry\b/i,"My bad! / Oops, sorry!","«My bad» — «моя вина», когда ошибка мелкая."],
+ [/\bhello\b/i,"Hey! / Hiya!","«Hiya!» — тёплое британское «привет»."],
+ [/\bof course\b/i,"Sure! / Totally!","«Totally!» — «Ещё бы!»"],
+ [/\breally\?|\bis it true\b/i,"No way! / Seriously?","«No way!» — «Да ладно!»"],
+ [/\bexpensive\b/i,"pricey / a rip-off","«It's a bit pricey» — «Дороговато», «a rip-off» — «грабёж»."],
+ [/\bdelicious\b|\btasty\b/i,"yummy / so good","«This is so good!» — так скажут чаще, чем «delicious»."],
+ [/\bwhat's the matter\b|\bwhat happened\b/i,"What's up? / What's wrong?","«What's up?» — и «что случилось?», и «как дела?»"],
+ [/\bwait\b/i,"Hang on! / Hold on a sec!","«Hang on!» — «Погоди!»"]];
+let LIFE_SEEN={n:0,last:-9};
+function lifeHint(text){
+  LIFE_SEEN.n++;if(LIFE_SEEN.n-LIFE_SEEN.last<3)return null;
+  const day=dkey(),seen=(S.lifeSeen&&S.lifeSeen.d===day)?S.lifeSeen.h:[];
+  for(const [re,alt,note] of LIFE){if(re.test(text)&&!seen.includes(alt)){LIFE_SEEN.last=LIFE_SEEN.n;S.lifeSeen={d:day,h:seen.concat(alt)};return{alt,note}}}
+  return null;
+}
+const _mascotizeL=mascotize;
+mascotize=function(){
+  const fresh=[...V.querySelectorAll(".card .verdict.ok:not([data-ya]),.card .verdict.warn:not([data-ya])")];
+  _mascotizeL();
+  fresh.forEach(v=>{const card=v.closest(".card");if(!card||card.querySelector(".lifehint"))return;
+    const txt=[...card.querySelectorAll(".answer span,.answer,.q,.prompt,.example,.dl .answer span")].map(e=>e.textContent).join(" ");
+    const h=lifeHint(txt);if(!h)return;
+    const t=card.querySelector(".teach")||v;
+    t.insertAdjacentHTML("afterend",`<div class="lifehint"><span class="label">Как говорят в жизни</span><div class="answer" style="gap:6px"><b>${esc(h.alt)}</b>${sayBtn(h.alt.split(" / ")[0])}</div><span class="small muted">${esc(h.note)}</span></div>`)});
+};
+
+/* ---------- Фраза дня по-простому ---------- */
+const SLANG=[["No worries!","Не за что! / Ничего страшного!"],["Fancy a coffee?","Не хочешь кофе?"],["I'm knackered.","Я вымотан(а)."],["That's a rip-off!","Это грабёж (слишком дорого)!"],["Hang on a sec.","Подожди секунду."],["I'm starving!","Умираю с голоду!"],["Gotta go!","Мне пора!"],["What's up?","Как дела? / Что нового?"],["Fair enough.","Справедливо, логично."],["I'm on my way!","Уже иду / еду!"],["Long time no see!","Сто лет не виделись!"],["Take it easy.","Не напрягайся / Бывай."],["It's up to you.","Решать тебе."],["I'm all ears.","Я весь(вся) внимание."],["Piece of cake!","Проще простого!"],["Let's call it a day.","На сегодня хватит."],["My bad!","Моя вина!"],["No way!","Да ладно! / Ни за что!"],["I'm in!","Я в деле!"],["Same here.","У меня так же."],["Count me in!","Я с вами!"],["It's not my cup of tea.","Это не моё."],["Break a leg!","Ни пуха ни пера!"],["Cheers, mate!","Спасибо, дружище!"],["I'm down for that.","Я за!"],["Keep me posted.","Держи меня в курсе."],["Sounds like a plan!","Отличный план!"],["Better late than never.","Лучше поздно, чем никогда."],["You made my day!","Ты сделал(а) мой день!"],["Hit me up later.","Напиши мне потом."]];
+function slangOfDay(){const d=new Date();const i=Math.floor((d.getTime()-d.getTimezoneOffset()*6e4)/DAY)%SLANG.length;return SLANG[(i+SLANG.length)%SLANG.length]}
+const _viewTodayL=viewToday;
+viewToday=function(){
+  _viewTodayL();
+  const [en,ru]=slangOfDay(),q=V.querySelector(".quests")||V.querySelector(".daybox");
+  if(q)q.insertAdjacentHTML("afterend",`<section class="sheet slang"><div class="label">Фраза дня по-простому</div><div class="answer" style="gap:8px;margin-top:6px"><b class="slangen">${esc(en)}</b>${sayBtn(en)}</div><span class="small muted">${esc(ru)}</span></section>`);
+};
+(function(){const css=document.createElement("style");css.textContent=`
+  .lifehint{display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-radius:14px;background:var(--soft);margin-top:2px}
+  .lifehint b{font-size:17px;color:var(--accent)}
+  .slang .slangen{font-size:20px}`;document.head.appendChild(css)})();
+
 /* ===================== FIREBASE: перенос по коду, вход через Telegram, соревнование ===================== */
 // Firestore через REST, без SDK. Работает в приложении на телефоне и в Telegram-версии
 // (веб-артефакт claude.ai до Firebase не достучится из-за CSP — там остаётся длинный код YE1:).
